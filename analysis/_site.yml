@@ -1,7 +1,7 @@
-name: "annapragada2024_artemis_code"
+name: annapragada2024_artemis_code
 output_dir: ../docs
 navbar:
-  title: "annapragada2024_artemis_code"
+  title: annapragada2024_artemis_code
   left:
   - text: Home
     href: index.html
@@ -9,6 +9,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fa-github
+    text: Source code
+    href: https://github.com/cancer-genomics/annapragada2024_artemis_code
 output:
   workflowr::wflow_html:
     toc: yes
