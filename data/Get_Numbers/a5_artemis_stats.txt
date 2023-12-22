@@ -1,0 +1,4 @@
+Unique:    144
+Distinct:  830
+Total:     26754
+Max_count: 273

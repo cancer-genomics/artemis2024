@@ -1,0 +1,338 @@
+---
+title: "S22"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(RColorBrewer)
+load_all(here("code","useful.stuff.aa"))           # Load
+
+model_names<-c("ARTEMIS_Ensemble","ARTEMIS_single_DELFI_SSLs_Ensemble")
+#model_names<-c("ARTEMIS_Ensemble","Mathios_DELFI","ARTEMIS_single_DELFI_SSLs_Ensemble")
+
+#colors<-c("#66c2a5","#8da0cb","#fc8d62")
+colors<-c("#1b9e77","#d95f02")
+
+meta<-fread(here("data","Plasma_CV_meta_Novaseq.csv"))
+meta<-meta %>% select(-V1)
+
+#Add in Mathios Published scores
+cv<-fread(here("data","Liver_Published_delfi-results_risk.csv"))
+cv$model<-"Mathios_Published"
+cv$set<-"SSL"
+cv$score<-round(cv$score.delfi.gbm,3)
+data<-fread(here("data","Final_Liver_Risk_Ensemble","Results","Cross_Validation_scores.csv"))
+data<-data %>% select(-V1)
+
+data<-rbind(data,cv %>% select(id,type,score,model,set))
+#########
+data<-data %>% filter(model %in% model_names)
+
+cv_dat<-data
+```
+
+```{r lucas_roc, echo=FALSE, fig.width=10, fig.height=5, dev=c("png", "pdf")}
+
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+data<-data %>% mutate(group=if_else(Stage %in% c("0"),"Stage 0","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("B"),"Stage B",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("C"),"Stage C",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("A"),"Stage A",group))
+
+m<-unique(data$model)
+c<-c("Stage 0","Stage A","Stage B","Stage C")
+h<-c("Non-Cancer")
+
+dat_full<-tibble(type="test",sens=-1,spec=-1,model="test",set="test",cancer="test",healthy="test")
+
+k<-1
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d<-data %>% filter(model==m[k]) %>% filter(group %in% c(c[i],h[j]))
+    dat<-format_roc(d$type,d$score,"")
+    dat$model<-m[k]
+    dat$set<-paste0(c[i]," vs. ",h[j])
+    dat$cancer<-paste0(c[i])
+    dat$healthy<-paste0(h[j])
+    dat_full<-rbind(dat_full,dat)
+  }
+}
+
+dat_full<-dat_full %>% filter(type != "test")
+d<-data %>% filter(model==m[k]) 
+dat<-format_roc(d$type,d$score,"")
+dat$model<-m[k]
+dat$set<-"All cancer vs. Non-Cancer"
+dat$cancer<-"All cancer"
+dat$healthy<-"Non-Cancer"
+dat_full<-rbind(dat_full,dat)
+
+k<-2
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d<-data %>% filter(model==m[k]) %>% filter(group %in% c(c[i],h[j]))
+    dat<-format_roc(d$type,d$score,"")
+    dat$model<-m[k]
+    dat$set<-paste0(c[i]," vs. ",h[j])
+    dat$cancer<-paste0(c[i])
+    dat$healthy<-paste0(h[j])
+    dat_full<-rbind(dat_full,dat)
+  }
+}
+d<-data %>% filter(model==m[k]) 
+dat<-format_roc(d$type,d$score,"")
+dat$model<-m[k]
+dat$set<-"All cancer vs. Non-Cancer"
+dat$cancer<-"All cancer"
+dat$healthy<-"Non-Cancer"
+dat_full<-rbind(dat_full,dat)
+
+
+dat_full<-dat_full %>% group_by(model,set) %>% arrange(sens)
+dat_full<-dat_full %>% mutate(type=if_else(sens==0 & spec==1,type," "))
+dat_full<-dat_full %>% mutate(jit=if_else(model==m[1],.07, 1))
+dat_full<-dat_full %>% mutate(jit=if_else(model==m[2],.13, jit))
+dat_full$model<-factor(dat_full$model,levels=model_names)
+##
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="All cancer vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+
+A <- dat_full %>% filter(set=="All cancer vs. Non-Cancer") %>% 
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_text(size=15)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("All Cancers")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage 0 vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage 0 vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage 0")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C1<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage A vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage A vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage A")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C2<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage B vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage B vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage B")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C3<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage C vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage C vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage C")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C4<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r all_ROCs,fig.height=8,fig.width=16, dev=c("png", "pdf")}
+x<-plot_grid(C1,C2,C3,C4,nrow=2)
+
+r<-plot_grid(C,x,rel_widths=c(1,2))
+r
+
+#Get legend
+l<-get_legend(A+scale_color_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=colors)+theme(legend.position="top",legend.title=element_blank(),legend.text=element_text(size=14)))
+legend<-l
+
+```
+
+```{r CV_boxplots, echo=FALSE, fig.width=18, fig.height=6, dev=c("png", "pdf")}
+#Lung by stage
+data<-cv_dat
+data<-inner_join(data,meta %>% select(Stage,id,Subtype),by="id")
+
+
+data<-data %>% mutate(group=if_else(Stage %in% c("0"),"Stage 0","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("B"),"Stage B",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("C"),"Stage C",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("A"),"Stage A",group))
+data<-data %>% mutate(group=if_else(Subtype=="Cirrhosis","Cirrhosis",group))
+data<-data %>% mutate(group=if_else(Subtype=="HCV"|Subtype=="HBV","Viral hepatitis",group))
+
+data$set<-"Liver Cohort By Stage"
+all_dat<-data %>% select(-Stage,-Subtype)
+
+
+all_dat$cohort<-"Cross-Validated Cohort"
+data_plot<-all_dat
+
+all_dat<-data_plot
+#################
+
+n<-all_dat %>% filter(model=="ARTEMIS_Ensemble")
+n<-n %>% group_by(cohort,group,set) %>% summarize(s=n())
+all_dat<-inner_join(all_dat,n,by=c("cohort","group","set"))
+all_dat$group2<-paste0(all_dat$group,"\n(n=",all_dat$s,")")
+
+all_dat$group2<-factor(all_dat$group2,levels=unique(all_dat$group2))
+########
+#all_dat<-all_dat %>% filter(cohort != "External Validation Cohort")
+#all_dat<-all_dat %>% filter(model != "Mathios_Published")
+all_dat<-all_dat %>% mutate(set=if_else(set=="Liver Cohort By Stage","Cancer Stage",set))
+all_dat<-all_dat %>% mutate(set=if_else(type=="healthy","Non-cancer individuals",set))
+
+all_dat$model<-factor(all_dat$model,levels=c("ARTEMIS_Ensemble","Mathios_Published","ARTEMIS_single_DELFI_SSLs_Ensemble"))
+all_dat$set<-factor(all_dat$set,levels=c("Non-cancer individuals","Cancer Stage"))
+all_dat$cohort<-factor(all_dat$cohort,levels=c("Cross-Validated Cohort","External Validation Cohort"))
+
+b<-ggplot(all_dat,aes(x=group2,y=score,dodge=model,fill=model))+
+  geom_point(aes(fill=model),
+              pch=21, alpha=0.5, size=0.7,
+              color="gray",position=position_jitterdodge(dodge.width=.4,jitter.width=.2)) +
+  geom_boxplot(outlier.shape=NA, alpha=0.3,width=.2,position=position_dodge(.4)) +
+  theme_classic(base_size=14) + #facet_wrap(vars(set),scales="free_x",nrow=1)+
+  theme(panel.grid=element_blank(),
+        legend.position="none",
+        legend.justification=c("center", "top"),
+        strip.background=element_blank(),
+        strip.placement="outside",axis.title.x =element_blank(),strip.text=element_text(size=14))+#scale_fill_discrete(labels=c("ARTEMIS+DELFI","ARTEMIS","DELFI"))+
+     scale_fill_manual(labels=c("ARTEMIS","DELFI","ARTEMIS+DELFI"),values=colors)+
+      #facet_grid(.~cohort,scales="free_x",space="free",switch="x")+
+    ylab("Model Score")
+
+
+b<-plot_grid(b,l,ncol=1,rel_heights=c(10,1))
+
+b
+
+```
+
+
+
+

@@ -8,4 +8,83 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+# Citation
+Annapragada, A.V. Niknafs, N. White, J.R. Bruhm, D.C., Cherry, C., Medina, J.E., Adleff, V., Hruban C., Mathios, D., Foda, Z.H., Phallen, J., Scharpf, R.B., Velculescu, V.E. Genome-wide repeat landscapes in cancer and cell-free DNA.
+
+# Abstract
+Genetic changes in repetitive sequences are a hallmark of cancer and other diseases but characterizing these has been challenging using standard sequencing approaches.  We developed a de novo kmer finding approach to identify repeat elements from whole genome sequencing.  Using this method, we analyzed 1.2 billion kmers in 2837 samples from 1975 individuals, including those with lung, breast, colorectal, ovarian, liver, gastric, head and neck, bladder, cervical, thyroid, and prostate cancer, and found tumor-specific changes in 1280 repeat element types in these patients.  These included changes to known repeats as well as 820 elements that were not previously known to be altered in human cancer.  Repeat elements were enriched in regions of driver genes and their representation was altered by structural changes as well as epigenetic states.  Machine learning analyses using genome-wide repeat landscapes and fragmentation profiles in cfDNA detected patients with early-stage lung or liver cancers and could be used to noninvasively identify the tissue of origin of tumors. These analyses reveal widespread changes in repeat landscapes of human cancers and provide an approach for their detection and characterization.
+
+# Feature Generation Pipelines
+The code and a README needed to run the ARTEMIS pipeline for new samples may be found in [code/ARTEMIS_Pipeline](../code/ARTEMIS_Pipeline). Briefly this includes (1) de novo kmer finding to generate 1.2 billion kmers in 1280 repeat element features, (2) compiling kmer repeat landscapes for a cohort of samples (used in tissue and cfDNA), and (3) compiling coverage at regions of high density of epigenetic marks (used in cfDNA).
+
+We have previously published the code needed to run the DELFI pipeline, please see: https://github.com/cancer-genomics/reproduce_lucas_wflow/tree/master/code/preprocessing
+
+# Training ARTEMIS and ARTEMIS-DELFI Models
+The code needed to train the ARTEMIS models for classification of PCAWG tissue may be found in [code/Tissue_Models](../code/Tissue_Models)
+
+The ARTEMIS and DELFI features,  the code needed to train (and externally validate in the case of the lung detection model) the cfDNA models presented in this study, and a README may be found in [code/cfDNA_Models](../code/cfDNA_Models) 
+
+# Documentation
+We have provided a README describing the structure of this workflowr, as well as READMEs within subfolders as needed. 
+
+A list of R-related dependencies for reproducing the figures in the LUCAS manuscript is available in the [SessionInfo](../docs/SessionInfo.html) document. Most of the R packages are available from Bioconductor or CRAN. 
+
+There are two packages that we wrote with useful functions  - useful.stuff.aa and rlucas. Copies of both are available in the [code](../code) folder. rlucas was originally made available in the code/ folder of https://github.com/cancer-genomics/reproduce_lucas_wflow. 
+
+# Figures
+- Figure 1: [PDF](../docs/Fig1.pdf) 
+- Figure 2: 
+  - A: [Code](../analysis/Fig2a_S11_S16.Rmd), [PDF](../docs/figure/Fig2a_S11_S16.Rmd/T_N_Heatmap_Orig2-1.pdf)
+  - B: [Code](../analysis/Fig2b_S7.Rmd), [PDF](../docs/figure/Fig2b_S7.Rmd/SV_all-1.pdf)
+  - C: [Code](../analysis/Fig2c_S8a.Rmd), [PDF part 1](../docs/figure/Fig2c_S8a.Rmd/comp2-1.pdf), [PDF part 2](../docs/figure/Fig2c_S8a.Rmd/comp_legend-1.pdf)
+  - D: [Code](../analysis/Fig2d_S10_LINE1.Rmd), [PDF](../docs/figure/Fig2d_S10_LINE1.Rmd/main-1.pdf)
+  - E: [Code](../analysis/Fig2e_S13.Rmd), [PDF](../docs/figure/Fig2e_S13.Rmd/KM_overall_plot-1.pdf)
+- Figure 3:
+  - A: [Code](../analysis/Fig3a.Rmd), [PDF](../docs/figure/Fig3a.Rmd/composite-1.pdf)
+  - B: [Code](../analysis/Fig3b.Rmd), [PDF part 1](../docs/figure/Fig3b.Rmd/comp-1.pdf), [PDF part 2](../docs/figure/Fig3b.Rmd/legend-1.pdf)
+
+- Figure 4: [Code](../analysis/Fig4_Epi.Rmd), [PDF](../docs/figure/Fig4_Epi.Rmd/composite-1.pdf)
+- Figure 5: [Code](../analysis/Fig5_LUCAS.Rmd)
+    - A: [PDF](../docs/figure/Fig5_LUCAS.Rmd/CV_boxplots-2.pdf)
+    - B: [PDF](../docs/figure/Fig5_LUCAS.Rmd/all_ROCs-1.pdf)
+    - C: [PDF](../docs/figure/Fig5_LUCAS.Rmd/plotEV_extra-1.pdf)
+
+# Tables
+- Table 1: [Code](../code/Table1.Rmd)
+- Table 2: [Code](../code/Table2.Rmd)
+
+# Supplementary Figures
+- S1: [PDF](../docs/S1.pdf) 
+- S2: [Code](../analysis/figS2_S3abc.Rmd), [PDF](../docs/figure/figS2_S3abc.Rmd/size-1.pdf)
+- S3:
+  - A: [Code](../analysis/figS2_S3abc.Rmd), [PDF](../docs/figure/figS2_S3abc.Rmd/boxplots-1.pdf)
+  - B: [Code](../analysis/figS2_S3abc.Rmd), [PDF](../docs/figure/figS2_S3abc.Rmd/Hist-1.pdf)
+  - C: [Code](../analysis/figS2_S3abc.Rmd), [PDF](../docs/figure/figS2_S3abc.Rmd/lollipops-1.pdf)
+  - D: [Code](../analysis/figS3d_S4.Rmd), [PDF](../docs/figure/figS3d_S4.Rmd/cosmic-5.pdf)
+- S4: [Code](../analysis/figS3d_S4.Rmd), [PDF](../docs/figure/figS3d_S4.Rmd/KEGG-1.pdf)
+- S5: [Code](../analysis/figS5_S6_simulations.Rmd), [PDF part 1](../docs/figure/figS5_S6_simulations.Rmd/Sim_Matrix-1.pdf),  [PDF part 2](../docs/figure/figS5_S6_simulations.Rmd/Sim_Matrix_SINE-1.pdf)
+- S6: [Code](../analysis/figS5_S6_simulations.Rmd), [PDF](../docs/figure/figS5_S6_simulations.Rmd/altemose-1.pdf)
+- S7: [Code](../analysis/Fig2b_S7.Rmd), [PDF](../docs/figure/Fig2b_S7.Rmd/Arm_CN_aggregate2-1.pdf)
+- S8:
+  - A: [Code](../analysis/Fig2c_S8a.Rmd), [PDF](../docs/figure/Fig2c_S8a.Rmd/p2-1.pdf) 
+  - B: [Code](../analysis/figS8bc.Rmd), [PDF part 1](../docs/figure/figS8bc.Rmd/MCCC1_p2-2.pdf), [PDF part 2](../docs/figure/figS8bc.Rmd/MCCC1_p2-1.pdf), [PDF part 3](../docs/figure/figS8bc.Rmd/p32-1.pdf)
+  - C: [Code](../analysis/figS8bc.Rmd), [PDF](../docs/figure/figS8bc.Rmd/comp2-1.pdf) 
+- S9: [Code](../analysis/figS9.Rmd), [PDF](../docs/figure/figS9.Rmd/T_N_Heatmap_Orig_size-1.pdf)
+- S10: [Code](../analysis/Fig2d_S10_LINE1.Rmd), [PDF part 1](../docs/figure/Fig2d_S10_LINE1.Rmd/scatter-1.pdf), [PDF part 2](../docs/figure/Fig2d_S10_LINE1.Rmd/bar-1.pdf)
+- S11: [Code](../analysis/Fig2a_S11_S16.Rmd), [PDF part 1](../docs/figure/Fig2a_S11_S16.Rmd/comp-1.pdf), [PDF part 2](../docs/figure/Fig2a_S11_S16.Rmd/Healthy_Var_Top-1.pdf)
+- S12: [Code](../analysis/figS12.Rmd), [PDF part 1](../docs/figure/figS12.Rmd/overall-1.pdf), [PDF part 2](../docs/figure/figS12.Rmd/race-1.pdf), [PDF part 3](../docs/figure/figS12.Rmd/all-1.pdf)
+- S13: [Code](../analysis/Fig2e_S13.Rmd), [PDF part 1](../docs/figure/Fig2e_S13.Rmd/Scores_By_Type-1.png), [PDF part 2](../docs/figure/Fig2e_S13.Rmd/KM_group_plot-1.pdf)
+- S14: [Code](../analysis/figS14.Rmd), [PDF part 1](../docs/figure/figS14.Rmd/OS_ALL-1.pdf), [PDF part 2](../docs/figure/figS14.Rmd/PFS_ALL-1.pdf)
+- S15: [Code](../analysis/figS15.Rmd), [PDF](../docs/figure/figS15.Rmd/TN-2.pdf)
+- S16: [Code](../analysis/Fig2a_S11_S16.Rmd), [PDF](../docs/figure/Fig2a_S11_S16.Rmd/N_N_Heatmap_Orig_size-1.pdf)
+- S17: [Code](../analysis/figS17.Rmd), [PDF part 1](../docs/figure/figS17.Rmd/batch-1.pdf), [PDF part 2](../docs/figure/figS17.Rmd/cor-1.pdf),  [PDF part 3](../docs/figure/figS17.Rmd/MA-1.pdf)
+- S18: [Code](../analysis/figS18_epi.Rmd), [PDF](../docs/figure/figS18_epi.Rmd/epi3-1.pdf)
+- S19: [PDF](../docs/S19.pdf) 
+- S20: [Code](../analysis/figS20_Ideogram.Rmd), [PDF](../docs/figure/figS20_Ideogram.Rmd/ideo-1.pdf)
+- S21: [Code part 1](../analysis/figS21a_featureimp.Rmd), [PDF part 1](../docs/figure/figS21a_featureimp.Rmd/imp-1.pdf), [Code part 2 and 3](../analysis/figS21bc_stability.Rmd), [PDF part 2](../docs/figure/figS21bc_stability.Rmd/score_plots-1.pdf), [PDF part 3](../docs/figure/figS21bc_stability.Rmd/score_plots-2.pdf)
+- S22: [Code](../analysis/figS22_liver.Rmd), [PDF part 1](../docs/figure/figS22_liver.Rmd/CV_boxplots-1.pdf), [PDF part 2](../docs/figure/figS22_liver.Rmd/all_ROCs-1.pdf)
+- S23: [Code](../analysis/figS23_24_lungval.Rmd), [PDF](../docs/figure/figS23_24_lungval.Rmd/all_ROCs2-1.pdf)
+- S24: [Code](../analysis/figS23_24_lungval.Rmd), [PDF](../docs/figure/figS23_24_lungval.Rmd/recurrence-1.pdf)
+- S25: [Code](../analysis/figS25.Rmd), [PDF part 1](../docs/figure/figS25.Rmd/PFS-1.pdf), [PDF part 2](../docs/figure/figS25.Rmd/horizontal-1.pdf)
+
+

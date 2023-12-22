@@ -1,0 +1,246 @@
+---
+title: "S8bc"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(dplyr)
+library(devtools)
+library(tidyverse)
+library(data.table)
+library(here)
+library(readxl)
+library(ggpubr)
+library(cowplot)
+
+
+```
+
+```{r MCCC1, echo=FALSE, fig.width=5, fig.height=4, dev=c("png", "pdf")}
+#####
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy<-dplyr::inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+ploidy<-ploidy %>% filter(!`ICGC Donor` %in% exc$icgc_donor_id)
+ploidy<-ploidy %>% filter(project_id=="PCAWG-TCGA-LUSC-US")
+####
+meta<-fread(here("data","focal_pcawg","pcawg_sample_sheet.tsv"))
+meta<-meta %>% filter(dcc_project_code %in% c("LUSC-US"))
+#cnv<-fread(here("data","focal_pcawg","all_samples.consensus_CN.by_gene.170214.txt"))
+#inter<-intersect(meta$aliquot_id,colnames(cnv))
+#cnv2<-cnv %>% select(`Gene Symbol`, `Locus ID`, Cytoband, inter)
+
+#cnv2<-cnv2 %>% gather(key=Sample,value=CNV,-`Gene Symbol`,-`Locus ID`,-Cytoband)
+#cnv2<-inner_join(cnv2,meta %>% select(icgc_donor_id,dcc_project_code,dcc_specimen_type,aliquot_id),by=c("Sample"="aliquot_id"))
+#cnv2<-cnv2 %>% filter(CNV != "NaN")
+
+
+#c3<-cnv2 %>% filter(`Gene Symbol`=="SOX2"|`Gene Symbol`=="PIK3CA")
+
+#write.csv(c3,here("data","focal_pcawg","all_samples.consensus_CN.SOX2_PIK3CA.csv"))
+#for the purpose of github file size limit, made this filtered version for plotting
+c3<-fread(here("data","focal_pcawg","all_samples.consensus_CN.SOX2_PIK3CA.csv")) %>% select(-V1)
+
+c3<-c3 %>% select(`Gene Symbol`,CNV,icgc_donor_id) %>% spread(key=`Gene Symbol`,value=CNV)
+c3<-c3 %>% mutate(cat=if_else(PIK3CA>4 | SOX2>4,"PIK3CA and/or SOX2 Amplified","CN< 5"))
+
+
+###
+meta<-fread(here("data","focal_pcawg","pcawg_sample_sheet.tsv"))
+meta<-meta %>% filter(dcc_project_code %in% c("LUAD-US","LUSC-US"))
+cnv<-fread(here("data","LINE1","LUSC.tsv"))
+cnv<-cnv %>% filter(Chromosome==3)
+cnv$cn<-2*(2^(cnv$Segment_Mean))
+cnv$id<-paste0("TCGA-",sapply(str_split(cnv$Sample,"-"),"[",2),"-",sapply(str_split(cnv$Sample,"-"),"[",3))
+
+
+cnv<-inner_join(cnv,ploidy %>% select(donor_barcode,`ICGC Donor`),by=c("id"="donor_barcode"))
+cnv<-inner_join(cnv,c3 %>% select(icgc_donor_id,cat),by=c("ICGC Donor"="icgc_donor_id"))
+
+#Need to convert chm13 cytoband coords to hg19 for consistency -- use thenhg19 cytoband file for the plotting:
+#160700000 192300000
+a1<-ggplot(cnv)+geom_segment(aes(x=Start,xend=End,y=cn,yend=cn,color=cat))+geom_rect(aes(xmin=160700000,xmax=192300000,ymin=0,ymax=25),alpha=0,color="black")+theme_classic()+
+  theme(legend.position="bottom")
+
+s<-min(cnv$Start)
+e<-max(cnv$End)
+
+s1<-s
+s2<-s1+100000
+
+d<-cnv %>% filter(Start<=s1 & End > s2)
+d<-d %>% mutate(here=if_else(cn>4,"amp","no"))
+d %>% group_by(cat,here,id)%>% summarize(n=n())
+
+d<-d %>% group_by(`ICGC Donor`,cat)%>%summarize(n=sum(here=="amp")) %>% group_by(cat) %>% summarize(n=sum(n))
+d$s<-s1
+d$e<-s2
+dat<-d
+
+while (s2<=e) {
+  s1<-s2
+  s2<-s2+100000
+  d<-cnv %>% filter(Start<=s1 & End > s2)
+  d<-d %>% mutate(here=if_else(cn>4,"amp","no"))
+  d %>% group_by(cat,here,id)%>% summarize(n=n())
+
+  d<-d %>% group_by(`ICGC Donor`,cat)%>%summarize(n=sum(here=="amp")) %>% group_by(cat) %>% summarize(n=sum(n))
+  d$s<-s1
+  d$e<-s2
+  dat<-rbind(dat,d)
+
+  
+}
+#PIK3CA chr3:178,865,145-178,958,881
+dat2<-dat %>% group_by(cat) %>% summarize(r=frollmean(x=n,n=20),n=n,s=s)
+
+a1s<-ggplot(dat2,aes(x=s/1000000,y=r,color=cat))+geom_rect(aes(xmin=160700000/1000000,xmax=192300000/1000000,ymin=0,ymax=25),alpha=0,color="black")+theme_classic(base_size=14)+
+  theme(legend.position=c(.2,.8),legend.title=element_blank(),legend.text=element_text(size=14))+geom_line()+geom_line(aes(y=n),alpha=.2)
+
+
+####
+data<-fread(here("data","Kmer_Distributions","chr_distribution.csv"))
+data<-data %>% select(-V1)
+data$total_kmers<-data$occurrences*data$kmer_count
+data<-data %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+
+data2<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data2<-data2 %>% select(-V1)
+data2$total_kmers<-data2$occurrences*data2$kmer_count
+data2<-data2 %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+data<-rbind(data,data2)
+#data$total_kmers<-data$total_kmers/(30*.86) #86% of 30 million reads
+
+gene<-fread(here("data","focal_pcawg","chr3_big.txt"))
+colnames(gene)<-c("feature","count","ref")
+
+data<-inner_join(data,gene,by="feature")
+data$perc<-(data$count/data$total_kmers)*100
+
+data<-data %>% filter(perc != 0)
+data<-data %>% filter(perc>10)
+
+novel<-read_csv(here("data","NoveltyTables","Novel_Elements.csv"))
+novel %>% filter(feature %in% data$feature) %>% select(feature,Novelty,group) %>% rename("Subfamily status"="Novelty")
+
+
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg$type<-sapply(str_split(pcawg$id,"_"),"[",2)
+
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"tumor","normal"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$`ICGC Donor`)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(`ICGC Donor`,project_id),by=c("id"="ICGC Donor"))
+
+pcawg<-pcawg %>% filter(id %in% c3$icgc_donor_id)
+pcawg<-pcawg %>% select(id,type,data$feature)
+pcawg<-tibble(pcawg)
+pcawg<-pcawg %>% gather(key=feature,value=count,-id,-type) %>% spread(key=type,value=count)
+pcawg<-inner_join(pcawg,c3 %>% select(cat,icgc_donor_id),by=c("id"="icgc_donor_id"))
+pcawg$ratio<-pcawg$tumor/pcawg$normal
+
+pcawg<-inner_join(pcawg,data %>% select(feature,perc),by="feature")
+
+pcawg$name<-paste0(pcawg$feature,"\n(",round(pcawg$perc,2),"% of defining kmers)")
+pcawg$name2<-paste0(round(pcawg$perc,2),"% of kmers overlap")
+
+f<-(pcawg %>% filter(id=="DO26427")%>%arrange(-perc))$name
+pcawg$feature<-gsub("#","\n",pcawg$feature)
+
+f2<-(pcawg %>% filter(id=="DO26427")%>%arrange(-perc))$feature
+
+pcawg$name<-factor(pcawg$name,levels=f)
+pcawg$feature<-factor(pcawg$feature,levels=f2)
+
+pcawg %>% group_by(feature,cat) %>% summarize(m=mean(tumor)) %>% print(n=1000)
+
+wilcox.test((pcawg %>% filter(feature=="tRNA-Val-GTA\ntRNA" & cat=="CN< 5"))$tumor,(pcawg %>% filter(feature=="tRNA-Val-GTA\ntRNA" & cat=="PIK3CA and/or SOX2 Amplified"))$tumor,alternative="less")
+
+#pcawg<-pcawg %>% mutate(cat=if_else(cat=="CN< 5","CN< 5","Amplification"))
+names<-pcawg %>% filter(id=="DO26427")
+
+novel<-fread(here("data","NoveltyTables","Novel_Elements.csv"),header=T)
+novel<-novel %>% filter(group=="Novel")
+novel$feature<-gsub("#","\n",novel$feature)
+
+pcawg<-pcawg %>% mutate(Novelty=if_else(feature %in% novel$feature,"Newly identified as altered in cancer","Prior Evidence"))
+
+a2<-ggplot(pcawg,aes(x=cat,y=ratio,fill=cat))+geom_boxplot(outlier.shape=NA,width=.5)+
+  geom_jitter(size=.2)+facet_grid(feature~.,switch="both")+
+  coord_flip()+theme_classic(base_size=14)+
+  theme(legend.position="bottom",strip.text.y.left=element_text(angle=0,face="bold"),strip.background = element_blank(),
+        axis.text.y=element_blank(),axis.title.y=element_blank(),strip.placement="outside",legend.text = element_text(size=14),plot.title = element_text(hjust = 1))+ylab("Ratio of Tumor:Normal kmer count")+labs(fill="")+geom_text(data=names, aes(x = "CN< 5", y = 3.5,label=name2,group=feature))+ggtitle("Lung Cancer - Squamous Cell\nchr3 PIK3CA and SOX2 Region")
+
+l2<-get_legend(a2)
+
+a2<-a2 + theme(legend.position="none")
+
+
+percs<-pcawg %>% filter(id=="DO26427")
+
+
+
+
+p<-compare_means(ratio~cat, pcawg, method = "wilcox.test",p.adjust.method="BH",paired = FALSE,
+  group.by = "feature", ref.group = NULL,alternative="less")
+p$feature<-factor(p$feature,levels=f2)
+p$logp<--1*log10(p$p.adj)
+p<-p %>% mutate(color=if_else(p.adj<=.05,"Significant at\ncorrected\nthreshold","Not Significant"))
+a4<-ggplot(p,aes(x=feature,y=logp,color=color))+facet_grid(feature~.,scales="free_y")+coord_flip()+geom_point()+theme_classic(base_size=14)+theme(axis.text.y=element_blank(),strip.text=element_blank(),axis.title.y = element_blank(),legend.title=element_blank(),legend.position="bottom",legend.text = element_text(size=14),legend.key.size = unit(3,"line"))+ylab("p-val\n(-log10)")+scale_color_manual(values=c("indianred"))+geom_hline(yintercept=-1*log10(.05),linetype="dashed",alpha=.5)
+
+l<-get_legend(a4)
+
+```
+
+```{r comp2, echo=FALSE, fig.width=8, fig.height=12, dev=c("png", "pdf")}
+a4<-a4 + theme(legend.position="none")
+
+p1<-plot_grid(a2,a4,align="h",axis="tb",ncol=2,rel_widths=c(3,.7))
+p2<-plot_grid(l2,l,align="h",axis="b",ncol=2,rel_widths=c(1,1))
+p1
+#p3<-plot_grid(p1,p2,nrow=2,rel_heights=c(10,1))
+#p3
+```
+
+```{r MCCC1_p2, echo=FALSE, fig.width=2.5, fig.height=4, dev=c("png", "pdf")}
+
+
+c1<-ggplot(c3,aes(x=PIK3CA,fill=cat))+geom_histogram(binwidth=1)+
+  theme_classic()+
+  theme(legend.position="none")+xlab("Tumor PIK3CA Copy Number")
+
+c2<-ggplot(c3,aes(x=SOX2,fill=cat))+geom_histogram(binwidth=1)+
+  theme_classic()+
+  theme(legend.position="none")+xlab("Tumor SOX2 Copy Number")+scale_x_sqrt()
+
+c1
+c2
+```
+
+
+
+```{r p2,echo=FALSE, fig.width=12, fig.height=12, dev=c("png", "pdf")}
+a1
+```
+
+```{r p3,echo=FALSE, fig.width=12, fig.height=12, dev=c("png", "pdf")}
+a1s+xlab("chr3 Mb")+ylab("Number of samples with Copy Number > 4")
+```
+
+```{r p32,echo=FALSE, fig.width=12, fig.height=5, dev=c("png", "pdf")}
+a1s+xlab("chr3 Mb")+ylab("Number of samples with Copy Number > 4")
+```
+
+

@@ -1,0 +1,394 @@
+---
+title: "2E_S13"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r lib}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+```
+
+Assemble the data
+```{r assemble1}
+#I just need to get everything put together
+#All samples
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+#Noushin's data
+#Noushin's data
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy2<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230928.rds"))
+
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+exc2<-exc %>% filter(icgc_donor_id %in% ploidy$`ICGC Donor`|icgc_donor_id %in% ploidy2$icgc_donor_id)
+ploidy2<-inner_join(ploidy2,all_samples,by=c("icgc_specimen_id"="Specimen ID"))
+ploidy$icgc_donor_id<-ploidy$`ICGC Donor`
+nms<-intersect(colnames(ploidy),colnames(ploidy2))
+ploidy<-rbind(ploidy %>% select(nms),ploidy2%>%select(nms))
+
+ploidy<-ploidy %>% mutate(blacklist=if_else(`ICGC Donor` %in% exc$icgc_donor_id,"Y","N"))
+
+ploidy<-ploidy %>% mutate(Ploidy_Metrics_Available=if_else(is.na(ploidy),"N","Y"))
+
+ploidy<-ploidy %>% rename("id"="ICGC Donor")
+ploidy<-ploidy %>% select(Project,breakpoint.count,nondiploid.frac,loh.frac,non.modal.frac,modal.ploidy,entropy,ploidy,tmb,bcr_patient_barcode,id,blacklist,Ploidy_Metrics_Available)
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="OV-US","Ovarian","Other"))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="LUAD-US","Lung Adeno",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="LUSC-US","Lung Squamous",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="BRCA-US","Breast",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project %in% c("COAD-US","READ-US"),"Colorectal",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="LIHC-US","Liver",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="HNSC-US","Head and Neck - Squamous",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="THCA-US","Thyroid",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="BLCA-US","Bladder",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="STAD-US","Stomach",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="CESC-US","Cervical",Primary_site))
+ploidy<-ploidy %>% mutate(Primary_site=if_else(Project=="PRAD-US","Prostate",Primary_site))
+ploidy<-ploidy %>% filter(Project != "SKCM-US")
+
+clin<-fread(here("data","TCGA","clinical.cases_selection.2023-10-19","clinical.tsv"))
+clin<-clin %>% filter(treatment_type=="Pharmaceutical Therapy, NOS") #It's not clear why every pt has two rows, for Pharm and Rad
+clin<-clin %>% select(case_submitter_id,race,ajcc_pathologic_stage)
+ploidy<-inner_join(ploidy,clin,by=c("bcr_patient_barcode"="case_submitter_id"))
+#I would like to add the scores
+pcawg2<-fread(here("data","PCAWG","Classification_preds.csv"))
+
+exc<-ploidy %>% filter(blacklist=="Y"|ajcc_pathologic_stage=="'--")
+
+pcawg2<-pcawg2 %>% filter(!id %in% exc$id)
+
+pcawg2<-pcawg2 %>% filter(project_id != "Normal")
+pcawg2$Project<-pcawg2$project_id
+pcawg2$Project<-gsub("-US","",pcawg2$Project)
+pcawg2<-pcawg2 %>% mutate(Project=if_else(Project %in% c("COAD","READ"),"COAD/READ",Project))
+
+adv<-ploidy %>% filter(blacklist=="N" & ajcc_pathologic_stage %in% c("Stage IIIB","Stage IIIA","Stage IV","Stage IIIC","Stage III","Stage IVB","Stage IVA","Stage IVC"))
+pcawg2 <-pcawg2 %>% filter(id %in% adv$id)
+```
+
+
+
+```{r assemble2}
+library(survival)
+library(survminer)
+
+p1<-pcawg2# %>% ungroup()
+#p1<-p1 %>% spread(key=bigfam,value=c)
+
+meta<-read_xlsx(here("data","TCGA","pcawg_donor_clinical_August2016_v9 (2).xlsx"))
+meta<-meta %>% select(icgc_donor_id,donor_survival_time,donor_vital_status,donor_interval_of_last_followup)
+
+dat<-inner_join(p1,meta,by=c("id"="icgc_donor_id"))
+dat<-dat %>% mutate(surv=if_else(is.na(donor_survival_time),donor_interval_of_last_followup,donor_survival_time))
+dat<-dat %>% mutate(censor=if_else(donor_vital_status=="alive",0,1))
+dat_os<-dat
+
+meta<-fread(here("data","TCGA","KM_Plot__Progression_Free_(months) (1).txt"))
+dat<-inner_join(dat,ploidy %>% select(bcr_patient_barcode,id),by="id")
+dat<-inner_join(dat,meta,by=c("bcr_patient_barcode"="Patient ID"))
+dat$surv_pfs<-dat$PFS_MONTHS
+dat<-dat %>% filter(!is.na(surv_pfs))
+dat$censor_pfs<-if_else(dat$PFS_STATUS=="0:CENSORED",0,1)
+dat_pfs<-dat
+
+
+
+```
+
+KM based on overall median
+Plot Overall Suvival
+```{r KM_overall_OS}
+d<-as.data.frame(dat_os)
+med<-median(d$score)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(score<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("ARTEMIS Score Low", "ARTEMIS Score High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")#+theme(axis.text.x = element_text(size=8))
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/1), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall<-a#+ggtitle("Overall Survival")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+Plot PFS
+```{r KM_overall_PFS}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$score)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(score<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("ARTEMIS Score Low", "ARTEMIS Score High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")#+theme(axis.text.x = element_text(size=8))
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs<-a #+ggtitle("Progression Free Survival")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+
+```{r KM_overall_plot, fig.width=7,fig.height=10, dev=c("png", "pdf")}
+
+p1<-plot_grid(overall,pfs,ncol=1)
+p1
+
+#write.csv(dat_os,here("output","Figure_Data_Files","Fig2E_OS.csv"))
+#write.csv(dat_pfs,here("output","Figure_Data_Files","Fig2E_PFS.csv"))
+
+```
+
+Visualizing the by type
+```{r Scores_By_Type, fig.width=10,fig.height=4}
+data<-dat_os
+data<-data %>% mutate(name=if_else(Project=="LUSC","Lung Squamous",Project))
+data<-data %>% mutate(name=if_else(Project=="LUAD","Lung Adeno",name))
+data<-data %>% mutate(name=if_else(Project=="BLCA","Bladder",name))
+data<-data %>% mutate(name=if_else(Project=="BRCA","Breast",name))
+data<-data %>% mutate(name=if_else(Project=="STAD","Gastric",name))
+data<-data %>% mutate(name=if_else(Project=="COAD/READ","Colorectal",name))
+data<-data %>% mutate(name=if_else(Project=="OV","Ovarian",name))
+data<-data %>% mutate(name=if_else(Project=="THCA","Thyroid",name))
+data<-data %>% mutate(name=if_else(Project=="HNSC","Head and Neck\nSquamous",name))
+data<-data %>% mutate(name=if_else(Project=="PRAD","Prostate",name))
+data<-data %>% mutate(name=if_else(Project=="CESC","Cervical",name))
+data<-data %>% mutate(name=if_else(Project=="LIHC","Liver",name))
+norm<-fread(here("data","PCAWG","Classification_preds.csv"))
+
+norm<-norm %>% filter(type=="healthy")
+norm<-norm %>% filter(id %in% dat_os$id)
+norm$name<-"Normal Tissue\n(Not included in\nsurvival analysis)"
+norm$Project<-"Normal Tissue\n(Not included in\nsurvival analysis)"
+
+norm<-norm %>% select(score,Project,name)
+data<-data %>% select(name,score,Project)
+m<-median(data$score)
+data<-rbind(data,norm)
+lev<-(data %>% group_by(name) %>% summarize(m=median(score)) %>% arrange(-m))$name
+
+
+data$name<-factor(data$name,levels=lev)
+data<-data %>% mutate(Project=if_else(Project != "Normal Tissue\n(Not included in\nsurvival analysis)","Cancer","Normal Tissue\n(Not included in\nsurvival analysis)"))
+ggplot(data,aes(x=name,y=score,color=Project,fill=Project))+geom_boxplot(outlier.shape=NA,alpha=.1)+geom_jitter(size=.5)+theme_classic()+theme(legend.position="none")+ylab("ARTEMIS Score\nfrom PCAWG classification model")+xlab("")+scale_color_manual(values=c("indianred","gray50"))+scale_fill_manual(values=c("indianred","gray50"))
+
+```
+
+
+Do the KM curves with group medians instead
+Plot Overall Suvival
+```{r KM_group_OS}
+d<-as.data.frame(dat_os) 
+#med<-median(d$SINE)
+med<-d %>% group_by(Project) %>% summarize(med=median(score))
+d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(score<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("ARTEMIS Score Low", "ARTEMIS Score High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall<-a #+ggtitle("Overall Survival")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+Plot PFS
+```{r KM_group_PFS}
+d<-as.data.frame(dat_pfs) 
+med<-d %>% group_by(Project) %>% summarize(med=median(score))
+d<-inner_join(d,med,by="Project")
+#med<-median(d$SINE)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(score<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("ARTEMIS Score Low", "ARTEMIS Score High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs<-a #+ggtitle("Progression Free Survival")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+Plot the KM curves together
+```{r KM_group_plot, fig.width=10,fig.height=4, dev=c("png", "pdf")}
+
+p1<-plot_grid(overall,pfs)
+p1
+```
+
+
+
+
+
+

@@ -1,0 +1,162 @@
+---
+title: "3A"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+
+features<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+features<-features %>% select(-V1)
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+
+meta<-meta %>% filter(id %in% selected$id)
+
+features<-features %>% filter(id %in% meta$id)
+
+features<-features %>% select(id,starts_with("2"),starts_with("3"))
+features<-inner_join(features, meta %>% select(sex,type,id),by="id")
+features<-features %>% gather(key=HSAT,value=count,-id,-sex,-type)
+
+
+features <- features %>% mutate(set=if_else(HSAT%in% c("3A6","3A3"),"Predominantly\n chrY","set"))
+features <- features %>% mutate(set=if_else(HSAT%in% c("2A1","2A2","2B","3A1","3A5","3B2","3B3","3B4","3B5"),"Predominantly\n Autosomes",set))
+features <- features %>% mutate(set=if_else(HSAT%in% c("3A2","3A4","3B1"),"Mixed or\n Undetermined",set))
+features$type<-factor(features$type,levels=c("healthy","cancer"))
+
+features$HSAT<-factor(features$HSAT,levels=c("3A3","3A6","3A2","3A4","3B1","2A1","2A2","2B","3A1","3A5","3B2","3B3","3B4","3B5"))
+
+```
+
+```{r altemose_dist, echo=FALSE, fig.width=15, fig.height=3, dev=c("png", "pdf")}
+data<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data<-data %>% select(-V1)
+
+d0<-data 
+
+d0<-d0 %>% mutate(unique=if_else(occurrences==0,0.0,as.numeric(kmer_count)))
+
+
+d0<-d0 %>% group_by(feature,chr) %>% summarize(kmers=sum(unique)) #I am summing over all chromosomes here
+
+d_tot<-data %>% filter(chr=="chr1") %>% group_by(feature) %>% summarize(tot=sum(kmer_count))
+
+d0<-inner_join(d0,d_tot,by="feature")
+
+d0$perc<-d0$kmers/d0$tot
+order<-d0 %>% filter(chr=="chrY") %>% arrange(-perc)
+d0<-d0 %>% mutate(group=if_else(feature %in% c("2A1","2A2","2B"),"No kmers on chrY","kmers on chrY and autosomes"))
+d0<-d0 %>% mutate(group=if_else(feature %in% c("3A3","3A6"),"kmers primarily on chrY",group))
+d0$group<-factor(d0$group,levels=c("kmers primarily on chrY","kmers on chrY and autosomes","No kmers on chrY"))
+d0$feature<-factor(d0$feature,levels=order$feature)
+d0$chr<-factor(d0$chr,levels=c(paste0("chr",1:22),"chrX","chrY"))
+
+```
+
+```{r altemose_dist2, echo=FALSE, fig.width=15, fig.height=3, dev=c("png", "pdf")}
+data<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data<-data %>% select(-V1)
+
+d0<-data 
+
+d0$count<-d0$occurrences*d0$kmer_count
+#d0<-d0 %>% mutate(unique=if_else(occurrences==0,0.0,as.numeric(kmer_count)))
+
+
+d0<-d0 %>% group_by(feature,chr) %>% summarize(kmers=sum(count)) #I am summing over all chromosomes here
+
+d_tot<-d0 %>% group_by(feature) %>% summarize(tot=sum(kmers))
+
+y<-d0 %>% filter(chr=="chrY")
+a<-d0 %>% filter(chr!="chrY")
+a<-a %>% group_by(feature)%>%summarize(chr="Other",kmers=sum(kmers))
+d0<-rbind(a,y)
+d0<-inner_join(d0,d_tot,by="feature")
+
+d0$perc<-d0$kmers/d0$tot
+
+
+order<-d0 %>% filter(chr=="chrY") %>% arrange(-perc)
+d0$feature<-factor(d0$feature,levels=order$feature)
+
+
+d0<-d0 %>% mutate(group=if_else(feature %in% c("2A1","2A2","2B"),"No kmers\non chrY","kmers primarily\non autosomes"))
+d0<-d0 %>% mutate(group=if_else(feature %in% c("3A3","3A6"),"kmers primarily\non chrY",group))
+d0<-d0 %>% mutate(group=if_else(feature %in% c("3A4"),"kmers detectable\non chrY",group))
+d0$group<-factor(d0$group,levels=c("kmers primarily\non chrY","kmers detectable\non chrY","kmers primarily\non autosomes","No kmers\non chrY"))
+d0<-d0 %>% mutate(chr=if_else(chr=="Other","Other Chromosomes",chr))
+d0$chr<-factor(d0$chr,levels=c("chrY","Other Chromosomes"))
+
+
+a1<-ggplot(d0,aes(x=feature,y=perc,fill=chr))+geom_bar(stat="identity",position="dodge")+facet_wrap(vars(feature),scales="free_x",nrow=1)+theme_classic(base_size=14)+theme(legend.position="bottom",axis.title.x=element_blank(),panel.spacing = unit(0, "cm"),strip.placement = "outside",axis.text.x=element_blank(),legend.text= element_text(size=14))+labs(fill=element_blank())+scale_fill_manual(values=c("midnightblue", "lightskyblue"))+ylab("Proportion of\nkmer occurrences")
+
+
+ggplotGrob(a1) -> a1g
+
+#save_data<-d0 %>% select(-kmers,-tot)
+#write.csv(save_data,here("output","Figure_Data_Files","Fig3A_top.csv"))
+```
+
+
+```{r chrY_both_dodge, echo=FALSE, fig.width=19, fig.height=6, dev=c("png", "pdf")}
+
+features$HSAT<-factor(features$HSAT,levels=order$feature)
+features<-features %>% mutate(type=if_else(type=="healthy","Non-Cancer","Cancer"))
+features$type<-factor(features$type,levels=c("Non-Cancer","Cancer"))
+#I dont know why these 5 are coded as unknown Sex as the Mathios et al tables have these listed
+features<-features %>% mutate(sex=if_else(id %in% c("PGDX26551P1","PGDX26813P1","PGDX26586P1"),"Female",sex))
+features<-features %>% mutate(sex=if_else(id %in% c("PGDX26758P1","PGDX26763P1"),"Male",sex))
+features<-features %>% filter(type=="Non-Cancer")
+
+features0<-features %>% filter(id=="PGDX26920P")
+features0$count<-0
+p1<-ggplot(features,aes(x=sex,y=count,fill=sex))+geom_boxplot(outlier.shape=NA,position = position_dodge(width = 0.7))+
+geom_point(size=.5,position = position_jitterdodge(jitter.width = 0.1,
+                                             dodge.width = 0.7))+
+facet_wrap(HSAT~.,scales="free",nrow=1)+theme_classic(base_size=14)+ylab("kmer count per million aligned reads")+
+  #stat_compare_means(method = "wilcox.test",label = "p.format",data = filter(features, type == "Cancer"),size=3)+
+  stat_compare_means(method = "wilcox.test",label = "p.format",data = filter(features, type == "Non-Cancer"),size=5)+
+  theme(legend.position="bottom",legend.title=element_blank(),legend.text=element_text(size=20),
+        axis.ticks.x=element_blank(),axis.title.x = element_blank(),axis.text.x=element_blank(),strip.background = element_blank(),strip.text=element_blank(),panel.spacing = unit(0, "cm"))+geom_blank(data=features0)
+
+
+
+male<-features %>% filter(sex=="Male")
+
+#save_data<-features
+#load_all("~/Dropbox/useful.stuff.aa")           # Load
+#s<-lucas_meta %>% select(id,cg_id)
+#save_data<-inner_join(save_data,s,by="id")
+#save_data$id<-save_data$cg_id
+#save_data$cg_id<-NULL
+#write.csv(save_data,here("output","Figure_Data_Files","Fig3A_bottom.csv"))
+
+```
+
+```{r composite, echo=FALSE, fig.width=28, fig.height=10, dev=c("png", "pdf")}
+
+ggplotGrob(p1) -> p1g
+a1g$widths<-p1g$widths
+groblist<-list(a1g,p1g)
+library(gridExtra)
+grid.arrange(grobs=groblist,nrow=2,ncol=1,heights=c(1,2))
+
+library(cowplot)
+#plot_grid(a1,p1,ncol=1,rel_heights = c(.5,1),align="hv",axis="left")
+
+```
+
+

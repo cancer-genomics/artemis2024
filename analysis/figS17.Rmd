@@ -1,0 +1,152 @@
+---
+title: "S17"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r batch, echo=FALSE, fig.width=10, fig.height=6, dev=c("png", "pdf")}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(readxl)
+load_all(here("code","useful.stuff.aa"))           # Load
+
+features<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+features<-features %>% select(-V1)
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+meta<-meta %>% filter(id %in% selected$id)
+features<-features %>% filter(id %in% meta$id)
+
+batch<-read_xlsx(here("data","Mathios_batching.xlsx"))
+features<-inner_join(features,lucas_meta %>% select(id,cg_id),by="id")
+features<-inner_join(features,batch %>% select(Patient,`Genomic Library Batch`),by=c("cg_id"="Patient"))
+features<-inner_join(features,meta %>% select(id,type,sex),by=c("id"="id"))
+features<-features %>% mutate(sex=if_else(cg_id %in% c("CGPLLU286P","CGPLLU321P","CGPLLU533P"),"Female",sex)) ###These are "Unk" for some reason, but they shouldn't be, see Mathios tables
+features<-features %>% mutate(sex=if_else(cg_id %in% c("CGPLLU428P","CGPLLU415P"),"Male",sex))
+
+#features %>% filter(sex=="Unk") %>% select(id,sex,`3A6`,cg_id)
+
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+#e<-e %>% filter(total_kmers>1000)
+
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+
+
+artemis<-features %>% select(id,e$feature)
+test<-artemis %>% gather(key=feature,value=count,-id)
+test<-inner_join(test,e %>% select(feature,fam),by="feature")
+test<-test %>% group_by(id,fam) %>% summarize(c=scale(count)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+test<-test %>% spread(key=f,value=c)
+artemis<-test
+features<-inner_join(artemis,features %>% select(id,cg_id,`Genomic Library Batch`,sex,type))
+
+features$batch<-features$`Genomic Library Batch`
+features$`Genomic Library Batch`<-NULL
+dat_m<-features %>% filter(type=="healthy")%>%select(-id,-type,-sex,-batch,-cg_id)
+library(ggfortify)
+pca_res <- prcomp(dat_m, scale. = TRUE)
+features$batch<-factor(features$batch,levels=seq(1:24))
+a<-autoplot(pca_res, data = features %>% filter(type=="healthy"), colour ="batch",shape="sex",x=1,y=2)+theme_classic()+labs(color="Genomic Library Batch")+theme(legend.position="none")
+b<-autoplot(pca_res, data = features %>% filter(type=="healthy"), colour ="batch",shape="sex",x=2,y=3)+theme_classic()+labs(color="Genomic Library Batch")
+plot_grid(a,b,align="h",axis="b",nrow=1,rel_widths=c(1,1.2))
+
+
+
+
+```
+
+```{r cor, echo=FALSE, fig.width=8, fig.height=8, dev=c("png", "pdf")}
+##Process the NovaSeq samples the same way
+features2<-fread(here("data","lucas_nova_artemis.csv"))
+features2<-features2 %>% filter(id %in% features$cg_id)
+qc_fail_novaseq<-c("CGPLLU428P", "CGPLLU555P","CGPLLU404P","CGPLLU415P","CGPLLU533P","CGPLLU296P","CGPLLU286P")
+features2<-features2 %>% filter(!id %in%qc_fail_novaseq )
+
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+
+
+artemis<-features2 %>% select(id,e$feature)
+test<-artemis %>% gather(key=feature,value=count,-id)
+test<-inner_join(test,e %>% select(feature,fam),by="feature")
+test<-test %>% group_by(id,fam) %>% summarize(c=scale(count)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+test<-test %>% spread(key=f,value=c)
+artemis<-test
+features2<-inner_join(artemis,features2 %>% select(id))
+
+f_nova<-features2 %>% gather(key=feature,value=count_nova,-id)
+f_hi<-features %>% gather(key=feature,value=count_hi,-id,-type,-sex,-cg_id,-batch)
+f_platform<-inner_join(f_hi,f_nova,by=c("cg_id"="id","feature"))
+
+#f<-f_platform %>% group_by(id,type) %>% summarize(c=cor(count_hi,count_nova,method="pearson"))
+f<-f_platform %>% group_by(id,type) %>% summarize(c=cor(count_hi,count_nova,method="spearman"))
+
+ggplot(f,aes(x=type,y=c,color=type))+geom_boxplot(outlier.shape=NA)+geom_jitter()+theme_classic()+xlab("")+ylab("Spearman Correlation Coefficient Between Replicates")+labs(color="")+scale_color_manual(values=c("deeppink4","black"))
+
+```
+
+Let's go back to the raw counts, and show that there is less concordance for kmers with lower expected number
+```{r}
+features<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+features<-features %>% select(-V1)
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+meta<-meta %>% filter(id %in% selected$id)
+features<-features %>% filter(id %in% meta$id)
+features<-inner_join(features,lucas_meta %>% select(id,cg_id),by="id")
+
+
+features2<-fread(here("data","lucas_nova_artemis.csv"))
+features2<-features2 %>% filter(id %in% features$cg_id)
+qc_fail_novaseq<-c("CGPLLU428P", "CGPLLU555P","CGPLLU404P","CGPLLU415P","CGPLLU533P","CGPLLU296P","CGPLLU286P")
+features2<-features2 %>% filter(!id %in%qc_fail_novaseq )
+artemis_nova<-features2 %>% select(id,e$feature)
+
+
+```
+
+```{r MA, echo=FALSE, fig.width=12, fig.height=6, dev=c("png", "pdf")}
+
+f_nova<-artemis_nova %>% gather(key=feature,value=count_nova,-id)
+f_hi<-features %>% gather(key=feature,value=count_hi,-id,-cg_id)
+
+f<-inner_join(f_nova,f_hi,by=c("id"="cg_id","feature"))
+f$A<-(log10(f$count_hi)+log10(f$count_nova))/2
+f$M<-(log10(f$count_hi)-log10(f$count_nova))
+f<-inner_join(f,lucas_meta %>% select(type,cg_id),by=c("id"="cg_id"))
+h<-unique((f %>% filter(type=="healthy"))$id)
+c<-unique((f %>% filter(type=="cancer"))$id)
+#randomly sample 5 IDs from each
+set.seed(1234)
+h<-sample(h,5)
+set.seed(1234)
+c<-sample(c,5)
+f<-f %>% filter(id %in% c|id %in% h)
+ggplot(f,aes(x=A,y=M,color=type))+geom_point()+geom_hline(aes(yintercept=0),color="orange3")+
+  geom_vline(aes(xintercept=3,color="Average >1000 kmers/million"),linetype="dashed")+facet_wrap(vars(id))+theme_classic()+theme(strip.text=element_text(size=6))+scale_color_manual(values=c("black","deeppink4","gray25"))+theme(legend.position="bottom",legend.text = element_text(size=12),legend.title=element_blank())+xlab("Log Average Count")+ylab("Log Difference in Counts")
+```
+
+
+

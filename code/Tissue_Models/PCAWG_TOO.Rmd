@@ -1,0 +1,149 @@
+---
+title: "PCAWGROCs"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+ROCs for PCAWG T vs N
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+load_all("~/Dropbox/useful.stuff.aa")           # Load
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+
+
+```
+
+
+```{r}
+ploidy<-fread(here("data","TCGA","combined_meta.csv"))
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+pcawg3<-fread(here("data","PCAWG","artemis_PCAWG2.csv"))
+pcawg3<-pcawg3 %>% tibble() %>% select(-V1)
+pcawg2<-rbind(pcawg2,pcawg3)
+
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$id)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(id,Project),by=c("id"="id"))
+pcawg<-pcawg %>% mutate(project_id=gsub("PCAWG-TCGA-","",Project))
+pcawg<-pcawg %>% select(-Project)
+pcawg<-pcawg %>% mutate(project_id=gsub("-US","",project_id))
+pcawg<-pcawg %>% mutate(project_id=if_else(project_id %in% c("COAD","READ"),"COAD_READ",project_id))
+
+
+
+
+######
+test<-pcawg %>% gather(key=feature,value=count,-id,-type,-project_id)
+
+#Add info needed to center/scale by family
+test$fam<-sapply(str_split(test$feature,"#"),"[",2)
+test<-test %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+test$bigfam<-sapply(str_split(test$fam,"_"),"[",1)
+test<-test %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA",bigfam))
+test<-test %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"TEs",bigfam))
+
+
+test<-test %>% group_by(id,type,project_id,bigfam)%>%summarize(c=scale(count)[,1],f=feature)
+#test<-test %>% group_by(id,type,project_id)%>%summarize(c=scale(count)[,1],f=feature)
+
+test<-test %>% rename("count"="c") %>% rename("feature"="f")
+pcawg<-test %>% ungroup() %>% select(-bigfam) %>% spread(key=feature,value=count)
+#pcawg<-test %>% ungroup() %>% spread(key=feature,value=count)
+
+pcawg<-pcawg %>% ungroup()
+
+library(ggpubr)
+
+h<-pcawg %>% filter(type=="healthy")
+
+c<-pcawg %>% filter(type=="cancer")
+
+pcawg2<-pcawg %>% gather(key=feature,value=count,-id,-type,-project_id)
+pcawg2$type<-factor(pcawg2$type,levels=unique(pcawg2$type))
+pcawg2$project_id<-factor(pcawg2$project_id,levels=unique(pcawg2$project_id))
+
+
+```
+
+```{r pcawg_roc_cancers, echo=FALSE, fig.width=6, fig.height=6, dev=c("png", "pdf")}
+
+recipe_seq <- recipe(project_id ~ ., data=c) %>%
+    update_role(id, new_role = "ID") %>%  
+    update_role(type, new_role = "ID") 
+
+
+glmnetGrid <- expand.grid(
+    alpha = 1,
+    lambda = 10^seq(-5, -1, length.out = 100))
+
+
+#A control object
+set.seed(1234)
+ctrl_all <- trainControl(method = "repeatedcv",
+                     number = 5,
+                     repeats = 1,
+                     verboseIter = TRUE,
+                     savePredictions="final",
+                     classProbs=TRUE,
+                     index=createMultiFolds(c$project_id, 5, 1))
+
+
+#Train model
+set.seed(1234)
+model_delfi <- caret::train(recipe_seq,
+                          data = c,
+                          method = "gbm",
+                          trControl = ctrl_all)
+
+
+cancer<-model_delfi$pred
+write.csv(cancer,"../data/PCAWG/TOOpreds.csv")
+
+#cancer<-read_csv("../data/PCAWG/TOOpreds.csv")
+#res<-cancer %>% group_by(obs) %>% dplyr::summarize(n=n(),c=sum(obs==pred),p=c/n,l=binom.test(c,n)$conf.int[1],t=binom.test(c,n)$conf.int[2])
+
+
+
+```
+
+```{r}
+
+set.seed(1234)
+rand<-sample(res$obs,size=525,replace=TRUE,prob=res$n/525)
+
+dat<-tibble(obs=c$project_id,pred=rand)
+
+dat$correct<-(dat$obs==dat$pred)
+
+dat %>% dplyr::group_by(obs) %>% dplyr::summarize(n=n(),c=sum(correct),p=c/n)
+
+test<-dat %>% dplyr::group_by(obs) %>% dplyr::summarize(n=n(),c=sum(correct),p=c/n)
+
+cancer$pred<-factor(cancer$pred,levels=res$obs)
+cancer$obs<-factor(cancer$obs,levels=res$obs)
+
+confusionMatrix(cancer$pred,cancer$obs)
+
+```
+
+
+
+

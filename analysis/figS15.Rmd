@@ -1,0 +1,74 @@
+---
+title: "S15"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r TN, echo=FALSE, fig.width=6, fig.height=12, dev=c("png", "pdf")}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(readxl)
+
+features<-fread(here("data","Downsamples","artemis_TN_Downsample.csv"))
+features<-features %>% select(-V1) %>% tibble()
+features$sample<-sapply(str_split(features$id,"_"),"[",3)
+features$type<-sapply(str_split(features$id,"_"),"[",2)
+features$id<-sapply(str_split(features$id,"_"),"[",1)
+
+#Get the originals
+f<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+f<-f %>% select(-V1) %>% filter(id %in% paste0(features$id,"_",features$type)) %>% tibble()
+f$type<-sapply(str_split(f$id,"_"),"[",2)
+f$id<-sapply(str_split(f$id,"_"),"[",1)
+f$sample<-"Original"
+features<-rbind(features,f)
+f<-features %>% gather(key=feature,value=count,-id,-type,-sample) %>% spread(key=sample,value=count)
+
+ids<-unique(f$id)
+set.seed(1234)
+s<-sample(ids,5)
+f2<-f %>% filter(id %in% s)
+
+f2<-f2 %>% gather(key=sample,value=count,-Original,-feature,-id,-type)
+f2$sample<-paste0(f2$type,"_",f2$sample)
+f2<-f2 %>% mutate(sample=if_else(sample=="normal_ds1","Normal 1-2x subsample",sample))
+f2<-f2 %>% mutate(sample=if_else(sample=="tumor_ds1","Tumor 1-2x subsample",sample))
+f2<-f2 %>% mutate(sample=if_else(sample=="normal_eq","Normal 30x subsample",sample))
+f2<-f2 %>% mutate(sample=if_else(sample=="tumor_eq","Tumor 30x subsample",sample))
+
+a<-ggplot(f2,aes(x=(log10(count)+log10(Original))/2,y=log10(Original)-log10(count),color=type))+geom_point()+geom_hline(aes(yintercept=0),color="orange3")+
+  geom_vline(aes(xintercept=3,color="Average >1000 kmers/million"),linetype="dashed")+facet_grid(id~sample)+theme_classic()+theme(strip.text=element_text(size=6))+scale_color_manual(values=c("gray25","black","deeppink4"))+theme(legend.position="bottom",legend.text = element_text(size=12),legend.title=element_blank())+xlab("Log Average Count")+ylab("Log Difference in Counts")
+a
+
+
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+
+
+test<-inner_join(f,e %>% select(feature,fam),by="feature")
+test<-test %>% group_by(id,type,fam) %>% summarize(ds1=scale(ds1)[,1],Original=scale(Original)[,1],eq=scale(eq)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+f<-test
+
+f<-f %>% group_by(id,type) %>% summarize(c1=cor(ds1,Original,method="spearman"),c2=cor(eq,Original,method="spearman"))
+f<-f %>% gather(key=sample,value=c,-type,-id)
+f<-ggplot(f,aes(x=sample,y=c,dodge=type,color=type))+geom_boxplot(outlier.shape=NA)+geom_point(position = position_jitterdodge())+scale_color_manual(values=c("black","deeppink4","gray25"))+labs(color="")+xlab("Sample")+ylab("Correlation Coefficient")+scale_x_discrete(labels=c("Original vs. 1-2x subsample","Original vs. 30X subsample"))+theme_classic()+theme(legend.position="none")+ylim(c(.99,1.00))
+
+plot_grid(f,a,ncol=1,rel_heights=c(1,4))
+
+
+```
+

@@ -1,0 +1,61 @@
+---
+title: "SessionInfo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r packages}
+#2
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+
+library(survival)
+library(survminer)
+
+library(ComplexHeatmap)
+library(circlize)
+
+library(RColorBrewer)
+
+library(dplyr)
+
+library(gridExtra)
+
+library(scales)
+
+
+library(corrplot)
+
+
+library(fgsea)
+
+library(MASS)
+
+
+library(gbm)
+library(karyoploteR)
+library("viridis")           
+library(regioneR)
+
+library(viridis)
+
+
+```
+
+```{r info}
+sessionInfo()
+```
+

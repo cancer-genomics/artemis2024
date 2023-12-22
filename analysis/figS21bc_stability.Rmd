@@ -1,0 +1,65 @@
+---
+title: "S21bc"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+This makes the LUCAS ARTEMIS figure
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(cowplot)
+
+#library(ggpubr)
+library(RColorBrewer)
+library(viridis)
+library(ggpubr)
+
+```
+
+```{r score_plots, echo=FALSE, fig.width=12, fig.height=8, dev=c("png", "pdf")}
+load_all(here("code","useful.stuff.aa"))           # Load
+
+f<-list.files(here("data","LUCAS_Stability_Analysis","CV_Scores"),pattern=".csv",full.names=T)
+
+dat<-squish(f)
+
+dat<-dat %>% filter(model %in% c("ARTEMIS_single_DELFI_SSLs_Ensemble","ARTEMIS_Ensemble"))
+dat<-dat %>% select(-V1)
+dat<-dat %>% group_by(id,model)%>%summarize(score=mean(score))
+loo<-fread(here("data","Final_LUCAS_Ensemble","Results","Cross_Validation_scores.csv"))
+loo<-loo %>% select(-V1)
+loo<-loo %>% select(-set)%>% filter(model %in% c("ARTEMIS_single_DELFI_SSLs_Ensemble","ARTEMIS_Ensemble"))
+loo<-loo %>% rename("loo_score"="score")
+dat<-inner_join(dat,loo,by=c("id","model"))
+dat<-dat %>% mutate(model=if_else(model=="ARTEMIS_Ensemble","ARTEMIS","ARTEMIS-DELFI"))
+
+ggplot(dat,aes(x=loo_score,y=score,color=type))+geom_point()+facet_grid(.~model)+theme_classic()+stat_cor()+geom_abline(slope=1,intercept=0)+xlab("Score from LOO Ensemble")+ylab("Mean Score from 10 repeats of 5-fold CV")
+#############
+f<-list.files(here("data","LUCAS_Stability_Analysis","CV_Scores"),pattern=".csv",full.names=T)
+
+dat<-squish(f)
+
+dat<-dat %>% filter(model %in% c("ARTEMIS_single_DELFI_SSLs_Ensemble","ARTEMIS_Ensemble"))
+dat<-dat %>% select(-V1)
+
+loo<-fread(here("data","Final_LUCAS_Ensemble","Results","Cross_Validation_scores.csv"))
+loo<-loo %>% select(-V1)
+loo<-loo%>% filter(model %in% c("ARTEMIS_single_DELFI_SSLs_Ensemble","ARTEMIS_Ensemble"))
+dat$set<-"5x10CV Ensemble"
+loo$set<-"LOO Ensemble"
+dat<-rbind(dat,loo)
+dat<-dat %>% mutate(model=if_else(model=="ARTEMIS_Ensemble","ARTEMIS","ARTEMIS-DELFI"))
+
+ggplot(dat,aes(x=score,color=type,alpha=set))+geom_line(stat="density")+facet_grid(.~model)+theme_classic()+scale_alpha_manual(values=c(1,.4))+xlab("Model Score")+ylab("Density")
+
+```
+
+
+

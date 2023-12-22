@@ -1,0 +1,676 @@
+---
+title: "Fig5"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+This makes the LUCAS ARTEMIS figure
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(RColorBrewer)
+load_all(here("code","useful.stuff.aa"))           # Load
+load_all(here("code","rlucas"))           # Load
+
+model_names<-c("ARTEMIS_Ensemble","ARTEMIS_single_DELFI_SSLs_Ensemble")
+#model_names<-c("ARTEMIS_Ensemble","Mathios_DELFI","ARTEMIS_single_DELFI_SSLs_Ensemble")
+
+#colors<-c("#66c2a5","#8da0cb","#fc8d62")
+colors<-c("#1b9e77","#d95f02")
+
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+meta<-meta %>% select(-V1)
+
+#Add in Mathios Published scores
+model<-readRDS(here("data","Mathios_Published","model_seq_glm.rds"))
+#cv<-fread(here("data","Models","Mathios_Published","Mathios_S2.csv"))
+cv<-colData(se) %>%
+    as_tibble() %>%
+    mutate(lab_id=colnames(se)) %>%
+    filter(!is.na(score_seq)) %>%
+    select(lab_id, score_seq)
+
+cv<-inner_join(lucas_meta %>% filter(Training=="YES") %>% select(cg_id,id,type),cv,by=c("cg_id"="lab_id")) %>% rename("score"="score_seq")
+cv$model<-"Mathios_Published"
+cv$set<-"SSL"
+data<-fread(here("data","Final_LUCAS_Ensemble","Results","Cross_Validation_scores.csv"))
+data<-data %>% select(-V1)
+data<-rbind(data,cv %>% select(-cg_id))
+#########
+data<-data %>% filter(model %in% model_names)
+
+val_dat<-fread(here("data","Final_LUCAS_Ensemble","Results","Test_set_scores.csv"))
+val_dat<-val_dat %>% select(-V1)
+#The mathios publication didn't have scores for ahn_bu
+v<-fread(here("data","Mathios_Published","validation_preds.csv"))
+v<-inner_join(meta %>% select(id,type),v %>% select(id,cancer),by=c("id"="id")) %>% rename("score"="cancer")
+v$model<-"Mathios_Published"
+v$set<-"SSL"
+
+#get IDs not in Mathios
+ids<-unique((val_dat %>% filter(!id %in% v$id))$id)
+#read in the test set features
+t<-fread(here("data","Final_LUCAS_Ensemble","Cohorts","LUCAS_Test.csv"))
+#get only the missing ids and needed features
+t<-t %>% filter(id %in% ids) %>% select(id,type,starts_with("ratio"),starts_with("zscore"))
+preds<-predict(model,t,type="prob")
+t<-tibble(id=t$id,type=t$type,score=preds$cancer,model="Mathios_Published",set="SSL")
+val_dat<-rbind(val_dat,v,t)
+#######
+val_dat<-val_dat %>% filter(model %in% model_names)
+#val_dat %>% dplyr::group_by(model) %>% dplyr::summarize(r=roc(type,score)$auc[1])
+#data %>% dplyr::group_by(model) %>% dplyr::summarize(r=roc(type,score)$auc[1])
+cv_dat<-data
+
+```
+
+```{r lucas_roc, echo=FALSE, fig.width=10, fig.height=5, dev=c("png", "pdf")}
+
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB"),"Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIIA","IIIB","IIIC"),"Stage III",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IV"),"Stage IV",group))
+
+m<-unique(data$model)
+c<-c("Stage I","Stage II","Stage III","Stage IV")
+h<-c("Non-Cancer")
+
+dat_full<-tibble(type="test",sens=-1,spec=-1,model="test",set="test",cancer="test",healthy="test")
+
+k<-1
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d<-data %>% filter(model==m[k]) %>% filter(group %in% c(c[i],h[j]))
+    dat<-format_roc(d$type,d$score,"")
+    dat$model<-m[k]
+    dat$set<-paste0(c[i]," vs. ",h[j])
+    dat$cancer<-paste0(c[i])
+    dat$healthy<-paste0(h[j])
+    dat_full<-rbind(dat_full,dat)
+  }
+}
+
+dat_full<-dat_full %>% filter(type != "test")
+d<-data %>% filter(model==m[k]) 
+dat<-format_roc(d$type,d$score,"")
+dat$model<-m[k]
+dat$set<-"All cancer vs. Non-Cancer"
+dat$cancer<-"All cancer"
+dat$healthy<-"Non-Cancer"
+dat_full<-rbind(dat_full,dat)
+
+k<-2
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d<-data %>% filter(model==m[k]) %>% filter(group %in% c(c[i],h[j]))
+    dat<-format_roc(d$type,d$score,"")
+    dat$model<-m[k]
+    dat$set<-paste0(c[i]," vs. ",h[j])
+    dat$cancer<-paste0(c[i])
+    dat$healthy<-paste0(h[j])
+    dat_full<-rbind(dat_full,dat)
+  }
+}
+d<-data %>% filter(model==m[k]) 
+dat<-format_roc(d$type,d$score,"")
+dat$model<-m[k]
+dat$set<-"All cancer vs. Non-Cancer"
+dat$cancer<-"All cancer"
+dat$healthy<-"Non-Cancer"
+dat_full<-rbind(dat_full,dat)
+
+
+
+dat_full<-dat_full %>% group_by(model,set) %>% arrange(sens)
+dat_full<-dat_full %>% mutate(type=if_else(sens==0 & spec==1,type," "))
+dat_full<-dat_full %>% mutate(jit=if_else(model==m[1],.07, 1))
+dat_full<-dat_full %>% mutate(jit=if_else(model==m[2],.13, jit))
+#dat_full<-dat_full %>% mutate(jit=if_else(model==m[3],.19, jit))
+dat_full$model<-factor(dat_full$model,levels=model_names)
+##
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="All cancer vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+
+A <- dat_full %>% filter(set=="All cancer vs. Non-Cancer") %>% 
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_text(size=15)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("All Cancers")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage I vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage I vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage I")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C1<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage II vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage II vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage II")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C2<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage III vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage III vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage III")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C3<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage IV vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage IV vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("Stage IV")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C4<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r all_ROCs,fig.height=8,fig.width=16, dev=c("png", "pdf")}
+x<-plot_grid(C1,C2,C3,C4,nrow=2)
+
+r<-plot_grid(C,x,rel_widths=c(1,2))
+r
+
+#Get legend
+l<-get_legend(A+scale_color_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=colors)+theme(legend.position="top",legend.title=element_blank(),legend.text=element_text(size=14)))
+legend<-l
+
+#save_data<-dat_full
+#write.csv(save_data,here("output","Figure_Data_Files","Fig5_ROCs.csv"))
+
+```
+
+```{r CV_boxplots, echo=FALSE, fig.width=18, fig.height=6, dev=c("png", "pdf")}
+#Lung by stage
+data<-cv_dat
+data<-inner_join(data,meta %>% select(Stage,id,Subtype),by="id")
+
+
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB"),"I",Subtype))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIIA","IIIB","IIIC"),"III",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IV"),"IV",group))
+data<-data %>% mutate(group=if_else(group=="No baseline cancer","No Biopsy",group))
+data<-data %>% mutate(group=if_else(group=="Benign","Benign Nodule",group))
+
+data$set<-"Lung Cohort By Stage"
+all_dat<-data %>% select(-Stage,-Subtype)
+
+#Lung by histology
+data<-cv_dat
+data<-inner_join(data,meta %>% select(Stage,id,Subtype),by="id")
+
+data<-data %>% filter(Subtype %in% c("Adenocarcinoma","Metastasis from another primary cancer","SCLC","Squamous"))#|Subtype %in% c("No baseline cancer","Benign"))
+data<-data %>% mutate(group=if_else(Subtype=="Metastasis from another primary cancer","Metastases\n to Lung",Subtype))
+#data<-data %>% mutate(group=if_else(group=="No baseline cancer","Non-Cancer",group))
+#data<-data %>% mutate(group=if_else(group=="Benign","Benign Lung\n Nodule",group))
+
+data$set<-"Lung Cohort By Subtype"
+all_dat<-rbind(all_dat,data %>% select(-Subtype,-Stage))
+all_dat$cohort<-"Cross-Validated Cohort"
+data_plot<-all_dat
+
+#################
+data<-val_dat
+data<-inner_join(data,meta %>% select(Subtype,Stage,id),by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("I","IA","IB","IA-2"),"I",Subtype))
+data<-data %>% mutate(group=if_else(Stage %in% c("II","IIA","IIB"),"II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"III/IV",group))
+data<-data %>% mutate(group=if_else(group=="non-cancer"|group=="Non-cancer","No Biopsy",group))
+data<-data %>% mutate(group=if_else(group=="Benign","Benign Nodule",group))
+data<-data %>% filter(group != "Small Cell Lung Cancer") ##These had unknown stage
+data$set<-"Lung Cohort By Stage"
+
+all_dat<-data %>% select(-Stage,-Subtype)
+
+#Lung by histology
+data<-val_dat
+data<-inner_join(data,meta %>% select(Subtype,id),by="id")
+
+data<-data %>% filter(Subtype %in% c("Adenocarcinoma","Invasive Mucinous Adenocarcinoma","Small Cell Lung Cancer","small cell","squamous","Squamous Cell Carcinoma"))#|Subtype %in% c("No baseline cancer","Benign"))
+data<-data %>% mutate(group=if_else(Subtype=="Invasive Mucinous Adenocarcinoma","Adenocarcinoma",Subtype))
+data<-data %>% mutate(group=if_else(Subtype=="Small Cell Lung Cancer"|Subtype=="small cell","SCLC",group))
+data<-data %>% mutate(group=if_else(Subtype=="Squamous Cell Carcinoma"|Subtype=="squamous","Squamous",group))
+
+#data<-data %>% mutate(group=if_else(group=="No baseline cancer","Non-Cancer",group))
+#data<-data %>% mutate(group=if_else(group=="Benign","Benign Lung\n Nodule",group))
+
+data$set<-"Lung Cohort By Subtype"
+all_dat<-rbind(all_dat,data %>% select(-Subtype))
+all_dat$cohort<-"External Validation Cohort"
+all_dat<-rbind(data_plot,all_dat)
+#################
+
+n<-all_dat %>% filter(model=="ARTEMIS_Ensemble")
+n<-n %>% group_by(cohort,group,set) %>% summarize(s=n())
+all_dat<-inner_join(all_dat,n,by=c("cohort","group","set"))
+all_dat$group2<-paste0(all_dat$group,"\n(n=",all_dat$s,")")
+
+all_dat$group2<-factor(all_dat$group2,levels=c("No Biopsy\n(n=91)","Benign Nodule\n(n=67)","I\n(n=15)","II\n(n=7)", "III\n(n=35)","IV\n(n=72)","Adenocarcinoma\n(n=62)","Squamous\n(n=29)","SCLC\n(n=11)","Metastases\n to Lung\n(n=15)","Non-Cancer\n(n=385)","Benign Lung\n Nodule\n(n=15)","I\n(n=60)","II\n(n=16)","III/IV\n(n=11)",
+                                               "Adenocarcinoma\n(n=22)","Squamous\n(n=18)","SCLC\n(n=4)"))
+########
+all_dat_val<-all_dat
+all_dat<-all_dat %>% filter(cohort != "External Validation Cohort")
+all_dat<-all_dat %>% filter(model != "Mathios_Published")
+all_dat<-all_dat %>% mutate(set=if_else(set=="Lung Cohort By Stage","Cancer Stage",set))
+all_dat<-all_dat %>% mutate(set=if_else(set=="Lung Cohort By Subtype","Histology",set))
+all_dat<-all_dat %>% mutate(set=if_else(group2=="No Biopsy\n(n=91)"|group2=="Benign Nodule\n(n=67)","Non-cancer individuals",set))
+
+all_dat$model<-factor(all_dat$model,levels=c("ARTEMIS_Ensemble","ARTEMIS_single_DELFI_SSLs_Ensemble"))
+all_dat$set<-factor(all_dat$set,levels=c("Non-cancer individuals","Cancer Stage","Histology"))
+b<-ggplot(all_dat,aes(x=group2,y=score,dodge=model,fill=model))+
+  geom_point(aes(fill=model),
+              pch=21, alpha=0.5, size=0.7,
+              color="gray",position=position_jitterdodge(dodge.width=.4,jitter.width=.2)) +
+  geom_boxplot(outlier.shape=NA, alpha=0.3,width=.2,position=position_dodge(.4)) +
+  theme_classic(base_size=14) + #facet_wrap(vars(set),scales="free_x",nrow=1)+
+  theme(panel.grid=element_blank(),
+        legend.position="none",
+        legend.justification=c("center", "top"),
+        strip.background=element_blank(),
+        strip.placement="outside",axis.title.x =element_blank(),strip.text=element_text(size=14))+#scale_fill_discrete(labels=c("ARTEMIS+DELFI","ARTEMIS","DELFI"))+
+     scale_fill_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=c("#1b9e77","#d95f02"))+
+      facet_grid(.~set,scales="free_x",space="free",switch="x")+ylab("Model Score")
+
+b
+b<-plot_grid(b,l,ncol=1,rel_heights=c(10,1))
+
+b
+
+#save_data<-all_dat
+#save_data<-inner_join(save_data,lucas_meta %>% select(id,cg_id),by="id")
+#save_data$id<-save_data$cg_id
+#save_data$cg_id<-NULL
+#write.csv(save_data,here("output","Figure_Data_Files","Fig5_boxplots.csv"))
+
+```
+
+
+```{r}
+all_dat_val<-all_dat_val %>% filter(cohort == "External Validation Cohort" & model != "Mathios_Published")
+```
+
+
+
+```{r EV, echo=FALSE, fig.width=4, fig.height=5, dev=c("png", "pdf")}
+
+#At the 80% specificity threshold, what is the sensitivity?
+data<-cv_dat
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+library(pROC)
+
+t<-data %>% group_by(model) %>% summarize(cohort="LUCAS",thresh=(roc(type,score,levels=c("healthy",'cancer')) %>% coords(transpose=FALSE) %>% filter(specificity>=.8))$threshold[1] 
+)
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+#data<-inner_join(data,meta %>% select(Stage,id),by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+#data<-data %>% mutate(group=if_else(Stage %in% c("IV"),"Lung Cancer\n Stage IV",group))
+
+data<-data %>% group_by(group,model)%>%dplyr::summarize(m=sum(correct)/n())
+data$set<-"80% Specificity"
+all_dat_cv<-data
+
+
+
+data<-val_dat
+data<-inner_join(data,meta %>% select(Stage,Subtype,id),by="id")
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+
+
+#data<-inner_join(data,meta,by="id")
+#data<-data %>% filter(AHN_BU!="FALSE")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Lung Cancer\n Stage II",group))
+#data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Unk"),"Lung Cancer\n Stage Unknown",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Benign"),"Benign Lung\n Nodule",group))
+
+data<-data %>% group_by(group,model)%>%dplyr::summarize(m=sum(correct)/n())
+data$set<-"80% Specificity"
+
+#ggplot(data,aes(x=model,y=m,color=model))+facet_wrap(vars(group),nrow=1)+geom_point()+theme(axis.text.x=element_blank())
+
+full_data<-data
+#########
+
+#At the 60% specificity threshold, what is the sensitivity?
+data<-cv_dat
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+t<-data %>% group_by(model) %>% summarize(cohort="LUCAS",thresh=(roc(type,score,levels=c("healthy",'cancer')) %>% coords(transpose=FALSE) %>% filter(specificity>=.6))$threshold[1] 
+)
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+#data<-inner_join(data,meta %>% select(Stage,id),by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+
+data<-data %>% group_by(group,model)%>%dplyr::summarize(m=sum(correct)/n())
+data$set<-"60% Specificity"
+all_dat_cv<-rbind(all_dat_cv,data)
+
+
+data<-val_dat
+data<-inner_join(data,meta %>% select(Stage,Subtype,id),by="id")
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+
+
+#data<-inner_join(data,meta,by="id")
+#data<-data %>% filter(AHN_BU!="FALSE")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Lung Cancer\n Stage II",group))
+#data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Unk"),"Lung Cancer\n Stage Unknown",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Benign"),"Benign Lung\n Nodule",group))
+
+data<-data %>% group_by(group,model)%>%summarize(m=sum(correct)/n())
+
+data$set<-"60% Specificity"
+full_data<-rbind(full_data,data)
+
+
+############
+#At the 70% specificity threshold, what is the sensitivity?
+data<-cv_dat
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+t<-data %>% group_by(model) %>% summarize(cohort="LUCAS",thresh=(roc(type,score,levels=c("healthy",'cancer')) %>% coords(transpose=FALSE) %>% filter(specificity>=.7))$threshold[1] 
+)
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+#data<-inner_join(data,meta %>% select(Stage,id),by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+
+
+data<-data %>% group_by(group,model)%>%summarize(m=sum(correct)/n())
+data$set<-"70% Specificity"
+all_dat_cv<-rbind(all_dat_cv,data)
+
+
+data<-val_dat
+data<-inner_join(data,meta %>% select(Stage,Subtype,id),by="id")
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+
+#data<-inner_join(data,meta,by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Lung Cancer\n Stage II",group))
+#data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Unk"),"Lung Cancer\n Stage Unknown",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Benign"),"Benign Lung\n Nodule",group))
+
+data<-data %>% group_by(group,model)%>%summarize(m=sum(correct)/n())
+data$set<-"70% Specificity"
+full_data<-rbind(full_data,data)
+
+########
+############
+#At the 50% specificity threshold, what is the sensitivity?
+data<-cv_dat
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+t<-data %>% group_by(model) %>% summarize(cohort="LUCAS",thresh=(roc(type,score,levels=c("healthy",'cancer')) %>% coords(transpose=FALSE) %>% filter(specificity>=.5))$threshold[1] 
+)
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+#data<-inner_join(data,meta %>% select(Stage,id),by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+
+
+data<-data %>% group_by(group,model)%>%summarize(m=sum(correct)/n())
+data$set<-"50% Specificity"
+all_dat_cv<-rbind(all_dat_cv,data)
+
+
+data<-val_dat
+data<-inner_join(data,meta %>% select(Stage,Subtype,id),by="id")
+
+data<-inner_join(data,t,by="model")
+data<-data %>% mutate(pred=if_else(score>thresh,"cancer","healthy"))
+data<-data %>% mutate(correct=if_else(type==pred,TRUE,FALSE))
+
+#data<-inner_join(data,meta,by="id")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Lung Cancer\n Stage II",group))
+#data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Unk"),"Lung Cancer\n Stage Unknown",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Benign"),"Benign Lung\n Nodule",group))
+
+data<-data %>% group_by(group,model)%>%summarize(m=sum(correct)/n())
+data$set<-"50% Specificity"
+full_data<-rbind(full_data,data)
+```
+
+```{r plotEV, echo=FALSE, fig.width=8, fig.height=8, dev=c("png", "pdf")}
+#all_dat<-rbind(all_dat,data)
+all_dat<-full_data
+all_dat <- all_dat %>% mutate(metric=if_else(group=="Non-Cancer"|group=="Benign Lung\n Nodule","Specificity","Sensitivity"))
+all_dat<-all_dat %>% filter(group != "Lung Cancer\n Stage Unknown")
+
+
+
+n<-val_dat
+n<-n %>% select(id,score,model) %>% filter(model=="ARTEMIS_Ensemble")
+
+n<-inner_join(n,meta,by="id")
+n<-n %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Lung Cancer\n Stage I","Non-Cancer"))
+n<-n %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Lung Cancer\n Stage II",group))
+n<-n %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+n<-n %>% mutate(group=if_else(Stage %in% c("Unk"),"Lung Cancer\n Stage Unknown",group))
+n<-n %>% mutate(group=if_else(Stage %in% c("Benign"),"Benign Lung\n Nodule",group))
+n<-n %>% group_by(group) %>% summarize(n=n())
+all_dat<-inner_join(all_dat,n,by="group")
+all_dat$group<-paste0(all_dat$group,"\n(n=",all_dat$n,")")
+library(Hmisc)
+CI<-binconf(all_dat$n*all_dat$m, all_dat$n, .1)
+CI<-tibble(Low=CI[,2],High=CI[,3])
+all_dat<-cbind(all_dat,CI)
+all_dat$model<-factor(all_dat$model,levels=model_names)
+all_dat$metric<-factor(all_dat$metric,levels=c("Specificity","Sensitivity"))
+#ggplot(all_dat,aes(x=group,y=m,dodge=model,alpha=set,color=model))
+
+all_dat_cv<-all_dat_cv%>% mutate(group=gsub("Lung Cancer\n ","",group))
+all_dat_cv<-all_dat_cv %>% mutate(group=gsub("Lung\n ","",group))
+all_dat_cv<-all_dat_cv %>% mutate(metric=if_else(group=="Non-Cancer","Specificity","Sensitivity"))
+all_dat_cv<-all_dat_cv %>% mutate(group=if_else(group=="Stage I","Stage I\n(n=60)",group))
+all_dat_cv<-all_dat_cv %>% mutate(group=if_else(group=="Non-Cancer","Non-Cancer\n(n=385)",group))
+all_dat_cv<-all_dat_cv %>% mutate(group=if_else(group=="Stage II","Stage II\n(n=16)",group))
+all_dat_cv<-all_dat_cv %>% mutate(group=if_else(group=="Stage III/IV","Stage III/IV\n(n=11)",group))
+all_dat_cv$metric<-factor(all_dat_cv$metric,levels=c("Specificity","Sensitivity"))
+all_dat_cv$model<-factor(all_dat_cv$model,levels=model_names)
+
+
+all_dat<-all_dat %>% mutate(group=gsub("Lung Cancer\n ","",group))
+all_dat<-all_dat %>% mutate(group=gsub("Lung\n ","",group))
+all_dat$group<-factor(all_dat$group,levels=c("Non-Cancer\n(n=385)","Benign Nodule\n(n=15)","Stage I\n(n=60)","Stage II\n(n=16)","Stage III/IV\n(n=11)"))
+
+#write.csv(all_dat,here("Data","External_Validation_SensSpec.csv"))
+#write.csv(all_dat_cv,here("Data","CV_SensSpec.csv"))
+
+
+v2<-ggplot(all_dat,aes(x=group,y=m,dodge=model,color=model))+geom_point(position=position_dodge(width = .5),size=2)+facet_grid(set~metric,scales="free_x",space="free")+#+scale_alpha_discrete(range=c(.3,1))
+theme_classic()+theme(axis.title = element_blank(),legend.position="none",axis.text=element_text(size=12),strip.text =element_text(size=12),plot.title = element_text(hjust = 0.5,size=12))+geom_errorbar(aes(x=group,ymin=Low,ymax=High,width=.5),position=position_dodge(width = .5))+labs(title="External Validation Cohort")+scale_color_manual(labels=l$n,values=colors)+ylim(c(0,1))
+
+
+
+
+#save_data<-all_dat
+#write.csv(save_data,here("output","Figure_Data_Files","Fig5_EV.csv"))
+
+
+```
+
+
+```{r plotEV_extra, echo=FALSE, fig.width=8, fig.height=8, dev=c("png", "pdf")}
+v3<-ggplot(all_dat%>% filter(metric=="Specificity"),aes(x=group,y=m,dodge=model,color=model))+geom_point(position=position_dodge(width = .5),size=2)+facet_grid(set~metric,scales="free_x",space="free")+#+scale_alpha_discrete(range=c(.3,1))
+theme_classic()+theme(axis.title.x = element_blank(),legend.position="none",axis.text=element_text(size=12),strip.text.y=element_blank(),strip.text =element_text(size=12),plot.title = element_text(hjust = 0.5,size=12))+geom_errorbar(aes(x=group,ymin=Low,ymax=High,width=.5),position=position_dodge(width = .5))+scale_color_manual(labels=l$n,values=colors)+ylim(c(0,1))+ylab("Specificity")
+
+v4<-ggplot(all_dat%>% filter(metric=="Sensitivity"),aes(x=group,y=m,dodge=model,color=model))+geom_point(position=position_dodge(width = .5),size=2)+facet_grid(set~metric,scales="free_x",space="free")+#+scale_alpha_discrete(range=c(.3,1))
+theme_classic()+theme(axis.title.x = element_blank(),legend.position="none",axis.text=element_text(size=12),strip.text =element_text(size=12),plot.title = element_text(hjust = 0.5,size=12))+geom_errorbar(aes(x=group,ymin=Low,ymax=High,width=.5),position=position_dodge(width = .5))+scale_color_manual(labels=l$n,values=colors)+ylim(c(0,1))+ylab("Sensitivity")
+
+plot_grid(v3,v4,rel_widths = c(1,1.6))
+
+```
+
+
+

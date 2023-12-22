@@ -1,0 +1,178 @@
+---
+title: "S5_S6"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(RColorBrewer)
+```
+
+Organize the data for the matrix
+```{r}
+features<-fread(here("data","Simulation","simulated_splits.csv"))
+features<-tibble(features) %>% select(-V1)
+
+features$id<-gsub("A01.1-simulate-t2t-reads_19_","",features$id)
+features<-features %>% gather(key=counted_feature,value=count,-id)
+
+#For now I am not going to do the Altemose kmers, as we expect overlap with the other features
+features<-features %>% filter(!counted_feature %in% unique(features$counted_feature)[3:16])
+
+#Need to fix the parentheses ones
+unique(features$counted_feature)[grepl("\\(",unique(features$counted_feature))]
+
+features$id <- gsub("CATTCn#Satellite","(CATTC)n#Satellite",features$id)
+features$id <- gsub("GAATGn#Satellite","(GAATG)n#Satellite",features$id)
+features$id <- gsub("tRNA-Leu-TTAm#tRNA","tRNA-Leu-TTA(m)#tRNA",features$id)
+features$id <- gsub("tRNA-Ser-TCAm#tRNA","tRNA-Ser-TCA(m)#tRNA",features$id)
+
+#indeed 21 features (inc one that originally had parentheses) that have no kmers to count
+#1287-21-14 altemose=1266
+empty<-unique((features %>% filter(!id %in% unique(features$counted_feature)))$id)
+features<-features %>% filter(!id %in% empty)
+
+#I now have 1266 by 1266
+#Set up fams
+features$id_fam<-sapply(str_split(features$id,"#"),"[",2)
+features$id_fam<-sapply(str_split(features$id_fam,"_"),"[",1)
+features<-features %>% mutate(id_fam=if_else(grepl("RNA",id_fam),"RNA\nElements",id_fam))
+features<-features %>% mutate(id_fam=if_else(id_fam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable\nElements",id_fam))
+
+features$count_fam<-sapply(str_split(features$counted_feature,"#"),"[",2)
+features$count_fam<-sapply(str_split(features$count_fam,"_"),"[",1)
+features<-features %>% mutate(count_fam=if_else(grepl("RNA",count_fam),"RNA\nElements",count_fam))
+features<-features %>% mutate(count_fam=if_else(count_fam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable\nElements",count_fam))
+
+#Get total counts
+tot<-features %>% group_by(counted_feature) %>% summarize(n=sum(count))
+features<-inner_join(features,tot,by="counted_feature")
+features$perc<-features$count/features$n
+
+
+
+#test<-features[mapply(grepl, features$id, features$counted_feature),]
+
+features$id<-factor(features$id,levels=unique(features$id))
+features$counted_feature<-factor(features$counted_feature,levels=rev(unique(features$id)))
+
+#Get NA in a few of the RNA features where none of them were found (4 features)
+features <- features %>% mutate(perc=if_else(is.na(perc),0,perc))
+#Actually change the NA stuff later
+#features$perc[features$perc == 0] <- NA
+
+all<-fread(here("data","Simulation","A01.1-simulate-t2t-reads_19.txt"))
+colnames(all)<-c("counted_feature","all","fastq")
+
+features<-inner_join(features,all,by="counted_feature")
+
+features$perc_all<-features$n/features$all
+features %>% filter(id==counted_feature) %>% summarize(a=sum(count),t=sum(all),p=a/t)
+
+```
+
+
+Plot matrix
+```{r Sim_Matrix, echo=FALSE, fig.width=8, fig.height=8, dev=c("png", "pdf")}
+col<-colorRampPalette(c("gray90","red"))
+c<-col(100)
+features2<-features
+features2$perc[features2$perc == 0] <- NA
+features2$counted_feature<-factor(features2$counted_feature,levels=unique(features2$counted_feature))
+features2$id<-factor(features2$id,levels=rev(unique(features2$counted_feature)))
+id=c("Alu-VAR_rnd-5_family-1084#SINE_Alu","Alu-VAR_rnd-5_family-1084#SINE_Alu","MIRc#SINE_MIR","MIRc#SINE_MIR")
+counted_feature=c("Alu-VAR_rnd-5_family-1084#SINE_Alu","MIRc#SINE_MIR","Alu-VAR_rnd-5_family-1084#SINE_Alu","MIRc#SINE_MIR")
+f<-c("SINE","SINE","SINE","SINE")
+rect<-tibble(id=id,counted_feature=counted_feature,id_fam=f,count_fam=f)
+features2<-features2 %>% mutate(id_fam=if_else(id_fam=="Satellite","Sat",id_fam))
+features2<-features2 %>% mutate(id_fam=if_else(id_fam=="RNA\nElements","RNA",id_fam))
+features2<-features2 %>% mutate(id_fam=if_else(id_fam=="Transposable\nElements","TE",id_fam))
+
+A<-ggplot(features2,aes(x=id,y=counted_feature,fill=perc))+geom_tile()+facet_grid(count_fam~id_fam,scales="free",space="free")+scale_fill_gradientn(colors=c,breaks=c(0,.25,.5,.75,1.0),limits=c(0,1),na.value = "white")+theme_classic(base_size=12)+theme(axis.text = element_blank(),legend.position="bottom",axis.ticks=element_blank(),strip.background.y = element_rect(color = NA),strip.background.x=element_rect(color = NA),legend.title=element_text(size=9),legend.text=element_text(size=9),                                                 strip.text.y = element_text(angle = 0,hjust=0), panel.spacing = unit(.1, "cm"))+xlab("True feature")+ylab("Counted Features")+labs(fill="Percentage\n of counted\n kmers")+geom_rect(data=rect,aes(xmin="Alu-VAR_rnd-5_family-1084#SINE_Alu",ymin="Alu-VAR_rnd-5_family-1084#SINE_Alu",xmax="MIRc#SINE_MIR",ymax="MIRc#SINE_MIR"),fill="transparent",color="black")
+
+library(grid)
+q <- ggplotGrob(A)
+
+lg <- linesGrob(x=unit(c(0,1),"npc"), y=unit(c(0,0),"npc"), 
+                   gp=gpar(col="black", lwd=3))
+
+for (k in grep("strip-t",q$layout$name)) {
+  q$grobs[[k]]$grobs[[1]]$children[[1]] <- lg
+}
+
+lg <- linesGrob(x=unit(c(0,0),"npc"), y=unit(c(0,1),"npc"), 
+                   gp=gpar(col="black", lwd=3))
+
+for (k in grep("strip-r",q$layout$name)) {
+  q$grobs[[k]]$grobs[[1]]$children[[1]] <- lg
+}
+
+grid.draw(q)
+
+
+
+```
+
+Matrix inset
+```{r Sim_Matrix_SINE, echo=FALSE, fig.width=8, fig.height=8, dev=c("png", "pdf")}
+#Let us do SINEs now
+
+mat<-features %>% filter(id_fam=="SINE" & count_fam=="SINE")
+
+mat$counted_feature<-factor(mat$counted_feature,levels=unique(mat$counted_feature))
+mat$id<-factor(mat$id,levels=rev(unique(mat$counted_feature)))
+mat$perc[mat$perc == 0] <- NA
+
+main<-ggplot(mat,aes(x=id,y=counted_feature,fill=perc))+geom_tile()+scale_fill_gradientn(colors=c,breaks=c(0,.25,.5,.75,1.0),limits=c(0,1),na.value="white")+theme_classic(base_size=15)+theme(axis.text = element_blank(),legend.position="none",axis.ticks=element_blank(),strip.background = element_blank(),legend.text=element_text(size=7))+xlab("True feature")+ylab("Counted Features")+facet_grid(.~id_fam,scales="free",space="free")
+
+mat_count2<-features %>% filter(count_fam=="SINE" & id_fam != "SINE")
+mat_count2<-mat_count2 %>% group_by(counted_feature,id_fam)%>%summarize(perc=sum(perc))
+mat_count2$perc[mat_count2$perc == 0] <- NA
+
+main
+```
+
+Altemose kmer supplement
+```{r altemose, echo=FALSE, fig.width=10, fig.height=8, dev=c("png", "pdf")}
+#For the Altemose kmers, should look at what percentage of occurrences are in different elements/not at all
+features<-fread(here("data","Simulation","simulated_splits.csv"))
+features<-tibble(features) %>% select(-V1)
+features$id<-gsub("A01.1-simulate-t2t-reads_19_","",features$id)
+features<-features %>% gather(key=counted_feature,value=count,-id)
+
+features<-features %>% filter(counted_feature %in% unique(features$counted_feature)[3:16])
+features$id_fam<-sapply(str_split(features$id,"#"),"[",2)
+features$id_fam<-sapply(str_split(features$id_fam,"_"),"[",1)
+features<-features %>% mutate(id_fam=if_else(grepl("RNA",id_fam),"RNA\nElements",id_fam))
+features<-features %>% mutate(id_fam=if_else(id_fam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable\nElements",id_fam))
+
+altemose<-features %>% group_by(counted_feature,id_fam) %>% summarize(n=sum(count))
+#I want to know what percentage this is of all kmers called for the Altemose families
+altemose<-inner_join(altemose,all,by="counted_feature")
+altemose$perc<-altemose$n/altemose$all
+altemose$perc[altemose$perc == 0] <- NA
+p1<-ggplot(altemose,aes(x=id_fam,y=counted_feature,fill=perc))+geom_tile()+scale_fill_viridis_c(option="magma",direction=-1)+theme_classic(base_size=14)+theme(legend.position="bottom",axis.title.x = element_blank(),legend.text=element_text(size=10))+labs(fill="Proportion of Kmers\ncounted in Overlapping\nRepeat Family")+ylab("Counted Feature")
+
+f3<-altemose %>% filter(id_fam=="Satellite") #doesn't matter what I filter for, im just getting one copy of each feature
+f3<-f3 %>% mutate(sat=if_else(grepl("2",counted_feature),"HSAT2","HSAT3"))
+p2<-ggplot(f3,aes(x=counted_feature,y=all,color=sat))+geom_point()+
+  geom_segment(aes(x=counted_feature,xend=counted_feature,y=0,yend=all))+coord_flip()+theme_classic(base_size=14)+scale_y_log10()+
+  theme(legend.position = "bottom",axis.title.y =element_blank(),axis.text.y =element_blank())+labs(color="")+ylab("log10 all kmers counted genome wide")
+
+library(cowplot)
+cowplot::plot_grid(p1,p2,align="h",axis="b",rel_widths = c(1,1))
+
+```
+
+

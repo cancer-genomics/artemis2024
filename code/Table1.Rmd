@@ -1,0 +1,94 @@
+---
+title: "About"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(readxl)
+library(data.table)
+novel<-fread(here("data","NoveltyTables","Subfamily.csv"))
+a<-fread(here("data","Supp_Tables","s6_All_features.csv"))
+a<-a %>% select(feature,fam,bigfam)
+
+a<-inner_join(a,novel,by=c("fam"="subfamily"))
+
+jang<-read_xlsx(here("data","NoveltyTables","Jang_Elements.xlsx"))
+
+jang$name<-paste0(jang$Subfam,"#",jang$Class,"_",jang$Family)
+
+a<-a %>% mutate(Jang=if_else(feature %in% jang$name,"Jang et al","No"))
+
+jang %>% filter(!name %in% a$feature) 
+#MLT1D-int -- we don't have this element
+#MamRep4096 -- we say that it is DNA_hAT-Tip100 whereas jang said it is hAT?
+a<-a %>% mutate(Jang=if_else(grepl("MamRep4096",feature),"Jang et al",Jang))
+#MLT1G3-int -- we don't have this element
+#MamRep1879 --- we say that it is DNA_hAT-Tip100 whereas jang said it is hAT?
+a<-a %>% mutate(Jang=if_else(grepl("MamRep1879",feature),"Jang et al",Jang))
+
+#MER96B we say that it is DNA_hAT-Tip100 whereas jang said it is hAT
+a<-a %>% mutate(Jang=if_else(grepl("MER96B",feature),"Jang et al",Jang))
+
+#MER4A1_ -- we don't have this element
+
+```
+
+The Rodriguez elements
+```{r}
+#We're going to do all LINE-L1 to be conservative since they have 20,000 instances and it's not clear the source elements for all
+a<-a %>% mutate(Rodriguez=if_else(fam=="LINE_L1","Rodriguez-Martin et al","No"))
+r<-read_xlsx(here("data","NoveltyTables","Jang_Elements.xlsx"),sheet=2)
+
+unique(r$Fam)
+r<-r %>% mutate(Fam=if_else(Fam=="SVA","Retroposon_SVA","SINE_Alu"))
+r$name<-paste0(r$Subfam,"#",r$Fam)
+unique(r$name)
+r %>% filter(!name %in% a$feature)
+#AluYb11
+a %>% filter(grepl("AluYb11",feature)) #we don't have this one
+
+a<-a %>% mutate(Rodriguez=if_else(feature %in% r$name,"Rodriguez-Martin et al",Rodriguez))
+
+a %>% filter(Jang != "No"|Rodriguez != "No") %>% group_by(fam) %>% summarize(n=n())
+```
+
+The subfamily evidence
+```{r}
+dat<-fread(here("data","NoveltyTables","Novel_subfam.csv"))
+
+a<-a %>% select(feature,fam,Jang,Rodriguez)
+a<-inner_join(a,dat,by=c("fam"="Subfamily"))
+a<-a %>% mutate(Novelty=if_else(`Previous report of Involvement in Cancer (Number of elements if available)` %in% c("Subfamily Evidence","Novel"),`Previous report of Involvement in Cancer (Number of elements if available)`,"Prior demonstration in TCGA/PCAWG"))
+
+a %>% group_by(Rodriguez,Jang,Novelty) %>% summarize(n=n())
+
+dat<-dat %>% mutate(Novelty=if_else(`Previous report of Involvement in Cancer (Number of elements if available)` %in% c("Subfamily Evidence","Novel"),`Previous report of Involvement in Cancer (Number of elements if available)`,"Prior demonstration in TCGA/PCAWG"))
+
+dat %>% group_by(Novelty) %>% summarize(n=n())
+a %>% group_by(Novelty) %>% summarize(n=n())
+a %>% group_by(Novelty,Rodriguez,Jang) %>% summarize(n=n())
+
+a<-a %>% mutate(group=if_else(Novelty=="Prior demonstration in TCGA/PCAWG" & Rodriguez=="No" & Jang=="No","Novel",Novelty))
+a %>% group_by(group) %>% summarize(n=n())
+
+#write.csv(a,here("data","NoveltyTables","Novel_Elements.csv"))
+
+sig<-fread(here("data","Supp_Tables","s7_Top_Sig_Table.csv"))
+
+sig<-inner_join(sig,a %>% select(feature),by="feature")
+
+sig %>% group_by(cohort,group) %>% summarize(n=n())
+
+T1<-fread(here("data","NoveltyTables","Subfamily.csv"))
+dat<-fread(here("data","NoveltyTables","Novel_subfam.csv"))
+
+T1<-inner_join(T1,dat,by=c("subfamily"="Subfamily")) %>% select(-V1) %>% select(subfamily, bigfam,n, starts_with("Ave"),`Previous report of Involvement in Cancer (Number of elements if available)`)
+#write.csv(T1,here("data","Supp_Tables","Table1.csv"))
+```
+

@@ -1,0 +1,229 @@
+---
+title: "S18"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(here)
+library(devtools)
+load_all(here("code","useful.stuff.aa"))           # Load
+library(gridExtra)
+library(cowplot)
+library(readxl)
+library(RColorBrewer)
+library(MASS)
+
+```
+
+```{r}
+
+
+#How much variation is their in random resamples of the same T/N
+var_norm<-fread(here("data","Downsamples","artemis_half_normal.csv"))
+var_norm<-var_norm %>% dplyr::select(-V1) %>% gather(key=feature,value=count,-id)
+var_norm$sample<-sapply(str_split(var_norm$id,"_"),"[",4)
+var_norm$id<-sapply(str_split(var_norm$id,"_"),"[",1)
+var_norm<-var_norm %>% spread(key=sample,value=count)
+var_norm$ratio<-var_norm$ds1/var_norm$ds2
+var_norm<-var_norm %>% filter(!is.na(ratio) & !is.infinite(ratio))
+sd_tissue_ratio<-sd(var_norm$ratio,na.rm=T)
+
+
+
+```
+
+```{r}
+
+get_swap <- function(TF,Tissue_Fold,sd_tissue_ratio) {
+  set.seed(1234)
+  i<-rnorm(n=100,mean=TF,sd=.01)
+  i[i < 0] <- 0
+  i[i > 1] <- 1
+  #i<-rep(TF,100)
+  set.seed(1234)
+  tissue_ratio<-rnorm(n=100,mean=Tissue_Fold,sd=sd_tissue_ratio) #I will get this SD from what we saw in random resampling.
+  tissue_ratio[tissue_ratio < 0] <- 0
+  
+  #For a given TF and Tissue Fold -- we will do the following 100 times.
+  r<-1
+  #WBC vector - 1000 elements, active with prob percactive
+  set.seed(r)
+  mu_wbc<-rnorm(n=1,mean=1,sd=.1)
+  set.seed(r)
+  mu_tumor<-rnorm(n=1,mean=.93,sd=.15) #depends on the % more active thing, was .15 earlier
+  set.seed(r)
+  norms<-mvrnorm(n=1000,mu=c(mu_wbc,mu_tumor),Sigma=matrix(c(.1*.1,.9*.1*.15,.9*.1*.15,.15*.15),ncol=2)) #we're giving them a corr=.9
+
+  wbc_plasma<-norms[,1]
+  tumor_plasma<-norms[,2]
+  set.seed(r)
+  hyper<-rbernoulli(n=1000,p=.04)
+  tumor_plasma<-tumor_plasma+(hyper*(tumor_plasma/.36))-(hyper*tumor_plasma)
+  cancer_plasma<-((1-i[r])*(sum(wbc_plasma)))+(i[r]*tissue_ratio[r]*sum(tumor_plasma))
+  plasma_ratio<-cancer_plasma/sum(wbc_plasma)
+
+  data<-tibble(rep=r,plasma_ratio=plasma_ratio,tissue_ratio=tissue_ratio[r],tumor_fraction=i[r],sim_TF=TF)
+
+  for(r in 2:100) {
+    set.seed(r)
+    mu_wbc<-rnorm(n=1,mean=1,sd=.1)
+    set.seed(r)
+    mu_tumor<-rnorm(n=1,mean=.93,sd=.15) #depends on the % more active thing
+    set.seed(r)
+    norms<-mvrnorm(n=1000,mu=c(mu_wbc,mu_tumor),Sigma=matrix(c(.1*.1,.9*.1*.15,.9*.1*.15,.15*.15),ncol=2)) #we're giving them a corr=.9
+
+    wbc_plasma<-norms[,1]
+    
+    tumor_plasma<-norms[,2]
+    set.seed(r)
+    hyper<-rbernoulli(n=1000,p=.04)
+    tumor_plasma<-tumor_plasma+(hyper*(tumor_plasma/.36))-(hyper*tumor_plasma)
+
+    cancer_plasma<-((1-i[r])*(sum(wbc_plasma)))+(i[r]*tissue_ratio[r]*sum(tumor_plasma))
+    plasma_ratio<-cancer_plasma/sum(wbc_plasma)
+
+    data2<-tibble(rep=r,plasma_ratio=plasma_ratio,tissue_ratio=tissue_ratio[r],tumor_fraction=i[r],sim_TF=TF)
+    data<-rbind(data,data2)
+  }
+  #swap<-nrow(data %>% filter(plasma_ratio>=1 & tissue_ratio<1))+nrow(data %>% filter(plasma_ratio<1 & tissue_ratio>=1))
+  #print(swap)
+  return(data)
+}
+
+get_swap_null <- function(TF,Tissue_Fold,sd_tissue_ratio) {
+  set.seed(1234)
+  i<-rnorm(n=100,mean=TF,sd=.01)
+  i[i < 0] <- 0
+  i[i > 1] <- 1
+  #i<-rep(TF,100)
+  set.seed(1234)
+  tissue_ratio<-rnorm(n=100,mean=Tissue_Fold,sd=sd_tissue_ratio) #I will get this SD from what we saw in random resampling.
+  tissue_ratio[tissue_ratio < 0] <- 0
+  
+  #For a given TF and Tissue Fold -- we will do the following 100 times.
+  r<-1
+  #WBC vector - 1000 elements, active with prob percactive
+  set.seed(r)
+  mu_wbc<-rnorm(n=1,mean=1,sd=.1)
+  set.seed(r)
+  mu_tumor<-rnorm(n=1,mean=1,sd=.1) #depends on the % more active thing, was .15 earlier
+  set.seed(r)
+  norms<-mvrnorm(n=1000,mu=c(mu_wbc,mu_tumor),Sigma=matrix(c(.1*.1,.9*.1*.1,.9*.1*.1,.1*.1),ncol=2)) #we're giving them a corr=.9
+
+  wbc_plasma<-norms[,1]
+  tumor_plasma<-norms[,2]
+  cancer_plasma<-((1-i[r])*(sum(wbc_plasma)))+(i[r]*tissue_ratio[r]*sum(tumor_plasma))
+  plasma_ratio<-cancer_plasma/sum(wbc_plasma)
+
+  data<-tibble(rep=r,plasma_ratio=plasma_ratio,tissue_ratio=tissue_ratio[r],tumor_fraction=i[r],sim_TF=TF)
+
+  for(r in 2:100) {
+    set.seed(r)
+    mu_wbc<-rnorm(n=1,mean=1,sd=.1)
+    set.seed(r)
+    mu_tumor<-rnorm(n=1,mean=1,sd=.1) #depends on the % more active thing
+    set.seed(r)
+    norms<-mvrnorm(n=1000,mu=c(mu_wbc,mu_tumor),Sigma=matrix(c(.1*.1,.9*.1*.1,.9*.1*.1,.1*.1),ncol=2)) #we're giving them a corr=.9
+
+    wbc_plasma<-norms[,1]
+    
+    tumor_plasma<-norms[,2]
+    cancer_plasma<-((1-i[r])*(sum(wbc_plasma)))+(i[r]*tissue_ratio[r]*sum(tumor_plasma))
+    plasma_ratio<-cancer_plasma/sum(wbc_plasma)
+
+    data2<-tibble(rep=r,plasma_ratio=plasma_ratio,tissue_ratio=tissue_ratio[r],tumor_fraction=i[r],sim_TF=TF)
+    data<-rbind(data,data2)
+  }
+  #swap<-nrow(data %>% filter(plasma_ratio>=1 & tissue_ratio<1))+nrow(data %>% filter(plasma_ratio<1 & tissue_ratio>=1))
+  #print(swap)
+  return(data)
+}
+
+#
+```
+
+
+```{r}
+TFs<-c(.01,.1,.25,.5,.75)
+Tissue_Folds<-seq(.75,1.25,.05)
+swap_table<-tibble(rep=-1,plasma_ratio=-1,tissue_ratio=-1,tumor_fraction=-1,sim_TF=-1)
+
+for(tf in 1:length(TFs)) {
+  for (tissue in 1:length(Tissue_Folds)) {
+    TF<-TFs[tf]
+    Tissue_Fold<-Tissue_Folds[tissue]
+    s<-get_swap(TF,Tissue_Fold,sd_tissue_ratio)
+    swap_table<-rbind(swap_table,s)
+  }
+  print(tf)
+}
+
+swap_table<-swap_table %>% filter(rep != -1)
+swap_table$sim_TF<-factor(swap_table$sim_TF,levels=TFs)
+swap_table$dist<-"Epigenetic"
+swap_table2<-swap_table
+
+TFs<-c(.01,.1,.25,.5,.75)
+Tissue_Folds<-seq(.75,1.25,.05)
+swap_table<-tibble(rep=-1,plasma_ratio=-1,tissue_ratio=-1,tumor_fraction=-1,sim_TF=-1)
+
+for(tf in 1:length(TFs)) {
+  for (tissue in 1:length(Tissue_Folds)) {
+    TF<-TFs[tf]
+    Tissue_Fold<-Tissue_Folds[tissue]
+    s<-get_swap_null(TF,Tissue_Fold,sd_tissue_ratio)
+    swap_table<-rbind(swap_table,s)
+  }
+  print(tf)
+}
+
+swap_table<-swap_table %>% filter(rep != -1)
+swap_table$sim_TF<-factor(swap_table$sim_TF,levels=TFs)
+swap_table$dist<-"Null"
+swap_table<-rbind(swap_table2,swap_table)
+
+```
+
+```{r epi, echo=FALSE, fig.width=10, fig.height=5, dev=c("png", "pdf")}
+#ggplot(swap_table,aes(x=tissue_ratio,y=plasma_ratio,color=sim_TF))+theme_classic()+geom_point()+geom_hline(yintercept=1)+geom_vline(xintercept=1)+xlab("Observed Tumor:Normal Ratio in Tissue")+ylab("Observed Cancer:Healthy Ratio in Plasma")+labs(color="Simulated\nTumor Fraction")
+
+swap_table<-swap_table %>% mutate(dist=if_else(dist=="Epigenetic","Epigenetic changes\nimpact plasma coverage","No epigenetic impacts\non plasma coverage"))
+
+swap_table<-swap_table %>% mutate(sim_TF2=paste0("Simulated Tumor Fraction = ",sim_TF))
+
+
+
+```
+
+```{r epi2, echo=FALSE, fig.width=10, fig.height=14, dev=c("png", "pdf")}
+library(ggpubr)
+
+swap_table2<-swap_table
+swap_table2<-swap_table2 %>% mutate(flip=if_else(plasma_ratio>1 & tissue_ratio<=1,"Tissue Decrease,\nPlasma Increase","NC"))
+swap_table2<-swap_table2 %>% mutate(flip=if_else(plasma_ratio<=1 & tissue_ratio>1,"Tissue Increase,\nPlasma Decrease",flip))
+swap_table2<-swap_table2 %>% mutate(flip=if_else(plasma_ratio>1 & tissue_ratio>1,"Concordant -\nIncrease",flip))
+swap_table2<-swap_table2 %>% mutate(flip=if_else(plasma_ratio<=1 & tissue_ratio<=1,"Concordant -\nDecrease",flip))
+swap_table2<-swap_table2 %>% mutate(flip=if_else((plasma_ratio<1.05 & plasma_ratio>.95 & tissue_ratio<1.05 & tissue_ratio>.95),"No change",flip))
+
+
+```
+
+```{r epi3, echo=FALSE, fig.width=10, fig.height=6, dev=c("png", "pdf")}
+
+swap_table3<-swap_table2 %>% group_by(flip,dist) %>% summarize(n=(n()/5500)*100,num=n(),low=binom.test(num,5500)$conf.int[1]*100,high=binom.test(num,5500)$conf.int[2]*100) 
+
+d2<-tibble(flip="Tissue Decrease,\nPlasma Increase",dist="No epigenetic impacts\non plasma coverage",n=.05) #dummy to make a gray line at 0
+swap_table3<-rbind(swap_table3,d2)
+swap_table3$flip<-factor(swap_table3$flip,levels=c("No change","Concordant -\nIncrease","Concordant -\nDecrease","Tissue Decrease,\nPlasma Increase","Tissue Increase,\nPlasma Decrease"))
+ggplot(swap_table3,aes(x=flip,y=n,fill=dist))+geom_bar(position="dodge",stat="identity")+scale_fill_manual(values=c("indianred","gray50"))+theme_classic()+theme(legend.position="bottom")+ylab("Percentage of simulations")+xlab("")+labs(fill="")+geom_errorbar(aes(ymin=low,ymax=high),position="dodge")
+
+```
+

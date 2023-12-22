@@ -1,0 +1,131 @@
+---
+title: "S21a"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(gbm)
+
+
+#These are the models we actually want
+model<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","ARTEMIS_Ensemble.rds"))
+model2<-readRDS(here("data","Mathios_Published","model_seq_glm.rds"))
+model3<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","ARTEMIS_single_DELFI_SSLs_Ensemble.rds"))
+
+#I have to generate some SSL scores though to use:
+s1<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Cov_GBM.rds"))
+s2<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Ratios_ssl.rds"))
+s3<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","zscores_ssl.rds"))
+s4<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Epi_ssl.rds"))
+s5<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","LINE_ssl.rds"))
+s6<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","LTR_ssl.rds"))
+s7<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","SINE_ssl.rds"))
+s8<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Sat_ssl.rds"))
+s9<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","RNA_TE_ssl.rds"))
+
+
+get_coefs <- function(model) {
+  orig_coefs <- coef(model$finalModel, s = model$bestTune$lambda) * (-1)
+  pr <- prep(model$recipe)
+  model_input <- suppressWarnings(bake(pr, new_data = model$trainingData))
+
+  feature_means <- model_input  %>%
+      select(-c(id, type)) %>%
+      colMeans()
+  feature_sds <- model_input %>%
+      select(-c(id, type)) %>%
+      as.data.frame() %>%
+      summarise_all(sd)
+  feature_coefs <- data.frame(features = names(feature_sds),
+                            sd = as.numeric(feature_sds))
+  feature_coefs <- merge(feature_coefs,
+                     data.frame(features = rownames(orig_coefs),
+                                orig_coefs = as.numeric(orig_coefs)),
+                     by = 'features', all.x = TRUE)
+  feature_coefs$scaled_coefs <- feature_coefs$orig_coefs * feature_coefs$sd
+  coefs<-feature_coefs %>% filter(scaled_coefs != 0)
+  coefs
+}
+
+
+
+```
+
+```{r imp, echo=FALSE, fig.width=8, fig.height=15, dev=c("png", "pdf")}
+artemis<-get_coefs(model) %>% select(features,scaled_coefs) %>% mutate(model="artemis")
+joint<-get_coefs(model3) %>% select(features,scaled_coefs) %>% mutate(model="join")
+
+#The epi coefficients should be multiplied by the epi coefficient in the artemis model 
+e<-get_coefs(s4) %>% select(features,scaled_coefs) %>% mutate(model="Epigenetics")
+e$scaled_coefs<-e$scaled_coefs * (artemis %>% filter(features=="Epi_ssl"))$scaled_coefs
+
+
+refs<-fread(here("data","Epi_Reference_Bins.csv"))
+refs<-refs[map >= 0.90 & gc >= 0.30]
+refs <- refs[,chr:=factor(chr, paste0("chr", c(1:22, "X")))]
+setkey(refs, chr, start, end)
+refs[,bin:=1:.N]
+refs$bin<-paste0(refs$ref,"_",refs$bin)
+
+e<-inner_join(e,refs %>% select(chr,start,end,ref,bin),by=c("features"="bin"))
+e<-e %>% mutate(ref=if_else(ref=="H3K27me3-human_GM12878_ENCFF001SUI","H3K27me3",ref))
+e<-e %>% mutate(ref=if_else(ref=="H3K36me3-human_GM12878_ENCFF001SUJ","H3K36me3",ref))
+e<-e %>% mutate(ref=if_else(ref=="H3K9me3-human_GM12878_ENCFF001SUP","H3K9me3",ref))
+e<-e %>% mutate(ref=if_else(ref=="states_1_5","Activation",ref))
+e<-e %>% mutate(ref=if_else(ref=="states_10_13","3' Transcription",ref))
+e<-e %>% mutate(ref=if_else(ref=="states_7_9","Repression",ref))
+e$features<-paste0(e$ref,"_",e$chr,":",e$start,"-",e$end)
+e<-e %>% select(features,scaled_coefs,model)
+#The LTR coefficients should be multiplied by the epi coefficient in the artemis model 
+l<-get_coefs(s6)%>% select(features,scaled_coefs) %>% mutate(model="LTR")
+l$scaled_coefs<-l$scaled_coefs * (artemis %>% filter(features=="LTR_ssl"))$scaled_coefs
+
+#The Sat coefficients should be multiplied by the epi coefficient in the artemis model 
+s<-get_coefs(s8)%>% select(features,scaled_coefs) %>% mutate(model="Satellite")
+s$scaled_coefs<-s$scaled_coefs * (artemis %>% filter(features=="Sat_ssl"))$scaled_coefs
+
+#All of these need to be scaled by the weight of ARTEMIS in the joint model
+a<-rbind(e,l,s) %>% mutate(model2="ARTEMIS")
+a$scaled_coefs<-a$scaled_coefs * (joint %>% filter(features=="Artemis_Score"))$scaled_coefs
+
+#ratios and z features, scaled by weight of ratios in the joint model
+r<-get_coefs(s2)%>% select(features,scaled_coefs) %>% mutate(model="Fragmentation Ratios")
+r$scaled_coefs<-r$scaled_coefs * (joint %>% filter(features=="Ratios_ssl"))$scaled_coefs
+
+z<-get_coefs(s3)%>% select(features,scaled_coefs) %>% mutate(model="Aneuploidy Z-scores")
+z$scaled_coefs<-z$scaled_coefs * (joint %>% filter(features=="zscores_ssl"))$scaled_coefs
+d<-rbind(r,z) %>% mutate(model2="DELFI")
+
+dat<-rbind(a,d)
+lev<-dat %>% arrange(-abs(scaled_coefs))
+dat$features<-factor(dat$features,levels=rev(lev$features))
+
+##Add the Mathios features
+mathios<-get_coefs(model2)%>% select(features,scaled_coefs) %>% mutate(model="Mathios et al")
+mathios$features<-factor(mathios$features,levels=rev(lev$features))
+
+
+dat<-dat %>% mutate(model=if_else(model2=="ARTEMIS",paste0("ARTEMIS-",model),model))
+#dat<-left_join(dat,mathios %>% select(features,scaled_coefs)%>%rename("mathios_coef"="scaled_coefs"))
+ggplot(dat,aes(x=features,y=scaled_coefs,color=model))+geom_segment(aes(x=features,xend=features,y=0,yend=scaled_coefs))+
+  geom_point()+coord_flip()+theme_classic()+theme(legend.position="right",axis.title.y=element_blank())+labs(color="Feature Class")+ylab("Scaled Contribution to Joint Model")#+geom_bar(stat="identity",aes(x=features,y=mathios_coef),fill="gray25",width=1,alpha=.3,color="white")
+
+
+
+
+```
+

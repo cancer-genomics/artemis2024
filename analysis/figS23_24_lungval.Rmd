@@ -1,0 +1,329 @@
+---
+title: "S23_24"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(RColorBrewer)
+
+library(readxl)
+```
+
+
+```{r}
+load_all(here("code","useful.stuff.aa"))           # Load
+load_all(here("code","rlucas"))           # Load
+
+model_names<-c("ARTEMIS_Ensemble","ARTEMIS_single_DELFI_SSLs_Ensemble")
+#model_names<-c("ARTEMIS_Ensemble","Mathios_DELFI","ARTEMIS_single_DELFI_SSLs_Ensemble")
+
+#colors<-c("#66c2a5","#8da0cb","#fc8d62")
+colors<-c("#1b9e77","#d95f02")
+
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+meta<-meta %>% select(-V1)
+
+#Add in Mathios Published scores
+model<-readRDS(here("data","Mathios_Published","model_seq_glm.rds"))
+#cv<-fread(here("data","Models","Mathios_Published","Mathios_S2.csv"))
+cv<-colData(se) %>%
+    as_tibble() %>%
+    mutate(lab_id=colnames(se)) %>%
+    filter(!is.na(score_seq)) %>%
+    select(lab_id, score_seq)
+
+cv<-inner_join(lucas_meta %>% filter(Training=="YES") %>% select(cg_id,id,type),cv,by=c("cg_id"="lab_id")) %>% rename("score"="score_seq")
+cv$model<-"Mathios_Published"
+cv$set<-"SSL"
+data<-fread(here("data","Final_LUCAS_Ensemble","Results","Cross_Validation_scores.csv"))
+data<-data %>% select(-V1)
+data<-rbind(data,cv %>% select(-cg_id))
+#########
+data<-data %>% filter(model %in% model_names)
+
+val_dat<-fread(here("data","Final_LUCAS_Ensemble","Results","Test_set_scores.csv"))
+val_dat<-val_dat %>% select(-V1)
+#The mathios publication didn't have scores for ahn_bu
+v<-fread(here("data","Mathios_Published","validation_preds.csv"))
+v<-inner_join(meta %>% select(id,type),v %>% select(id,cancer),by=c("id"="id")) %>% rename("score"="cancer")
+v$model<-"Mathios_Published"
+v$set<-"SSL"
+
+#get IDs not in Mathios
+ids<-unique((val_dat %>% filter(!id %in% v$id))$id)
+#read in the test set features
+t<-fread(here("data","Final_LUCAS_Ensemble","Cohorts","LUCAS_Test.csv"))
+#get only the missing ids and needed features
+t<-t %>% filter(id %in% ids) %>% select(id,type,starts_with("ratio"),starts_with("zscore"))
+preds<-predict(model,t,type="prob")
+t<-tibble(id=t$id,type=t$type,score=preds$cancer,model="Mathios_Published",set="SSL")
+val_dat<-rbind(val_dat,v,t)
+#######
+val_dat<-val_dat %>% filter(model %in% model_names)
+#val_dat %>% dplyr::group_by(model) %>% dplyr::summarize(r=roc(type,score)$auc[1])
+#data %>% dplyr::group_by(model) %>% dplyr::summarize(r=roc(type,score)$auc[1])
+cv_dat<-data
+
+```
+
+```{r}
+lucas_extra_val<-val_dat %>% filter(!id %in% v$id & id %in% lucas_meta$id)
+jhu_val<-val_dat %>% filter(id %in% v$id)
+```
+
+```{r recurrence, echo=FALSE,fig.width=10,fig.height=4,dev=c("png","pdf")}
+library(ggpubr)
+colors<-c("#1b9e77","#d95f02")
+
+rec<-read_xlsx(here("data","Extended Data Fig.12_recurrence_analysis_Mathios_etal.xlsx"))
+lucas_extra_val<-inner_join(lucas_meta %>% select(id,cg_id),lucas_extra_val,by=c("id"="id"))
+
+lucas_extra_val<-inner_join(rec,lucas_extra_val,by=c("Patient"="cg_id"))
+
+lucas_extra_val$`Recurrence status`<-factor(lucas_extra_val$`Recurrence status`,levels=c("0","1"))
+lucas_extra_val<-lucas_extra_val %>% mutate(model=if_else(model=="ARTEMIS_Ensemble","ARTEMIS","ARTEMIS+DELFI"))
+b<-ggplot(lucas_extra_val,aes(x=`Recurrence status`,y=score))+geom_boxplot(aes(fill=model),alpha=0.3, outlier.shape=NA, width=0.2) +geom_jitter(width=0.1, color="gray", height=0.01)+ theme_classic()+facet_grid(.~model)#+stat_compare_means()
+
+c<-b+theme(axis.text.x = element_text(size=16, face="bold"),axis.text.y = element_text(size=16, face="bold"),strip.text = element_text(size=16, face="bold"),axis.title.y = element_text(size=16, face="bold"))
+c+theme(axis.title.x = element_blank(),legend.position="none")+scale_y_continuous(breaks = c(0,0.2, 0.4,0.6,0.8,1))+ylab("Score")+scale_x_discrete(labels=c("0" = "No recurrence\n(n=20)", "1" = "Clinical recurrence\n(n=5)"))+scale_fill_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=colors)+stat_compare_means()
+
+```
+
+
+```{r}
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+meta<-meta %>% select(-V1)
+
+data<-jhu_val
+
+data<-inner_join(data,meta %>% select(Stage,Subtype,id),by="id")
+
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Lung Cancer\n Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Lung Cancer\n Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Lung Cancer\n Stage III/IV",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Unk"),"Lung Cancer\n Stage Unknown",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("Benign"),"Benign Lung\n Nodule",group))
+
+```
+
+```{r}
+data<-data %>% select(id,model,score)
+data<-inner_join(data,meta %>% select(Stage,id,type),by="id")
+
+data<-data %>% filter(Stage != "Unk")
+data<-data %>% mutate(group=if_else(Stage %in% c("IA","IB","I","IA-2"),"Stage I","Non-Cancer"))
+data<-data %>% mutate(group=if_else(Stage %in% c("IIA","IIB","II"),"Stage II",group))
+data<-data %>% mutate(group=if_else(Stage %in% c("III","IIIA","IIIB","IIIC","IV"),"Stage III/IV",group))
+
+m<-unique(data$model)
+c<-c("Stage I","Stage II","Stage III/IV")
+h<-c("Non-Cancer")
+
+dat_full<-tibble(type="test",sens=-1,spec=-1,model="test",set="test",cancer="test",healthy="test")
+
+k<-1
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d<-data %>% filter(model==m[k]) %>% filter(group %in% c(c[i],h[j]))
+    dat<-format_roc(d$type,d$score,"")
+    dat$model<-m[k]
+    dat$set<-paste0(c[i]," vs. ",h[j])
+    dat$cancer<-paste0(c[i])
+    dat$healthy<-paste0(h[j])
+    dat_full<-rbind(dat_full,dat)
+  }
+}
+
+dat_full<-dat_full %>% filter(type != "test")
+d<-data %>% filter(model==m[k]) 
+dat<-format_roc(d$type,d$score,"")
+dat$model<-m[k]
+dat$set<-"All cancer vs. Non-Cancer"
+dat$cancer<-"All cancer"
+dat$healthy<-"Non-Cancer"
+dat_full<-rbind(dat_full,dat)
+
+k<-2
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d<-data %>% filter(model==m[k]) %>% filter(group %in% c(c[i],h[j]))
+    dat<-format_roc(d$type,d$score,"")
+    dat$model<-m[k]
+    dat$set<-paste0(c[i]," vs. ",h[j])
+    dat$cancer<-paste0(c[i])
+    dat$healthy<-paste0(h[j])
+    dat_full<-rbind(dat_full,dat)
+  }
+}
+d<-data %>% filter(model==m[k]) 
+dat<-format_roc(d$type,d$score,"")
+dat$model<-m[k]
+dat$set<-"All cancer vs. Non-Cancer"
+dat$cancer<-"All cancer"
+dat$healthy<-"Non-Cancer"
+dat_full<-rbind(dat_full,dat)
+
+
+
+dat_full<-dat_full %>% group_by(model,set) %>% arrange(sens)
+dat_full<-dat_full %>% mutate(type=if_else(sens==0 & spec==1,type," "))
+dat_full<-dat_full %>% mutate(jit=if_else(model==m[1],.07, 1))
+dat_full<-dat_full %>% mutate(jit=if_else(model==m[2],.13, jit))
+#dat_full<-dat_full %>% mutate(jit=if_else(model==m[3],.19, jit))
+dat_full$model<-factor(dat_full$model,levels=model_names)
+```
+
+
+```{r}
+l<-dat_full %>% filter(set=="All cancer vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+
+A <- dat_full %>% filter(set=="All cancer vs. Non-Cancer") %>% 
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_text(size=15)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle("All Cancers")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+
+```{r}
+l<-dat_full %>% filter(set=="Stage I vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage I vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5,size=12))+ggtitle("Stage I\n(n=60 lung cancer, n=400 non-cancer)")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C1<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+l<-dat_full %>% filter(set=="Stage II vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage II vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5,size=12))+ggtitle("Stage II\n(n=16 lung cancer, n=400 non-cancer)")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C2<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+```{r}
+
+l<-dat_full %>% filter(set=="Stage III/IV vs. Non-Cancer")
+l<-l %>% group_by(model)%>%dplyr::summarize(n=unique(type)) %>% filter(n != " ")
+l$n<-gsub(": ","",l$n)
+A <- dat_full %>% filter(set=="Stage III/IV vs. Non-Cancer") %>%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c("0", ".25", ".50", ".80", "1.0"))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c("0", ".25", ".50", ".75", "1.0"))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab("Specificity") + ylab("Sensitivity") +
+    guides(color=guide_legend(title="AUC: (95% CI)", hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5,size=12))+ggtitle("Stage III/IV\n(n=11 lung cancer, n=400 non-cancer)")+
+    scale_color_manual(labels=l$n,values=colors)
+
+C3<-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)
+```
+
+
+```{r all_ROCs,fig.height=8,fig.width=16, dev=c("png", "pdf")}
+#x<-plot_grid(C1,C2,C3,nrow=2)
+x2<-plot_grid(C1,C2,C3,nrow=1)
+
+#r<-plot_grid(C,x,rel_widths=c(1,2))
+#r
+
+#Get legend
+l<-get_legend(A+scale_color_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=colors)+theme(legend.position="top",legend.title=element_blank(),legend.text=element_text(size=14)))
+legend<-l
+
+#plot_grid(x,l,rel_heights=c(10,1),ncol=1)
+```
+
+```{r all_ROCs2,fig.height=8,fig.width=12, dev=c("png", "pdf")}
+
+plot_grid(x2,l,rel_heights=c(10,1),ncol=1)
+```
+
+```{r}
+
+```
+

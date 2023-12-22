@@ -1,0 +1,146 @@
+---
+title: "2D_S10"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+```{r composite, echo=FALSE, fig.width=16, fig.height=10, dev=c("png", "pdf")}
+library(data.table)
+library(gridExtra)
+library(devtools)
+library(here)
+
+load_all(here("code","useful.stuff.aa"))           # Load
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(ggpubr)
+###################
+features<-list.files(here("data","LINE1","Downloads"),pattern="D",full.names=T)
+dat<-squish(features)
+
+colnames(dat)<-c("feature","count","id")
+
+counts<-list.files(here("data","process_pcawg","read_counts"),full.names=T)
+counts<-rbindlist(lapply(counts, fread,header=F))
+counts$V2<-rep(c("id","norm"),nrow(counts)/2)
+counts<-cbind(counts %>% filter(V2=="id"),counts %>% filter(V2=="norm"))
+colnames(counts)<-c("id","spare","norm","spare2") 
+counts<-counts%>% select(id,norm)
+dat<-inner_join(dat,counts,by="id")
+dat$norm<-as.numeric(dat$norm)
+dat$n_norm<-dat$count/(dat$norm/1000000)
+dat<-dat[,fam.scaled:=scale(n_norm), by=id]
+
+
+data<-dat %>% select(feature,n_norm,id) %>% spread(key=feature,value=n_norm)
+data<-tibble(data)
+data<-data %>% gather(key=feature,value=count,-id)
+
+data$type<-sapply(str_split(data$id,"_"),"[",2)
+data$id<-sapply(str_split(data$id,"_"),"[",1)
+data<-data %>% spread(key=type,value=count)
+data$ratio<-data$tumor/data$normal
+
+coords<-fread(here("data","LINE1","coords2.csv"))
+coords$reg<-paste0(coords$chrom,"-",coords$beg+1,"-",coords$end)
+coords<-coords %>% select(-V1)
+coords<-coords %>% filter(reg %in% data$feature)
+
+coords$choose<-paste0(coords$`ICGC Donor`,coords$reg)
+data<-data %>% mutate(del=if_else(paste0(id,feature) %in% coords$choose,"Deletion","No Deletion"))
+data<-data %>% filter(id %in% coords$`ICGC Donor`)
+
+CNV<-fread(here("data","LINE1","LUSC.tsv"))
+CNV$cn<-2*(2^(CNV$Segment_Mean))
+CNV$Chromosome<-paste0("chr",CNV$Chromosome)
+
+CNV$id<-paste0("TCGA-",sapply(str_split(CNV$Sample,"-"),"[",2),"-",sapply(str_split(CNV$Sample,"-"),"[",3))
+CNV<-CNV %>% filter(id %in% coords$donor_barcode)
+CNV<-CNV %>% mutate(id2=if_else(id=="TCGA-33-4586","DO27318","test"))
+CNV<-CNV %>% mutate(id2=if_else(id=="TCGA-66-2766","DO27747",id2))
+CNV<-CNV %>% mutate(id2=if_else(id=="TCGA-18-3408","DO26572",id2))
+CNV<-CNV %>% mutate(id2=if_else(id=="TCGA-56-7582","DO26976",id2))
+CNV<-CNV %>% mutate(id2=if_else(id=="TCGA-66-2793","DO27334",id2))
+
+data$chr<-sapply(str_split(data$feature,"-"),"[",1)
+data$start<-sapply(str_split(data$feature,"-"),"[",2)
+data$end<-sapply(str_split(data$feature,"-"),"[",3)
+data$start<-as.numeric(data$start)
+data$end<-as.numeric(data$end)
+data$surrounding_CN=-1
+
+for (i in 1:nrow(data)) {
+  c<-CNV %>% filter(Chromosome==data$chr[i] & id2==data$id[i])
+  c<-c %>% filter((data$start[i]<End & data$start[i]>Start) | (data$end[i]<End & data$end[i]>Start))
+  c
+  c<-c %>% summarize(cn=mean(cn))
+  data$surrounding_CN[i]<-c$cn
+}
+data<-data %>% mutate(surrounding_CN=if_else(is.na(surrounding_CN),2,surrounding_CN))
+
+x<-ggplot(data,aes(x=surrounding_CN,y=ratio,color=del))+geom_point()+stat_cor(method="spearman")+geom_smooth(method = "lm")+theme_classic()+
+  xlab("Average Tumor Copy Number in surrounding region")+geom_hline(yintercept=1,linetype="dashed",alpha=.4)+
+  annotate("text",x=2.8,y=.9,label="Kmer count indicates\nregion deleted in Tumor")+annotate("segment", x = 3, y = 1, xend = 3, yend = .75,arrow = arrow(type = "closed", length = unit(0.02, "npc")))+theme(legend.position="bottom",legend.title=element_blank())+ylab("Ratio of Tumor:Normal kmer count in LINE-1 Mediated Deletion Region")+scale_color_manual(values=c("indianred","gray50"))
+ggplotGrob(x) -> x1
+
+
+data$size<-paste0(round((data$end-data$start)/1000,2)," kb")
+data$name<-paste0(data$feature,"\n(",data$size,")")
+data$size2<-data$end-data$start
+nm<-data %>% filter(id=="DO26572")%>%arrange(size2)
+data$name<-factor(data$name,levels=nm$name)
+data_sub<-data %>% filter(del=="No Deletion")
+
+a<-ggplot(data,aes(x=name,y=ratio,color=del,size=del))+geom_boxplot(data=data_sub,outlier.shape=NA,width=.3,show.legend=FALSE,lwd=.5,fatten=.7)+geom_point(show.legend=TRUE)+theme_classic(base_size=14)+coord_flip()+theme(legend.position="none",axis.title.y=element_blank(),strip.text=element_blank(),plot.title = element_text(hjust = 0.5))+ylab("Ratio of Tumor:Normal kmer count")+facet_wrap(vars(name),ncol=1,scales="free_y")+scale_color_manual(values=c("indianred","gray50"))+scale_size_manual(values=c(3,1.3))+ggtitle("Lung Cancer - Squamous Cell\nLINE-1 Mediated Deletion Regions")
+
+#save_data<-data
+#write.csv(save_data %>% select(id,feature,name,ratio,del),here("output","Figure_Data_Files","Fig2d.csv"))
+
+f<-list.files(here("data","LINE1","Downloads"),pattern="c",full.names=T)
+dat<-squish(f)
+
+colnames(dat)<-c("feature","count","id")
+dat<-dat %>% filter(count != 0)
+dat<-dat %>% mutate(set=sapply(str_split(feature,"#"),"[",2))
+dat<-dat %>% mutate(set=sapply(str_split(set,"_"),"[",1))
+
+dat<-dat %>% mutate(set=if_else(is.na(set),"Satellite",set))
+dat<-dat %>% mutate(set=if_else(set %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA Elements",set))
+dat<-dat %>% mutate(set=if_else(set %in% c("DNA","DNA?","RC","Retroposon"),"Transposable Elements",set))
+dat<-dat %>% group_by(set,id) %>% summarize(n=sum(count))
+dat<-inner_join(dat,nm %>% select(feature,name),by=c("id"="feature"))
+dat$name<-factor(dat$name,levels=nm$name)
+
+b<-ggplot(dat,aes(x=name,y=n,fill=set))+geom_bar(stat="identity")+theme_classic()+coord_flip()+facet_wrap(vars(name),ncol=1,scales="free")+
+  theme(strip.text=element_blank(),axis.text.y=element_blank(),axis.title.y=element_blank(),legend.position="right",legend.title=element_blank())+ylab("Number of Kmers in Region")+scale_color_brewer(palette = "Dark2")+scale_fill_brewer(palette = "Dark2")
+
+
+b2<-ggplot(dat,aes(x=name,y=n,fill=set))+geom_bar(stat="identity")+theme_classic(base_size=12)+coord_flip()+facet_wrap(vars(name),ncol=1,scales="free")+
+  theme(strip.text=element_blank(),axis.title.y=element_blank(),legend.position="bottom",legend.title=element_blank())+ylab("Number of Kmers in Region")+scale_color_brewer(palette = "Dark2")+scale_fill_brewer(palette = "Dark2")
+
+
+ggplotGrob(a) -> a1
+ggplotGrob(b) -> b1
+
+a1$heights<-b1$heights
+#groblist<-list(x1,a1,b1)
+#c<-gridExtra::grid.arrange(grobs=groblist,nrow=1,ncol=3,widths=c(6,4,4))
+
+```
+
+```{r scatter, echo=FALSE, fig.width=8, fig.height=8, dev=c("png", "pdf")}
+x
+```
+
+```{r bar, echo=FALSE, fig.width=8, fig.height=10, dev=c("png", "pdf")}
+b2
+```
+
+```{r main, echo=FALSE, fig.width=6, fig.height=8, dev=c("png", "pdf")}
+a+theme(legend.position="right",legend.title=element_blank())
+```
+
+

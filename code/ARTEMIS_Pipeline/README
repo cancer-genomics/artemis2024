@@ -1,0 +1,76 @@
+#######
+This directory contains three folders, I will discuss each in turn. 
+
+In general, scripts within each folder are meant to be run (configured for a HPC with an SGE scheduler) follow the naming convention a{number}_* and are meant to be run in order of {number}, while R scripts called by these bash scripts (if used) are named x{number}_*
+
+Successive scripts depend on output of previous scripts, so unless otherwise noted, please run in order, only after preceding scripts have completed successfully. 
+#######
+01_generate_artemis will produce the kmers you need to run artemis (only needs to be run once, but it may take a few days depending on computing capacity - the files produced are large)
+
+02 and 03 are the artemis_repeat and artemis_epi pipelines, respectively -- to be run on any cohort.
+
+#######
+01_generate_artemis -- the scripts here are used to perform de novo kmer finding on the t2t reference genome, and finally produce a file with all ~1.2 billion artemis kmers. 
+
+You will need to install the Jellyfish package: 
+Guillaume Marcais and Carl Kingsford, A fast, lock-free approach for efficient parallel counting of occurrences of k-mers. Bioinformatics (2011) 27(6): 764-770 (first published online January 7, 2011) doi:10.1093/bioinformatics/btr011
+https://github.com/gmarcais/Jellyfish
+
+You will need to provide the following T2T references:
+ucsc-t2t-repeat-masker.bed
+chrm13.mod.fna
+
+To get chrm13.mod.fna, run the following:
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/009/914/755/GCF_009914755.1_T2T-CHM13v2.0/GCF_009914755.1_T2T-CHM13v2.0_genomic.fna.gz
+next, the provided perl script to reformat: xx-mod-t2t-assembly.pl
+
+To get ucsc-t2t-repeat-masker.bed, download the T2T RepeatMasker track from https://genome.ucsc.edu/cgi-bin/hgTables
+
+
+You will need the file  x9_altemosereference24.fasta that we provide here. This is based on a supplementary file provided in Altemose et al, 2014 which we use for an expanded kmer definition of HSAT2 and HSAT3.
+Altemose N, Miga KH, Maggioni M, Willard HF (2014) Genomic Characterization of Large Heterochromatic Gaps in the Human Genome Assembly. PLOS Computational Biology 10(5): e1003628. https://doi.org/10.1371/journal.pcbi.1003628
+
+You will need some functions from the package useful.stuff.aa which we provide in the code/ folder of this repository.
+
+These bash scripts should be run in the following order.
+a1_split_bed.sh -- calls x1_split_bed.r which takes chm13 repeatmasker BED and splits by element type
+a2_create_fasta.sh -- convert the bed file for each of these types to fasta
+a3_mask.sh -- create a version of chm13 that has all Repeats masked
+a4_mask_count.sh -- count all kmers in the masked chm13 -- these are kmers occurring in non-repeats that we later need to filter out
+a5_denovo_kmer.sh -- count all kmers in each repeat type
+a6_unique_kmer.sh -- This calls x6_select_kmers.r in order to find kmers unique to a type (ie, don't occur in other repeat elements)
+a7_nonmask_kmer.sh and x7_select_nonmask_kmers.r -- extract all kmers for each type that don't appear in the non-repeat portions of chm13
+a8_finalize_kmers.sh -- calls x8_finalize_kmer_set.r to compare unique and those in masked regions to get final lists. 
+a9_finalize_altemose_kmers.sh -- x9_format_altemose_kmers.r which reformats x9_altemosereference24.fasta 
+
+At this point, the folder final_kmers will have kmer lists for 1280 repeat types (we started with 1287 + 14 from Altemose 2014, but only 1266 of the 1287 have kmers that meet all the filters).
+
+Finally: 
+A10_finish.sh -- This will get all the kmers together into one reference file, called kmers_all.fasta
+
+
+############
+02_artemis_pipeline -- this folder has scripts needed to generate ARTEMIS features for any cohort.
+
+The scripts use outputs of the previous steps in the pipeline: the file kmers_all.fasta, and the contents of the folder final_kmers
+
+Edit a0_run_artemis_kmers.sh with location of fastq, bams, and number of samples you have and then run. Should not need to edit the other scripts.
+
+
+##############
+03_epi_pipeline -- this folder has the script needed to generate the epigenetic bins for any cfDNA cohort. 
+
+Requires several external code packages previously published by our group. These include:
+DELFI pipeline (this produces granges objects for each sample, which will be used in this step)
+https://github.com/cancer-genomics/reproduce_lucas_wflow/tree/master/code/preprocessing
+The packages PlasmaToolsNovaseq.hg19, PlasmaToolsHiseq.hg19, and PlasmaTools.lucas
+https://github.com/cancer-genomics/PlasmaToolsNovaseq.hg19
+https://github.com/cancer-genomics/PlasmaToolsHiseq.hg19
+https://github.com/cancer-genomics/reproduce_lucas_wflow/tree/master/code/PlasmaTools.lucas
+
+You will also need to provide the reference genomic bins which we provide in this repo, in data/Epi_Reference_Bins.csv
+ 
+Scripts:
+a1_bin_corrected.sh -- calls x1_bin_corrected.r to generate these bins
+a2_matrix.sh --- calls x2_aggregate_matrix.r to generate the bins matrix
+

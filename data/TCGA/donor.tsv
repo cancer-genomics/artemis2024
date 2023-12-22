@@ -1,0 +1,886 @@
+icgc_donor_id	project_code	study_donor_involved_in	submitted_donor_id	donor_sex	donor_vital_status	disease_status_last_followup	donor_relapse_type	donor_age_at_diagnosis	donor_age_at_enrollment	donor_age_at_last_followup	donor_relapse_interval	donor_diagnosis_icd10	donor_tumour_staging_system_at_diagnosis	donor_tumour_stage_at_diagnosis	donor_tumour_stage_at_diagnosis_supplemental	donor_survival_time	donor_interval_of_last_followup	prior_malignancy	cancer_type_prior_malignancy	cancer_history_first_degree_relative
+DO23018	LIHC-US	PCAWG	TCGA-G3-A25S	male	alive	progression		64		64		C22.0					37	unknown		unknown
+DO37659	SKCM-US	PCAWG	TCGA-DA-A1HV	female	alive	complete remission		75		75		C77.9					26	unknown		unknown
+DO12370	GBM-US	PCAWG	TCGA-19-5960	male	alive	complete remission		56		56		C71.9					165	unknown		unknown
+DO23028	LIHC-US	PCAWG	TCGA-CC-A1HT	male	alive	complete remission		50		50		C22.0					0	unknown		unknown
+DO11046	GBM-US	PCAWG	TCGA-19-2629	male	deceased			60		60		C71.9				737		unknown		unknown
+DO23023	LIHC-US	PCAWG	TCGA-EP-A2KA	female	alive			52		52		C22.0					111	unknown		unknown
+DO36335	PRAD-US	PCAWG	TCGA-EJ-5506	male	alive	complete remission		67		67		C61					356	unknown		unknown
+DO38966	THCA-US	PCAWG	TCGA-DJ-A2Q1	female	alive	complete remission		44		44		C73					284	unknown		unknown
+DO26987	LUSC-US	PCAWG	TCGA-60-2711	female	alive	complete remission		64		66		C34.9					889	unknown		unknown
+DO12352	GBM-US	PCAWG	TCGA-02-2483	male	alive	progression		43		44		C71.9					466	unknown		unknown
+DO26993	LUSC-US	PCAWG	TCGA-68-8250	male	alive	complete remission		66		66		C34.1					244	unknown		unknown
+DO38978	THCA-US	PCAWG	TCGA-DE-A2OL	female	alive	complete remission		44		44		C73					161	unknown		unknown
+DO24307	LUAD-US	PCAWG	TCGA-05-4389	male	alive	complete remission		70		73		C34.1					1369	unknown		unknown
+DO38946	THCA-US	PCAWG	TCGA-DE-A0Y3	female	alive	complete remission		60		62		C73					952	unknown		unknown
+DO37627	SKCM-US	PCAWG	TCGA-FS-A1ZD	male	deceased			63		63		C77.9				1628		unknown		unknown
+DO26971	LUSC-US	PCAWG	TCGA-22-1016	male	deceased			65		67		C34.9				822		unknown		unknown
+DO26976	LUSC-US	PCAWG	TCGA-56-7582	male	alive	complete remission		83		83		C34.3					26	unknown		unknown
+DO37607	SKCM-US	PCAWG	TCGA-DA-A3F3	male	alive	progression		52		52		C77.0					151	unknown		unknown
+DO25622	LUAD-US	PCAWG	TCGA-49-6742	male	alive	complete remission		70		74		C34.1					1678	unknown		unknown
+DO26957	LUSC-US	PCAWG	TCGA-92-8064	male	alive	complete remission		58		58		C34.1					160	unknown		unknown
+DO23073	LIHC-US	PCAWG	TCGA-G3-A25Y	female	deceased			52		52		C22.0				452		unknown		unknown
+DO36386	READ-US	PCAWG	TCGA-AG-4008	male	alive	progression		63		63		C18.9					31	unknown		unknown
+DO49695	LIHC-US	PCAWG	TCGA-HP-A5MZ	male	deceased			78		78		C22.0				91		unknown		unknown
+DO36361	PRAD-US	PCAWG	TCGA-G9-6370	male	alive	complete remission		52		54		C61					806	unknown		unknown
+DO36372	PRAD-US	PCAWG	TCGA-G9-6336	male	alive	complete remission		57		61		C61					1669	unknown		unknown
+DO12382	GBM-US	PCAWG	TCGA-19-1389	male	deceased			51		51		C71.9				141		unknown		unknown
+DO36345	PRAD-US	PCAWG	TCGA-G9-6365	male	alive	complete remission		71		73		C61					804	unknown		unknown
+DO36360	PRAD-US	PCAWG	TCGA-EJ-7791	male	alive	complete remission		67		67		C61					217	unknown		unknown
+DO49659	LIHC-US	PCAWG	TCGA-BW-A5NQ	male	alive	complete remission		63		63		C22.0					0	unknown		unknown
+DO23048	LIHC-US	PCAWG	TCGA-DD-A1EL	male	deceased			23		23		C22.0				415		unknown		unknown
+DO36359	PRAD-US	PCAWG	TCGA-EJ-5503	male	alive	complete remission		50		51		C61					530	unknown		unknown
+DO36356	PRAD-US	PCAWG	TCGA-HI-7169	male	alive	complete remission		55		60		C61					1949	unknown		unknown
+DO36352	PRAD-US	PCAWG	TCGA-HC-7079	male	alive	progression		51		51		C61					126	unknown		unknown
+DO8004	COAD-US	PCAWG	TCGA-AA-A01X	female	alive	progression		80		80		C18.7					30	unknown		unknown
+DO8047	COAD-US	PCAWG	TCGA-AA-3685	male	alive	progression		69		69		C18.9					31	unknown		unknown
+DO14942	HNSC-US	PCAWG	TCGA-CR-6467	male	alive	complete remission		59		63		C09.9					1777	unknown		unknown
+DO38903	THCA-US	PCAWG	TCGA-EL-A3CV	male	alive	complete remission		40		43		C73					1154	unknown		unknown
+DO38901	THCA-US	PCAWG	TCGA-EL-A3TB	female	alive	complete remission		47		53		C73					2519	unknown		unknown
+DO38911	THCA-US	PCAWG	TCGA-EM-A22O	male	alive	complete remission		75		75		C73					190	unknown		unknown
+DO26934	LUSC-US	PCAWG	TCGA-98-8022	male	alive	complete remission		61		61		C34.1					224	unknown		unknown
+DO856	BLCA-US	PCAWG	TCGA-BT-A3PH	male	deceased			76		76		C67.9				142		unknown		unknown
+DO822	BLCA-US	PCAWG	TCGA-DK-A1AG	male	alive	complete remission		65		65		C67.9					202	unknown		unknown
+DO828	BLCA-US	PCAWG	TCGA-CF-A27C	male	alive	complete remission		52		52		C67.9					21	unknown		unknown
+DO13575	GBM-US	PCAWG	TCGA-06-2570	female	alive	progression		21		21		C71.9					285	unknown		unknown
+DO37531	SKCM-US	PCAWG	TCGA-EE-A2MI	male	deceased			43		43		C77.3				6225		unknown		unknown
+DO26894	LUSC-US	PCAWG	TCGA-22-5477	male	deceased			65		68		C34.3				1346		unknown		unknown
+DO38871	STAD-US	PCAWG	TCGA-CD-5802	male	alive	complete remission		58		58		C16.0					9	unknown		unknown
+DO38847	STAD-US	PCAWG	TCGA-CG-5724	male	deceased			59		59		C16.3				366		unknown		unknown
+DO37515	SKCM-US	PCAWG	TCGA-GN-A262	female	alive	progression		47		57		C44.5					3664	unknown		unknown
+DO37527	SKCM-US	PCAWG	TCGA-GN-A264	male	deceased			60		60		C44.5				3587		unknown		unknown
+DO14862	HNSC-US	PCAWG	TCGA-BA-5149	male	alive	complete remission		47		47		C04.9					248	unknown		unknown
+DO38831	STAD-US	PCAWG	TCGA-IN-7806	male	alive	complete remission		50		50		C16.0					209	unknown		unknown
+DO13510	GBM-US	PCAWG	TCGA-06-0125	female	deceased			63		66		C71.9				1448		unknown		unknown
+DO38807	STAD-US	PCAWG	TCGA-EQ-5647	female	deceased			86		86		C16.3				19		unknown		unknown
+DO36285	PRAD-US	PCAWG	TCGA-HC-7737	male	alive	complete remission		55		55		C61					64	unknown		unknown
+DO37599	SKCM-US	PCAWG	TCGA-EE-A185	female	deceased			55		55		C44.5				151		unknown		unknown
+DO36265	PRAD-US	PCAWG	TCGA-CH-5789	male	alive	complete remission		61		61		C61					304	unknown		unknown
+DO36262	PRAD-US	PCAWG	TCGA-HC-7740	male	alive	complete remission		59		59		C61					53	unknown		unknown
+DO36283	PRAD-US	PCAWG	TCGA-HC-7744	male	alive	progression		46		46		C61					51	unknown		unknown
+DO36273	PRAD-US	PCAWG	TCGA-G9-7522	male	alive	complete remission		49		50		C61					452	unknown		unknown
+DO36248	PRAD-US	PCAWG	TCGA-CH-5750	male	alive	complete remission		72		73		C61					396	unknown		unknown
+DO37587	SKCM-US	PCAWG	TCGA-ER-A19L	male	deceased			35		35		C49.5				4000		unknown		unknown
+DO36253	PRAD-US	PCAWG	TCGA-CH-5788	male	alive	complete remission		69		71		C61					821	unknown		unknown
+DO36254	PRAD-US	PCAWG	TCGA-CH-5771	male	alive	complete remission		63		64		C61					396	unknown		unknown
+DO36226	PRAD-US	PCAWG	TCGA-HC-7075	male	alive	complete remission		63		63		C61					63	unknown		unknown
+DO36239	PRAD-US	PCAWG	TCGA-CH-5763	male	alive	complete remission		66		67		C61					365	unknown		unknown
+DO38899	THCA-US	PCAWG	TCGA-EL-A4K6	male	alive	complete remission		75		77		C73					874	unknown		unknown
+DO26806	LUSC-US	PCAWG	TCGA-37-4135	male	alive	complete remission		68		68		C34.3					207	unknown		unknown
+DO14814	HNSC-US	PCAWG	TCGA-CN-6989	male	alive	complete remission		64		64		C32.9					178	unknown		unknown
+DO49880	CESC-US	PCAWG	TCGA-C5-A2LT	female	alive	complete remission		38		44		C53.9					2226	unknown		unknown
+DO48552	LIHC-US	PCAWG	TCGA-DD-A4NB	male	alive	complete remission		25		26		C22.0					391	unknown		unknown
+DO37896	SKCM-US	PCAWG	TCGA-EE-A2GN	male	alive	complete remission		67		74		C49.3					2767	unknown		unknown
+DO36572	READ-US	PCAWG	TCGA-AG-3901	female	alive	progression		67		67		C19					0	unknown		unknown
+DO36556	READ-US	PCAWG	TCGA-F5-6814	male	alive	complete remission		57		57		C20					16	unknown		unknown
+DO48518	LIHC-US	PCAWG	TCGA-DD-A1EG	male	deceased			76		76		C22.0				1372		unknown		unknown
+DO48516	KIRP-US	PCAWG	TCGA-MH-A55W	male	alive	complete remission		50		51		C64.1					398	unknown		unknown
+DO11238	GBM-US	PCAWG	TCGA-06-0152	male	deceased			68		68		C71.9				375		unknown		unknown
+DO48509	KIRP-US	PCAWG	TCGA-MH-A561	male	alive	complete remission		66		67		C64.1					438	unknown		unknown
+DO48505	LIHC-US	PCAWG	TCGA-ED-A4XI	male	alive	complete remission		58		58		C22.0					6	unknown		unknown
+DO25887	LUAD-US	PCAWG	TCGA-75-6203	female	alive	complete remission						C34.3					0	unknown		unknown
+DO37861	SKCM-US	PCAWG	TCGA-GN-A26A	female	deceased			63		63		C44.5				988		unknown		unknown
+DO49815	PRAD-US	PCAWG	TCGA-HC-8258	male	alive	complete remission		56		56		C61					66	unknown		unknown
+DO47268	SKCM-US	PCAWG	TCGA-EE-A3JI	male	alive	progression		48		60		C77.3					4504	unknown		unknown
+DO47255	SKCM-US	PCAWG	TCGA-EE-A29B	male	alive	progression		67		73		C44.7					2452	unknown		unknown
+DO11292	GBM-US	PCAWG	TCGA-06-0155	male	deceased			61		61		C71.9				318		unknown		unknown
+DO219967	SARC-US	PCAWG	TCGA-DX-A3LU	male	alive	progression						C48.0					2144	unknown		unknown
+DO219966	SARC-US	PCAWG	TCGA-DX-A3LT	male	alive	complete remission						C49.1					702	unknown		unknown
+DO219965	SARC-US	PCAWG	TCGA-DX-A3LS	female	deceased							C48.0				275		unknown		unknown
+DO219964	SARC-US	PCAWG	TCGA-DX-A2J4	male	alive							C48.0					1309	unknown		unknown
+DO219969	SARC-US	PCAWG	TCGA-DX-A3LY	male	alive	complete remission						C48.0					520	unknown		unknown
+DO219968	SARC-US	PCAWG	TCGA-DX-A3LW	male	alive	complete remission						C48.0					3289	unknown		unknown
+DO219962	SARC-US	PCAWG	TCGA-DX-A2J0	male	deceased							C48.0				295		unknown		unknown
+DO219961	SARC-US	PCAWG	TCGA-DX-A2IZ	male	alive							C48.0					261	unknown		unknown
+DO219960	SARC-US	PCAWG	TCGA-DX-A240	male	alive							C63.1					1834	unknown		unknown
+DO219954	SARC-US	PCAWG	TCGA-DX-A23R	female	alive							C48.0					2271	unknown		unknown
+DO219952	SARC-US	PCAWG	TCGA-DX-A1L3	female	alive							C48.0					960	unknown		unknown
+DO219951	SARC-US	PCAWG	TCGA-DX-A1L2	male	alive							C48.0					1291	unknown		unknown
+DO219945	SARC-US	PCAWG	TCGA-DX-A1KW	male	alive							C48.0					62	unknown		unknown
+DO219944	SARC-US	PCAWG	TCGA-DX-A1KU	male	deceased							C48.0				427		unknown		unknown
+DO219949	SARC-US	PCAWG	TCGA-DX-A1L0	male	deceased							C48.0				564		unknown		unknown
+DO9106	COAD-US	PCAWG	TCGA-AA-A01S	female	alive	progression		47		47		C18.7					31	unknown		unknown
+DO11202	GBM-US	PCAWG	TCGA-14-2554	female	deceased			52		53		C71.9				532		unknown		unknown
+DO13869	GBM-US	PCAWG	TCGA-06-0210	female	deceased			72		72		C71.9				225		unknown		unknown
+DO37827	SKCM-US	PCAWG	TCGA-D3-A1Q5	male	deceased			60		60		C77.9				3424		unknown		unknown
+DO25847	LUAD-US	PCAWG	TCGA-05-4398	female	alive	complete remission		47		50		C34.1					1431	unknown		unknown
+DO219975	SARC-US	PCAWG	TCGA-DX-A3U8	male	deceased							C48.0				138		unknown		unknown
+DO219970	SARC-US	PCAWG	TCGA-DX-A3M1	male	alive	progression						C48.0					610	unknown		unknown
+DO219974	SARC-US	PCAWG	TCGA-DX-A3U7	male	alive	progression						C49.2					1301	unknown		unknown
+DO219973	SARC-US	PCAWG	TCGA-DX-A3U6	female	alive	progression						C48.0					540	unknown		unknown
+DO219972	SARC-US	PCAWG	TCGA-DX-A3U5	male	alive	complete remission						C48.0					458	unknown		unknown
+DO12484	GBM-US	PCAWG	TCGA-06-5411	male	deceased			51		51		C71.9				254		unknown		unknown
+DO49767	KIRP-US	PCAWG	TCGA-HE-A5NI	male	alive	complete remission		73		73		C64.1					360	unknown		unknown
+DO49768	KIRP-US	PCAWG	TCGA-HE-A5NJ	male	alive	complete remission		58		62		C64.1					1726	unknown		unknown
+DO24467	LUAD-US	PCAWG	TCGA-73-4659	male	deceased			66		67		C34.1				711		unknown		unknown
+DO25797	LUAD-US	PCAWG	TCGA-67-3771	female	alive	complete remission		77		78		C34.1					610	unknown		unknown
+DO36459	READ-US	PCAWG	TCGA-AG-4015	female	alive	progression		85		85		C18.9					0	unknown		unknown
+DO37782	SKCM-US	PCAWG	TCGA-GN-A26C	male	deceased			77		77		C44.5				821		unknown		unknown
+DO37758	SKCM-US	PCAWG	TCGA-DA-A1I2	male	deceased			45		57		C77.9				0		unknown		unknown
+DO37750	SKCM-US	PCAWG	TCGA-ER-A19D	female	deceased			46		46		C49.3				383		unknown		unknown
+DO49738	KIRP-US	PCAWG	TCGA-B1-A47N	male	alive	complete remission		62		62		C64.1					278	unknown		unknown
+DO49736	KIRP-US	PCAWG	TCGA-B1-A47M	male	alive	complete remission		79		79		C64.1					132	unknown		unknown
+DO11148	GBM-US	PCAWG	TCGA-14-1034	female	deceased			60		61		C71.9				485		unknown		unknown
+DO36431	READ-US	PCAWG	TCGA-AG-3890	male	alive	progression		62		62		C20					0	unknown		unknown
+DO49728	KIRP-US	PCAWG	TCGA-AL-A5DJ	female	alive	complete remission		54		54		C64.1					26	unknown		unknown
+DO12454	GBM-US	PCAWG	TCGA-06-5415	male	alive	progression		60		60		C71.9					260	unknown		unknown
+DO37719	SKCM-US	PCAWG	TCGA-DA-A1I0	male	alive	complete remission		63		63		C44.9					215	unknown		unknown
+DO25737	LUAD-US	PCAWG	TCGA-44-6148	male	alive	complete remission		60		60		C34.30					96	unknown		unknown
+DO37723	SKCM-US	PCAWG	TCGA-FS-A1ZU	female	deceased			70		70		C44.9				808		unknown		unknown
+DO48495	KIRP-US	PCAWG	TCGA-MH-A562	male	alive	complete remission		57		57		C64.1					292	unknown		unknown
+DO48474	KIRP-US	PCAWG	TCGA-MH-A560	male	alive	complete remission		62		63		C64.1					543	unknown		unknown
+DO48482	KIRP-US	PCAWG	TCGA-MH-A55Z	male	alive	complete remission		65		66		C64.1					391	unknown		unknown
+DO24497	LUAD-US	PCAWG	TCGA-75-5147	female	alive	complete remission						C34.1					0	unknown		unknown
+DO9226	COAD-US	PCAWG	TCGA-AA-A02O	male	alive	progression		82		82		C18.4					28	unknown		unknown
+DO37703	SKCM-US	PCAWG	TCGA-FS-A1ZP	male	deceased			52		52		C77.9				2273		unknown		unknown
+DO15870	HNSC-US	PCAWG	TCGA-CR-6472	male	alive	complete remission		59		61		C01					1050	unknown		unknown
+DO39841	THCA-US	PCAWG	TCGA-DJ-A13R	male	alive	complete remission		50		50		C73					92	unknown		unknown
+DO40831	UCEC-US	PCAWG	TCGA-B5-A0K8	female	alive	complete remission		71		72		C54.1					543	unknown		unknown
+DO39847	THCA-US	PCAWG	TCGA-FE-A22Z	female	alive	complete remission		61		65		C73					1566	unknown		unknown
+DO38519	STAD-US	PCAWG	TCGA-D7-6518	male	alive	progression		75		75		C16.0					298	unknown		unknown
+DO26508	LUSC-US	PCAWG	TCGA-34-2596	male	deceased			70		70		C34.9				80		unknown		unknown
+DO26512	LUSC-US	PCAWG	TCGA-68-7755	female	alive	complete remission		60		60		C34.3					83	unknown		unknown
+DO40806	UCEC-US	PCAWG	TCGA-BK-A0CC	female	alive	progression		69		69		C54.1					212	unknown		unknown
+DO14502	HNSC-US	PCAWG	TCGA-BA-4076	male	deceased			39		39		C32.9				415		unknown		unknown
+DO39804	THCA-US	PCAWG	TCGA-ET-A2N1	female	alive	complete remission		47		48		C73					449	unknown		unknown
+DO15815	HNSC-US	PCAWG	TCGA-CV-6956	male	deceased			67		67		C02.9				217		unknown		unknown
+DO37259	READ-US	PCAWG	TCGA-AG-3896	female	alive	progression		85		85		C20					31	unknown		unknown
+DO51551	KIRP-US	PCAWG	TCGA-B1-A47O	female	alive	complete remission		54		54		C64.1					147	unknown		unknown
+DO37267	READ-US	PCAWG	TCGA-AG-3574	female	alive	progression		89		89		C20					0	unknown		unknown
+DO38571	STAD-US	PCAWG	TCGA-D7-5579	male	alive	complete remission		74		74		C16.2					138	unknown		unknown
+DO26596	LUSC-US	PCAWG	TCGA-43-3394	male	alive	complete remission		52		52		C34.3					352	unknown		unknown
+DO26599	LUSC-US	PCAWG	TCGA-21-1076	female	alive	complete remission		54		59		C34.3					1852	unknown		unknown
+DO14582	HNSC-US	PCAWG	TCGA-CR-5249	female	alive	complete remission		35		38		C09.9					1152	unknown		unknown
+DO39886	THCA-US	PCAWG	TCGA-EM-A2CN	male	alive	progression		62		62		C73					344	unknown		unknown
+DO26563	LUSC-US	PCAWG	TCGA-34-5240	female	alive	complete remission		73		73		C34.1					235	unknown		unknown
+DO38547	STAD-US	PCAWG	TCGA-D7-6528	female	alive	complete remission		70		70		C16.2					51	unknown		unknown
+DO26572	LUSC-US	PCAWG	TCGA-18-3408	female	alive	progression		77		82		C34.3					2099	unknown		unknown
+DO40867	UCEC-US	PCAWG	TCGA-AP-A0LO	female	deceased			45		45		C54.1				1016		unknown		unknown
+DO14566	HNSC-US	PCAWG	TCGA-CV-6961	male	deceased			61		61		C02.9				76		unknown		unknown
+DO26540	LUSC-US	PCAWG	TCGA-60-2724	male	alive	complete remission		47		47		C34.9					37	unknown		unknown
+DO25218	LUAD-US	PCAWG	TCGA-78-7143	female	deceased			62		62		C34.1				4961		unknown		unknown
+DO26553	LUSC-US	PCAWG	TCGA-22-5485	female	deceased			58		60		C34.1				916		unknown		unknown
+DO38535	STAD-US	PCAWG	TCGA-CG-4474	female	alive	progression		67		67		C16.3					0	unknown		unknown
+DO25189	LUAD-US	PCAWG	TCGA-50-5930	male	deceased			47		47		C34.3				282		unknown		unknown
+DO14420	HNSC-US	PCAWG	TCGA-CR-7404	male	alive	progression		53		57		C09.9					1472	unknown		unknown
+DO27747	LUSC-US	PCAWG	TCGA-66-2766	male	alive	complete remission		54		54		C34.1					31	unknown		unknown
+DO26492	LUSC-US	PCAWG	TCGA-96-7545	male	alive			73		76		C34.3					1324	unknown		unknown
+DO37138	READ-US	PCAWG	TCGA-AG-3727	female	alive	progression		78		78		C19					30	unknown		unknown
+DO39798	THCA-US	PCAWG	TCGA-FK-A3SE	female	alive	complete remission		31		32		C73					670	unknown		unknown
+DO13192	GBM-US	PCAWG	TCGA-06-0145	female	deceased			53		53		C71.9				71		unknown		unknown
+DO26461	LUSC-US	PCAWG	TCGA-56-1622	male	deceased			58		58		C34.3				881		unknown		unknown
+DO26463	LUSC-US	PCAWG	TCGA-21-1082	male	alive	complete remission		61		70		C34.3					3644	unknown		unknown
+DO26469	LUSC-US	PCAWG	TCGA-60-2698	male	deceased			62		62		C34.3				311		unknown		unknown
+DO26475	LUSC-US	PCAWG	TCGA-94-7943	male	alive			80		80		C34.3					143	unknown		unknown
+DO26476	LUSC-US	PCAWG	TCGA-60-2713	male	alive			64		67		C34.3					1456	unknown		unknown
+DO13132	GBM-US	PCAWG	TCGA-27-1831	male	deceased			66		67		C71.9				505		unknown		unknown
+DO15791	HNSC-US	PCAWG	TCGA-CN-6011	male	alive	complete remission		57		57		C03.9					228	unknown		unknown
+DO26445	LUSC-US	PCAWG	TCGA-43-3920	male	alive	complete remission		71		71		C34.1					268	unknown		unknown
+DO38423	STAD-US	PCAWG	TCGA-D7-6822	male	alive	complete remission		77		77		C16.2					131	unknown		unknown
+DO40759	THCA-US	PCAWG	TCGA-EL-A3T0	female	alive	progression		45		55		C73					3976	unknown		unknown
+DO13144	GBM-US	PCAWG	TCGA-32-1970	male	deceased			59		60		C71.9				468		unknown		unknown
+DO1954	BRCA-US	PCAWG	TCGA-B6-A0RU	female	alive	complete remission		40		59		C50.9					7067	unknown		unknown
+DO26459	LUSC-US	PCAWG	TCGA-85-8052	male	alive	complete remission		53		53		C34.1					16	unknown		unknown
+DO38404	STAD-US	PCAWG	TCGA-BR-6452	female	alive	complete remission		78		78		C16.2					29	unknown		unknown
+DO40735	THCA-US	PCAWG	TCGA-EL-A3CX	female	alive	complete remission		22		28		C73					2214	unknown		unknown
+DO26427	LUSC-US	PCAWG	TCGA-18-3415	male	alive	complete remission		77		81		C34.1					1810	unknown		unknown
+DO26434	LUSC-US	PCAWG	TCGA-43-5670	male	alive	complete remission		70		71		C34.3					549	unknown		unknown
+DO25104	LUAD-US	PCAWG	TCGA-64-1678	female	alive	complete remission		70		73		C34.1					1189	unknown		unknown
+DO38388	STAD-US	PCAWG	TCGA-BR-7722	male	alive	complete remission		62		62		C16.0					5	unknown		unknown
+DO9042	COAD-US	PCAWG	TCGA-AA-3666	male	deceased			68		68		C18.9				61		unknown		unknown
+DO37074	READ-US	PCAWG	TCGA-AG-4007	male	alive	progression		87		87		C18.9					31	unknown		unknown
+DO9034	COAD-US	PCAWG	TCGA-A6-3807	female	alive	complete remission		53		53		C18.7					333	unknown		unknown
+DO38380	STAD-US	PCAWG	TCGA-CG-4442	male	alive	complete remission		85		85		C16.3					0	unknown		unknown
+DO49014	CESC-US	PCAWG	TCGA-C5-A1M9	female	deceased			46		46		C53.9				1065		unknown		unknown
+DO25068	LUAD-US	PCAWG	TCGA-67-6215	female	alive	complete remission		52		52		C34.3					162	unknown		unknown
+DO38376	STAD-US	PCAWG	TCGA-CG-5723	male	alive			83		88		C16.0					2131	unknown		unknown
+DO9074	COAD-US	PCAWG	TCGA-A6-2680	female	alive	complete remission		72		73		C18.3					522	unknown		unknown
+DO50090	COAD-US	PCAWG	TCGA-AD-A5EJ	female	alive	complete remission		74		74		C18.0					0	unknown		unknown
+DO37418	SKCM-US	PCAWG	TCGA-DA-A3F8	male	alive	complete remission		39		39		C77.0					111	unknown		unknown
+DO26769	LUSC-US	PCAWG	TCGA-21-1083	male	deceased			75		75		C34.1				1315		unknown		unknown
+DO37427	SKCM-US	PCAWG	TCGA-D3-A3MO	male	deceased			47		47		C49.4				284		unknown		unknown
+DO25444	LUAD-US	PCAWG	TCGA-05-4395	male	deceased			76		76		C34.1				0		unknown		unknown
+DO37426	SKCM-US	PCAWG	TCGA-ER-A19J	male	deceased			54		54		C49.0				196		unknown		unknown
+DO37425	SKCM-US	PCAWG	TCGA-EE-A2M5	male	deceased			49		49		C77.3				659		unknown		unknown
+DO37424	SKCM-US	PCAWG	TCGA-DA-A1I8	female	alive	complete remission		63		65		C44.9					999	unknown		unknown
+DO38727	STAD-US	PCAWG	TCGA-F1-6177	male	alive	complete remission		90		90		C16.3					200	unknown		unknown
+DO37409	SKCM-US	PCAWG	TCGA-DA-A1HY	male	alive	complete remission		42		50		C77.9					3199	unknown		unknown
+DO38731	STAD-US	PCAWG	TCGA-F1-6875	male	deceased			79		79		C16.3				2197		unknown		unknown
+DO14742	HNSC-US	PCAWG	TCGA-CV-7180	male	deceased			34		34		C02.9				327		unknown		unknown
+DO14750	HNSC-US	PCAWG	TCGA-CQ-6228	female	deceased			71		71		C14.8				456		unknown		unknown
+DO26719	LUSC-US	PCAWG	TCGA-85-8277	male	alive	complete remission		70		70		C34.1					11	unknown		unknown
+DO26710	LUSC-US	PCAWG	TCGA-66-2795	male	alive	complete remission		68		68		C34.1					122	unknown		unknown
+DO48159	THCA-US	PCAWG	TCGA-EM-A3AL	female	alive	complete remission		45		45		C73					203	unknown		unknown
+DO37474	SKCM-US	PCAWG	TCGA-FS-A1ZK	male	deceased			68		68		C44.9				728		unknown		unknown
+DO38791	STAD-US	PCAWG	TCGA-BR-4255	female	alive			76		76		C16.9					0	unknown		unknown
+DO48103	THCA-US	PCAWG	TCGA-EM-A3FR	female	alive	complete remission		55		55		C73					219	unknown		unknown
+DO13474	GBM-US	PCAWG	TCGA-26-5132	male	alive	complete remission		74		74		C71.9					286	unknown		unknown
+DO37439	SKCM-US	PCAWG	TCGA-EE-A2A0	female	deceased			77		77		C77.4				1424		unknown		unknown
+DO37435	SKCM-US	PCAWG	TCGA-DA-A3F5	male	alive	progression		45		61		C77.0					6076	unknown		unknown
+DO37432	SKCM-US	PCAWG	TCGA-GN-A266	male	deceased			45		45		C44.4				308		unknown		unknown
+DO37430	SKCM-US	PCAWG	TCGA-DA-A1IC	male	alive	progression		81		86		C49.9					1926	unknown		unknown
+DO24130	LUAD-US	PCAWG	TCGA-97-8171	male	alive	progression		81		81		C34.8					107	unknown		unknown
+DO38779	STAD-US	PCAWG	TCGA-CG-4443	male	alive			68		70		C16.2					912	unknown		unknown
+DO51731	COAD-US	PCAWG	TCGA-QG-A5Z1	male	alive	complete remission		71		71		C19					202	unknown		unknown
+DO26798	LUSC-US	PCAWG	TCGA-60-2722	male	alive	complete remission		66		68		C34.1					733	unknown		unknown
+DO37445	SKCM-US	PCAWG	TCGA-D3-A1Q1	female	deceased			79		79		C77.9				504		unknown		unknown
+DO38775	STAD-US	PCAWG	TCGA-CD-5799	male	alive	complete remission		45		45		C16.3					21	unknown		unknown
+DO37440	SKCM-US	PCAWG	TCGA-EB-A24D	male	alive	complete remission		72		72		C44.6					42	unknown		unknown
+DO48084	THCA-US	PCAWG	TCGA-BJ-A45K	male	alive			33		33		C73					273	unknown		unknown
+DO48065	THCA-US	PCAWG	TCGA-EM-A3FL	female	alive	complete remission		63		63		C73					349	unknown		unknown
+DO1663	BRCA-US	PCAWG	TCGA-AR-A0TX	female	alive			64		64		C50.9					15	unknown		unknown
+DO2995	BRCA-US	PCAWG	TCGA-A2-A0D0	female	alive	complete remission		60		61		C50.9					643	unknown		unknown
+DO14718	HNSC-US	PCAWG	TCGA-CV-7255	female	deceased			32		32		C02.9				64		unknown		unknown
+DO51600	CESC-US	PCAWG	TCGA-EK-A2R9	female	alive	progression		58		58		C53.9					4	unknown		unknown
+DO27978	OV-US	PCAWG	TCGA-13-1477	female	deceased			49		53		C56.9				1662		unknown		unknown
+DO14678	HNSC-US	PCAWG	TCGA-CV-5442	female	alive	complete remission		76		82		C05.0					2327	unknown		unknown
+DO39956	THCA-US	PCAWG	TCGA-EM-A2OW	female	alive	complete remission		37		37		C73					219	unknown		unknown
+DO13348	GBM-US	PCAWG	TCGA-06-0686	male	alive	progression		53		53		C71.9					286	unknown		unknown
+DO25320	LUAD-US	PCAWG	TCGA-05-4397	male	deceased			65		65		C34.2				731		unknown		unknown
+DO26653	LUSC-US	PCAWG	TCGA-21-1078	male	deceased			77		78		C34.3				474		unknown		unknown
+DO38635	STAD-US	PCAWG	TCGA-D7-6527	male	alive	complete remission		62		62		C16.0					126	unknown		unknown
+DO40948	UCEC-US	PCAWG	TCGA-AP-A0L9	female	alive	complete remission		71		80		C54.1					3444	unknown		unknown
+DO40930	UCEC-US	PCAWG	TCGA-AX-A06B	female	alive	complete remission		72		76		C54.1					1640	unknown		unknown
+DO13318	GBM-US	PCAWG	TCGA-06-2557	male	deceased			76		76		C71.9				33		unknown		unknown
+DO38603	STAD-US	PCAWG	TCGA-D7-6815	female	alive	complete remission		70		70		C16.2					111	unknown		unknown
+DO39910	THCA-US	PCAWG	TCGA-DE-A3KN	female	alive	complete remission		49		49		C73					286	unknown		unknown
+DO14614	HNSC-US	PCAWG	TCGA-HD-7753	male	alive	progression		62		62		C10.9					5	unknown		unknown
+DO15943	HNSC-US	PCAWG	TCGA-CR-6482	male	alive	complete remission		62		62		C09.9					345	unknown		unknown
+DO48040	STAD-US	PCAWG	TCGA-D7-8570	male	alive	complete remission		44		44		C16.0					243	unknown		unknown
+DO12070	GBM-US	PCAWG	TCGA-14-1823	female	deceased			58		59		C71.9				543		unknown		unknown
+DO38663	STAD-US	PCAWG	TCGA-BR-4280	female	alive			78		78		C16.9					0	unknown		unknown
+DO26692	LUSC-US	PCAWG	TCGA-90-7767	male	alive	complete remission		56		56		C34.1					89	unknown		unknown
+DO38671	STAD-US	PCAWG	TCGA-BR-A4J4	male	alive	complete remission		39		39		C16.3					16	unknown		unknown
+DO14686	HNSC-US	PCAWG	TCGA-CR-6470	male	alive	complete remission		38		42		C09.9					1521	unknown		unknown
+DO12034	GBM-US	PCAWG	TCGA-06-0745	male	deceased			59		59		C71.9				239		unknown		unknown
+DO38655	STAD-US	PCAWG	TCGA-BR-6456	female	alive			74		74		C16.2					0	unknown		unknown
+DO51594	CESC-US	PCAWG	TCGA-DG-A2KJ	female	alive	complete remission		50		54		C53.9					1791	unknown		unknown
+DO51592	CESC-US	PCAWG	TCGA-C5-A1ML	female	deceased			49		49		C53.9				636		unknown		unknown
+DO15911	HNSC-US	PCAWG	TCGA-CV-5443	male	alive	complete remission		63		70		C32.9					2567	unknown		unknown
+DO21295	LAML-US	PCAWG	TCGA-AB-2905	male	alive			48		52		C92					1611	unknown		unknown
+DO21277	LAML-US	PCAWG	TCGA-AB-2977	female	deceased			71		71		C92				31		unknown		unknown
+DO2719	BRCA-US	PCAWG	TCGA-E2-A1LK	female	deceased			84		84		C50.9				266		unknown		unknown
+DO2712	BRCA-US	PCAWG	TCGA-A8-A07I	female	alive	complete remission		69		70		C50.9					426	unknown		unknown
+DO2706	BRCA-US	PCAWG	TCGA-A2-A25B	female	alive	complete remission		39		39		C50.9					258	unknown		unknown
+DO47863	STAD-US	PCAWG	TCGA-BR-8486	female	alive	complete remission		90		90		C16.1					30	unknown		unknown
+DO47859	STAD-US	PCAWG	TCGA-BR-8373	female	alive	complete remission		65		65		C16.1					26	unknown		unknown
+DO21217	LAML-US	PCAWG	TCGA-AB-2964	female	alive			58		61		C92					1277	unknown		unknown
+DO22548	LGG-US	PCAWG	TCGA-CS-6668	female	alive	progression		57		57		C71.9					244	unknown		unknown
+DO47841	STAD-US	PCAWG	TCGA-HU-8608	male	alive	progression		70		70		C16.2					323	unknown		unknown
+DO21229	LAML-US	PCAWG	TCGA-AB-2985	female	deceased			81		81		C92				273		unknown		unknown
+DO21223	LAML-US	PCAWG	TCGA-AB-3000	male	alive			25		28		C92					1249	unknown		unknown
+DO2783	BRCA-US	PCAWG	TCGA-AN-A0AT	female	alive	complete remission		62		62		C50.9					10	unknown		unknown
+DO22524	LGG-US	PCAWG	TCGA-DU-5874	female	alive	complete remission		62		63		C71.9					461	unknown		unknown
+DO22536	LGG-US	PCAWG	TCGA-E1-5319	female	deceased			48		48		C71.9				2907		unknown		unknown
+DO47817	STAD-US	PCAWG	TCGA-BR-8381	male	alive	complete remission		51		51		C16.1					8	unknown		unknown
+DO11854	GBM-US	PCAWG	TCGA-14-1402	female	deceased			58		60		C71.9				975		unknown		unknown
+DO10558	COAD-US	PCAWG	TCGA-AA-A03F	female	alive	progression		90		90		C18.0					0	unknown		unknown
+DO23838	LUAD-US	PCAWG	TCGA-05-4396	male	deceased			76		76		C34.3				303		unknown		unknown
+DO11860	GBM-US	PCAWG	TCGA-06-0744	male	alive	complete remission		66		67		C71.9					595	unknown		unknown
+DO21199	LAML-US	PCAWG	TCGA-AB-3011	female	alive			21		26		C92					1885	unknown		unknown
+DO21170	LAML-US	PCAWG	TCGA-AB-2987	female	deceased			75		75		C92				184		unknown		unknown
+DO21155	LAML-US	PCAWG	TCGA-AB-2972	female	deceased			82		82		C92				30		unknown		unknown
+DO47785	STAD-US	PCAWG	TCGA-HU-A4H0	male	alive	complete remission		72		72		C16.2					64	unknown		unknown
+DO22496	LGG-US	PCAWG	TCGA-DB-5278	male	alive	progression		17		21		C71.0					1526	unknown		unknown
+DO22490	LGG-US	PCAWG	TCGA-DU-6401	female	deceased			31		31		C71.0				2660		unknown		unknown
+DO10486	COAD-US	PCAWG	TCGA-AA-3514	female	alive	progression		81		81		C18.9					0	unknown		unknown
+DO47753	STAD-US	PCAWG	TCGA-CD-8529	male	alive	complete remission		65		65		C16.3					4	unknown		unknown
+DO23702	LUAD-US	PCAWG	TCGA-50-6591	female	deceased			63		63		C34.3				119		unknown		unknown
+DO2842	BRCA-US	PCAWG	TCGA-EW-A1P8	female	deceased			58		58		C50.9				239		unknown		unknown
+DO2897	BRCA-US	PCAWG	TCGA-BH-A0WA	female	alive	complete remission		82		83		C50.9					372	unknown		unknown
+DO1559	BRCA-US	PCAWG	TCGA-AO-A0J4	female	alive	complete remission		41		41		C50.9					294	unknown		unknown
+DO1537	BRCA-US	PCAWG	TCGA-B6-A0WX	female	deceased			40		40		C50.9				639		unknown		unknown
+DO47747	STAD-US	PCAWG	TCGA-HU-A4G6	male	alive	complete remission		74		75		C16.0					374	unknown		unknown
+DO21115	LAML-US	PCAWG	TCGA-AB-2965	male	deceased			60		60		C92				335		unknown		unknown
+DO11794	GBM-US	PCAWG	TCGA-06-0211	male	deceased			47		47		C71.9				360		unknown		unknown
+DO47737	STAD-US	PCAWG	TCGA-BR-8682	male	alive	complete remission		52		52		C16.3					51	unknown		unknown
+DO23786	LUAD-US	PCAWG	TCGA-49-4486	male	deceased			72		72		C34.3				2318		unknown		unknown
+DO11776	GBM-US	PCAWG	TCGA-06-1086	male	deceased			42		42		C71.9				208		unknown		unknown
+DO11782	GBM-US	PCAWG	TCGA-27-2528	male	deceased			62		63		C71.9				480		unknown		unknown
+DO21102	LAML-US	PCAWG	TCGA-AB-2983	male	deceased			45		45		C92				335		unknown		unknown
+DO23735	LUAD-US	PCAWG	TCGA-49-4512	female	deceased			69		69		C34.2				905		unknown		unknown
+DO22417	LGG-US	PCAWG	TCGA-HT-7695	female	alive			29		30		C71.0					442	unknown		unknown
+DO23744	LUAD-US	PCAWG	TCGA-44-2659	female	alive	complete remission		65		66		C34.3					529	unknown		unknown
+DO23717	LUAD-US	PCAWG	TCGA-78-7146	female	deceased			71		71		C34.3				173		unknown		unknown
+DO23720	LUAD-US	PCAWG	TCGA-78-7156	male	deceased			62		62		C34.9				976		unknown		unknown
+DO22720	LGG-US	PCAWG	TCGA-IK-7675	male	deceased			43		43		C71.0				578		unknown		unknown
+DO22736	LGG-US	PCAWG	TCGA-HW-7486	male	alive	progression		37		38		C71.0					609	unknown		unknown
+DO3804	BRCA-US	PCAWG	TCGA-C8-A130	female	alive	complete remission		52		52		C50.9					4	unknown		unknown
+DO2539	BRCA-US	PCAWG	TCGA-A8-A07B	female	alive	complete remission		69		71		C50.9					1004	unknown		unknown
+DO3840	BRCA-US	PCAWG	TCGA-GM-A2DF	female	alive	complete remission		53		56		C50.9					1299	unknown		unknown
+DO2503	BRCA-US	PCAWG	TCGA-BH-A0DT	female	alive	complete remission		41		44		C50.9					1170	unknown		unknown
+DO2509	BRCA-US	PCAWG	TCGA-AR-A1AY	female	alive			65		66		C50.9					615	unknown		unknown
+DO1249	BRCA-US	PCAWG	TCGA-D8-A27H	female	alive	complete remission		72		72		C50.9					19	unknown		unknown
+DO44111	BRCA-US	PCAWG	TCGA-GM-A3XL	female	alive	complete remission		49		53		C50.9					1717	unknown		unknown
+DO44103	BRCA-US	PCAWG	TCGA-A2-A3XX	female	alive	complete remission		49		52		C50.9					1168	unknown		unknown
+DO2551	BRCA-US	PCAWG	TCGA-EW-A1PH	female	alive	complete remission		52		52		C50.9					140	unknown		unknown
+DO3874	BRCA-US	PCAWG	TCGA-E2-A14X	female	alive	complete remission		55		56		C50.9					692	unknown		unknown
+DO1287	BRCA-US	PCAWG	TCGA-AO-A124	female	alive	complete remission		38		46		C50.9					3120	unknown		unknown
+DO1281	BRCA-US	PCAWG	TCGA-AR-A2LK	female	alive			62		65		C50.9					1304	unknown		unknown
+DO1274	BRCA-US	PCAWG	TCGA-D8-A27F	female	alive	complete remission		40		40		C50.9					106	unknown		unknown
+DO21415	LAML-US	PCAWG	TCGA-AB-2979	female	alive			30		31		C92					671	unknown		unknown
+DO2593	BRCA-US	PCAWG	TCGA-A8-A094	female	alive	complete remission		75		75		C50.9					0	unknown		unknown
+DO1257	BRCA-US	PCAWG	TCGA-BH-A0DG	female	alive	complete remission		30		31		C50.9					713	unknown		unknown
+DO20082	KIRC-US	PCAWG	TCGA-CW-6087	male	deceased			61		61		C64.9				41		unknown		unknown
+DO1290	BRCA-US	PCAWG	TCGA-E9-A1NH	female	alive	complete remission		71		71		C50.9					0	unknown		unknown
+DO1291	BRCA-US	PCAWG	TCGA-AR-A24Z	female	alive			57		61		C50.9					1574	unknown		unknown
+DO21391	LAML-US	PCAWG	TCGA-AB-2976	male	deceased			53		53		C92				915		unknown		unknown
+DO21373	LAML-US	PCAWG	TCGA-AB-3002	male	deceased			68		68		C92				1431		unknown		unknown
+DO47997	STAD-US	PCAWG	TCGA-D7-A4YX	male	alive	complete remission		63		63		C16.1					244	unknown		unknown
+DO44097	BLCA-US	PCAWG	TCGA-BT-A3PJ	male	alive	complete remission		76		76		C67.2					33	unknown		unknown
+DO44096	COAD-US	PCAWG	TCGA-QG-A5Z2	male	alive	complete remission		61		62		C18.0					449	unknown		unknown
+DO44095	COAD-US	PCAWG	TCGA-A6-A56B	male	alive	complete remission		57		61		C18.7					1595	unknown		unknown
+DO44094	COAD-US	PCAWG	TCGA-NH-A50V	male	alive	complete remission		69		69		C18.0					154	unknown		unknown
+DO44086	COAD-US	PCAWG	TCGA-NH-A50T	female	alive	complete remission		68		68		C18.5					125	unknown		unknown
+DO44089	COAD-US	PCAWG	TCGA-AD-A5EK	male	alive	complete remission		51		51		C18.2					13	unknown		unknown
+DO44088	COAD-US	PCAWG	TCGA-QG-A5YV	female	alive	complete remission		64		66		C18.7					821	unknown		unknown
+DO44087	COAD-US	PCAWG	TCGA-A6-A567	male	deceased			56		56		C18.7				1881		unknown		unknown
+DO44093	COAD-US	PCAWG	TCGA-QG-A5YX	female	alive	complete remission		61		62		C18.7					526	unknown		unknown
+DO44092	COAD-US	PCAWG	TCGA-A6-A566	female	deceased			55		55		C18.6				758		unknown		unknown
+DO44091	COAD-US	PCAWG	TCGA-AY-A54L	female	alive	complete remission		74		74		C18.3					158	unknown		unknown
+DO44090	COAD-US	PCAWG	TCGA-A6-A565	female	deceased			34		34		C18.4				494		unknown		unknown
+DO23942	LUAD-US	PCAWG	TCGA-05-5429	male	alive	complete remission		60		60		C34.1					30	unknown		unknown
+DO10631	COAD-US	PCAWG	TCGA-AA-A01T	female	alive	progression		63		63		C18.7					31	unknown		unknown
+DO1328	BRCA-US	PCAWG	TCGA-AC-A2BK	female	alive	complete remission		78		81		C50.9					1172	unknown		unknown
+DO2647	BRCA-US	PCAWG	TCGA-A8-A09X	female	deceased			62		62		C50.9				426		unknown		unknown
+DO1301	BRCA-US	PCAWG	TCGA-BH-A0B3	female	alive	complete remission		53		56		C50.9					1203	unknown		unknown
+DO2629	BRCA-US	PCAWG	TCGA-E2-A15E	female	alive	complete remission		40		41		C50.9					518	unknown		unknown
+DO3958	BRCA-US	PCAWG	TCGA-A2-A0D1	female	alive	complete remission		76		78		C50.9					786	unknown		unknown
+DO2694	BRCA-US	PCAWG	TCGA-E2-A1LL	female	alive	complete remission		73		75		C50.9					1014	unknown		unknown
+DO19048	KIRC-US	PCAWG	TCGA-A3-3372	male	alive	complete remission		64		66		C64.9					735	unknown		unknown
+DO19028	KIRC-US	PCAWG	TCGA-A3-3363	male	alive	complete remission		50		50		C64.9					319	unknown		unknown
+DO1392	BRCA-US	PCAWG	TCGA-A7-A13D	female	alive	complete remission		46		46		C50.9					267	unknown		unknown
+DO1384	BRCA-US	PCAWG	TCGA-BH-A0E0	female	alive	complete remission		38		38		C50.9					134	unknown		unknown
+DO47929	STAD-US	PCAWG	TCGA-HU-8245	male	alive	complete remission		72		73		C16.2					383	unknown		unknown
+DO47911	STAD-US	PCAWG	TCGA-BR-8690	female	alive	complete remission		54		54		C16.0					18	unknown		unknown
+DO21307	LAML-US	PCAWG	TCGA-AB-2993	female	deceased			57		57		C92				761		unknown		unknown
+DO10172	COAD-US	PCAWG	TCGA-A6-6141	male	alive	complete remission		31		31		C18.9					130	unknown		unknown
+DO47451	SKCM-US	PCAWG	TCGA-ER-A2NF	male	alive	progression		53		54		C44.4					498	unknown		unknown
+DO22145	LGG-US	PCAWG	TCGA-EZ-7264	female	alive	progression		47		47		C71.0					160	unknown		unknown
+DO22106	LGG-US	PCAWG	TCGA-HT-7602	male	alive	complete remission		21		23		C71.9					908	unknown		unknown
+DO22117	LGG-US	PCAWG	TCGA-DU-7009	female	alive	progression		32		43		C71.0					4206	unknown		unknown
+DO22195	LGG-US	PCAWG	TCGA-E1-5318	female	deceased			42		48		C71.9				2379		unknown		unknown
+DO3614	BRCA-US	PCAWG	TCGA-A2-A0EY	female	alive	complete remission		62		63		C50.9					485	unknown		unknown
+DO3662	BRCA-US	PCAWG	TCGA-BH-A0BW	female	alive	complete remission		71		71		C50.9					355	unknown		unknown
+DO11441	GBM-US	PCAWG	TCGA-14-1459	female	deceased			63		64		C71.9				378		unknown		unknown
+DO11447	GBM-US	PCAWG	TCGA-26-5135	female	deceased			72		72		C71.9				270		unknown		unknown
+DO2323	BRCA-US	PCAWG	TCGA-AN-A0G0	female	alive	complete remission		56		56		C50.9					16	unknown		unknown
+DO12742	GBM-US	PCAWG	TCGA-02-2485	male	alive	progression		53		54		C71.9					470	unknown		unknown
+DO24729	LUAD-US	PCAWG	TCGA-78-7158	female	deceased			59		59		C34.3				179		unknown		unknown
+DO36710	READ-US	PCAWG	TCGA-AG-3582	male	alive	progression		75		75		C18.9					31	unknown		unknown
+DO4963	BRCA-US	PCAWG	TCGA-A2-A04P	female	deceased			36		36		C50.9				548		unknown		unknown
+DO2341	BRCA-US	PCAWG	TCGA-EW-A3U0	female	alive	complete remission		61		61		C50.9					229	unknown		unknown
+DO47331	SKCM-US	PCAWG	TCGA-EE-A3J5	male	deceased			71		71		C44.5				1124		unknown		unknown
+DO22026	LAML-US	PCAWG	TCGA-AB-2981	female	alive			35		36		C92					487	unknown		unknown
+DO22020	LAML-US	PCAWG	TCGA-AB-2906	male	alive			59		60		C92					577	unknown		unknown
+DO11382	GBM-US	PCAWG	TCGA-06-0171	male	deceased			65		66		C71.9				399		unknown		unknown
+DO49956	CESC-US	PCAWG	TCGA-EK-A2RM	female	alive	progression		40		40		C53.9					50	unknown		unknown
+DO49954	CESC-US	PCAWG	TCGA-EK-A2RL	female	alive	complete remission		32		33		C53.9					721	unknown		unknown
+DO24675	LUAD-US	PCAWG	TCGA-05-4420	male	alive	complete remission		41		43		C34.3					912	unknown		unknown
+DO49948	CESC-US	PCAWG	TCGA-EK-A2RE	female	alive	complete remission		26		26		C53.9					57	unknown		unknown
+DO24646	LUAD-US	PCAWG	TCGA-64-1680	male	alive	complete remission		63		66		C34.8					1126	unknown		unknown
+DO25985	LUAD-US	PCAWG	TCGA-55-7281	female	alive	complete remission		70		70		C34.2					18	unknown		unknown
+DO22086	LAML-US	PCAWG	TCGA-AB-2996	male	alive			74		78		C92					1581	unknown		unknown
+DO22080	LAML-US	PCAWG	TCGA-AB-2982	female	alive			29		29		C92					150	unknown		unknown
+DO13971	GBM-US	PCAWG	TCGA-06-0221	male	deceased			31		32		C71.9				603		unknown		unknown
+DO2455	BRCA-US	PCAWG	TCGA-E2-A14P	female	alive	complete remission		79		80		C50.9					487	unknown		unknown
+DO36619	READ-US	PCAWG	TCGA-AG-3885	female	alive	progression		71		71		C20					0	unknown		unknown
+DO37946	SKCM-US	PCAWG	TCGA-EE-A2GT	male	alive	complete remission		77		78		C77.3					595	unknown		unknown
+DO25927	LUAD-US	PCAWG	TCGA-55-8299	female	alive	complete remission		61		61		C34.1					216	unknown		unknown
+DO21077	LAML-US	PCAWG	TCGA-AB-2989	male	deceased			29		29		C92				365		unknown		unknown
+DO2055	BRCA-US	PCAWG	TCGA-C8-A12L	female	alive	complete remission		67		67		C50.9					0	unknown		unknown
+DO22382	LGG-US	PCAWG	TCGA-DU-7301	male	deceased			53		53		C71.0				788		unknown		unknown
+DO4695	BRCA-US	PCAWG	TCGA-EW-A1PB	female	alive	complete remission		70		71		C50.9					608	unknown		unknown
+DO3352	BRCA-US	PCAWG	TCGA-E2-A15K	female	alive	complete remission		58		58		C50.9					34	unknown		unknown
+DO45009	LIHC-US	PCAWG	TCGA-FV-A3I0	female	alive	complete remission		76		76		C22.0					6	unknown		unknown
+DO21039	LAML-US	PCAWG	TCGA-AB-2975	male	deceased			54		54		C92				0		unknown		unknown
+DO21033	LAML-US	PCAWG	TCGA-AB-2973	female	deceased			68		68		C92				609		unknown		unknown
+DO48993	CESC-US	PCAWG	TCGA-C5-A1M8	female	alive	complete remission		43		45		C53.9					919	unknown		unknown
+DO48991	CESC-US	PCAWG	TCGA-C5-A1BF	female	deceased			46		46		C53.9				570		unknown		unknown
+DO2096	BRCA-US	PCAWG	TCGA-B6-A0X5	female	deceased			61		61		C50.9				2097		unknown		unknown
+DO48987	CESC-US	PCAWG	TCGA-C5-A2LV	female	alive	complete remission		36		42		C53.9					2234	unknown		unknown
+DO2084	BRCA-US	PCAWG	TCGA-BH-A0H6	female	alive	complete remission		82		84		C50.9					747	unknown		unknown
+DO48977	CESC-US	PCAWG	TCGA-EK-A2PK	female	alive	complete remission		43		43		C53.9					0	unknown		unknown
+DO2078	BRCA-US	PCAWG	TCGA-BH-A18R	female	deceased			50		50		C50.9				1142		unknown		unknown
+DO21024	LAML-US	PCAWG	TCGA-AB-2995	male	alive			63		67		C92					1551	unknown		unknown
+DO23687	LUAD-US	PCAWG	TCGA-55-6984	female	deceased			71		71		C34.3				760		unknown		unknown
+DO22356	LGG-US	PCAWG	TCGA-CS-5395	male	deceased			43		43		C71.9				639		unknown		unknown
+DO4719	BRCA-US	PCAWG	TCGA-A2-A259	female	alive	complete remission		70		73		C50.9					1286	unknown		unknown
+DO22324	LGG-US	PCAWG	TCGA-HW-7487	male	alive	progression		39		40		C71.0					409	unknown		unknown
+DO23651	LUAD-US	PCAWG	TCGA-55-6986	female	alive	complete remission		74		79		C34.3					2151	unknown		unknown
+DO36969	READ-US	PCAWG	TCGA-AF-2691	female	alive	complete remission		48		48		C19					323	unknown		unknown
+DO10324	COAD-US	PCAWG	TCGA-AA-3518	female	alive	progression		81		81		C18.0					31	unknown		unknown
+DO3412	BRCA-US	PCAWG	TCGA-AN-A0XR	female	alive			55		55		C50.9					10	unknown		unknown
+DO36945	READ-US	PCAWG	TCGA-AG-A032	male	alive	progression		68		71		C20					31	unknown		unknown
+DO23648	LUAD-US	PCAWG	TCGA-75-7030	male	alive	complete remission						C34.3					0	unknown		unknown
+DO23610	LUAD-US	PCAWG	TCGA-50-5932	male	deceased			75		77		C34.1				1235		unknown		unknown
+DO4796	BRCA-US	PCAWG	TCGA-A8-A092	female	alive	complete remission		48		49		C50.9					487	unknown		unknown
+DO3458	BRCA-US	PCAWG	TCGA-AO-A03L	female	alive	complete remission		34		40		C50.9					2442	unknown		unknown
+DO2114	BRCA-US	PCAWG	TCGA-BH-A0H0	female	alive	complete remission		69		70		C50.9					461	unknown		unknown
+DO12952	GBM-US	PCAWG	TCGA-19-2620	male	deceased			70		70		C71.9				148		unknown		unknown
+DO4766	BRCA-US	PCAWG	TCGA-E2-A109	female	alive			64		67		C50.9					1172	unknown		unknown
+DO23608	LUAD-US	PCAWG	TCGA-91-6840	female	alive	complete remission		59		59		C34.1					0	unknown		unknown
+DO22285	LGG-US	PCAWG	TCGA-FG-8182	male	alive	progression		35		35		C71.0					101	unknown		unknown
+DO22295	LGG-US	PCAWG	TCGA-DU-6407	female	deceased			35		35		C71.0				2875		unknown		unknown
+DO22293	LGG-US	PCAWG	TCGA-FG-5964	male	alive	progression		62		63		C71.0					378	unknown		unknown
+DO3482	BRCA-US	PCAWG	TCGA-B6-A0RE	female	alive	complete remission		61		78		C50.9					6435	unknown		unknown
+DO47542	SKCM-US	PCAWG	TCGA-ER-A19E	female	deceased			36		36		C44.5				396		unknown		unknown
+DO36881	READ-US	PCAWG	TCGA-EI-6917	male	alive	complete remission		33		33		C20					237	unknown		unknown
+DO22257	LGG-US	PCAWG	TCGA-CS-6669	female	alive	progression		26		26		C71.9					225	unknown		unknown
+DO23584	LUAD-US	PCAWG	TCGA-91-6847	female	alive			62		64		C34.3					842	unknown		unknown
+DO23582	LUAD-US	PCAWG	TCGA-44-2665	female	alive	complete remission		55		56		C34.1					400	unknown		unknown
+DO12814	GBM-US	PCAWG	TCGA-06-0157	female	deceased			63		63		C71.9				97		unknown		unknown
+DO3500	BRCA-US	PCAWG	TCGA-A2-A3KC	female	alive	complete remission		55		55		C50.9					363	unknown		unknown
+DO24860	LUAD-US	PCAWG	TCGA-78-7535	male	deceased			45		45		C34.1				949		unknown		unknown
+DO36822	READ-US	PCAWG	TCGA-AF-2689	female	alive	progression		41		42		C19					482	unknown		unknown
+DO2252	BRCA-US	PCAWG	TCGA-AO-A0J2	female	alive	complete remission		41		42		C50.9					585	unknown		unknown
+DO36801	READ-US	PCAWG	TCGA-AG-3593	female	alive	progression		72		72		C19					0	unknown		unknown
+DO11501	GBM-US	PCAWG	TCGA-41-5651	female	alive	progression		59		59		C71.9					351	unknown		unknown
+DO2222	BRCA-US	PCAWG	TCGA-AN-A04D	female	alive	complete remission		58		58		C50.9					52	unknown		unknown
+DO4473	BRCA-US	PCAWG	TCGA-E2-A15H	female	alive	complete remission		38		38		C50.9					42	unknown		unknown
+DO3140	BRCA-US	PCAWG	TCGA-A8-A08S	female	alive	complete remission		71		72		C50.9					580	unknown		unknown
+DO4449	BRCA-US	PCAWG	TCGA-E2-A152	female	alive	progression		56		57		C50.9					588	unknown		unknown
+DO3110	BRCA-US	PCAWG	TCGA-A8-A08L	female	deceased			89		89		C50.9				304		unknown		unknown
+DO3188	BRCA-US	PCAWG	TCGA-A8-A09I	female	alive	complete remission		84		86		C50.9					1006	unknown		unknown
+DO3182	BRCA-US	PCAWG	TCGA-C8-A12Q	female	alive	complete remission		78		78		C50.9					2	unknown		unknown
+DO3158	BRCA-US	PCAWG	TCGA-AO-A12H	female	alive	complete remission		69		71		C50.9					863	unknown		unknown
+DO3152	BRCA-US	PCAWG	TCGA-BH-A0EA	female	deceased			72		72		C50.9				991		unknown		unknown
+DO20829	KIRP-US	PCAWG	TCGA-B3-3926	female	alive	complete remission		59		59		C64.1					126	unknown		unknown
+DO20839	KIRP-US	PCAWG	TCGA-AL-3468	male	alive	complete remission		74		78		C64.1					1636	unknown		unknown
+DO20780	KIRP-US	PCAWG	TCGA-B9-4113	male	deceased			64		64		C64.1				1536		unknown		unknown
+DO43418	UCEC-US	PCAWG	TCGA-AP-A0LE	female	alive	complete remission		57		65		C54.1					2986	unknown		unknown
+DO18452	KIRC-US	PCAWG	TCGA-A3-3370	female	alive	complete remission		48		50		C64.9					776	unknown		unknown
+DO20768	KIRP-US	PCAWG	TCGA-B9-4115	male	alive	complete remission		53		53		C64.1					329	unknown		unknown
+DO20770	KIRP-US	PCAWG	TCGA-B9-4117	female	alive	complete remission		48		48		C64.1					14	unknown		unknown
+DO31420	OV-US	PCAWG	TCGA-24-1548	female	deceased			57		58		C56.9				493		unknown		unknown
+DO5808	BRCA-US	PCAWG	TCGA-AO-A03N	female	alive	progression		59		63		C50.9					1645	unknown		unknown
+DO19733	KIRC-US	PCAWG	TCGA-CW-5585	male	alive	progression		51		58		C64.9					2609	unknown		unknown
+DO42169	UCEC-US	PCAWG	TCGA-AP-A0L8	female	deceased			70		70		C54.1				1484		unknown		unknown
+DO17178	KIRC-US	PCAWG	TCGA-AK-3454	male	alive	complete remission		84		86		C64.9					874	unknown		unknown
+DO4557	BRCA-US	PCAWG	TCGA-B6-A0I6	female	deceased			49		49		C50.9				991		unknown		unknown
+DO29146	OV-US	PCAWG	TCGA-10-0938	female	deceased			80		81		C56.9				636		unknown		unknown
+DO30090	OV-US	PCAWG	TCGA-24-2290	female	deceased			56		59		C48.1				1102		unknown		unknown
+DO32646	OV-US	PCAWG	TCGA-24-0982	female	deceased			77		78		C56.9				679		unknown		unknown
+DO21984	LAML-US	PCAWG	TCGA-AB-2990	male	alive			51		52		C92					457	unknown		unknown
+DO20604	KIRC-US	PCAWG	TCGA-CJ-4878	female	alive	complete remission		71		76		C64.9					2186	unknown		unknown
+DO21948	LAML-US	PCAWG	TCGA-AB-3001	female	alive			31		35		C92					1581	unknown		unknown
+DO4635	BRCA-US	PCAWG	TCGA-BH-A0AV	female	alive	complete remission		52		55		C50.9					1180	unknown		unknown
+DO30060	OV-US	PCAWG	TCGA-24-1558	female	deceased			73		74		C56.9				594		unknown		unknown
+DO43378	UCEC-US	PCAWG	TCGA-AP-A053	female	alive	complete remission		90		90		C54.1					18	unknown		unknown
+DO17085	KIRC-US	PCAWG	TCGA-CZ-5454	male	deceased			63		63		C64.9				722		unknown		unknown
+DO18392	KIRC-US	PCAWG	TCGA-BP-4781	male	alive	complete remission		78		83		C64.9					2080	unknown		unknown
+DO43338	UCEC-US	PCAWG	TCGA-AX-A1C8	female	alive			77		78		C54.1					412	unknown		unknown
+DO17074	KIRC-US	PCAWG	TCGA-BP-4807	male	alive	complete remission		42		42		C64.9					211	unknown		unknown
+DO43314	UCEC-US	PCAWG	TCGA-B5-A0K3	female	alive	progression		62		63		C54.1					700	unknown		unknown
+DO17054	KIRC-US	PCAWG	TCGA-B0-5695	female	alive	complete remission		61		63		C64.9					1042	unknown		unknown
+DO4233	BRCA-US	PCAWG	TCGA-AO-A0J6	female	alive	complete remission		61		63		C50.9					775	unknown		unknown
+DO31729	OV-US	PCAWG	TCGA-04-1542	female	deceased			52		52		C56.9				2561		unknown		unknown
+DO18701	KIRC-US	PCAWG	TCGA-CZ-5987	male	deceased			60		60		C64.9				445		unknown		unknown
+DO44994	LIHC-US	PCAWG	TCGA-FV-A3R2	male	deceased			75		75		C22.0				194		unknown		unknown
+DO28024	OV-US	PCAWG	TCGA-25-1634	female	deceased			75		77		C56.9				1091		unknown		unknown
+DO30340	OV-US	PCAWG	TCGA-36-1574	female	alive	progression		48		49		C56.9					686	unknown		unknown
+DO44982	LIHC-US	PCAWG	TCGA-DD-A3A7	male	deceased			67		67		C22.0				419		unknown		unknown
+DO43658	UCEC-US	PCAWG	TCGA-AP-A0LI	female	alive	complete remission		67		74		C54.1					2602	unknown		unknown
+DO44986	LIHC-US	PCAWG	TCGA-DD-A4ND	female	alive	progression		56		61		C22.0					2141	unknown		unknown
+DO44974	LIHC-US	PCAWG	TCGA-ED-A459	male	alive	complete remission		47		47		C22.0					7	unknown		unknown
+DO44978	LIHC-US	PCAWG	TCGA-G3-A5SL	male	alive	complete remission		70		70		C22.0					243	unknown		unknown
+DO28004	OV-US	PCAWG	TCGA-13-1491	female	deceased			55		59		C56.9				1595		unknown		unknown
+DO42304	UCEC-US	PCAWG	TCGA-A5-A0G9	female	alive	complete remission		79		84		C54.1					2165	unknown		unknown
+DO44966	LIHC-US	PCAWG	TCGA-FV-A496	female	alive	complete remission		84		84		C22.0					10	unknown		unknown
+DO17373	KIRC-US	PCAWG	TCGA-CJ-5681	female	deceased			44		45		C64.9				552		unknown		unknown
+DO18671	KIRC-US	PCAWG	TCGA-BP-5168	male	deceased			75		75		C64.9				1463		unknown		unknown
+DO43610	UCEC-US	PCAWG	TCGA-AP-A0LF	female	alive	progression		82		89		C54.1					2859	unknown		unknown
+DO16015	HNSC-US	PCAWG	TCGA-CR-5250	male	alive	complete remission		71		73		C01					799	unknown		unknown
+DO44930	LIHC-US	PCAWG	TCGA-DD-A4NA	female	alive	complete remission		67		69		C22.0					1008	unknown		unknown
+DO17323	KIRC-US	PCAWG	TCGA-A3-3387	male	alive	complete remission		49		50		C64.9					617	unknown		unknown
+DO18651	KIRC-US	PCAWG	TCGA-DV-5566	female	alive	progression		67		70		C64.9					1398	unknown		unknown
+DO29308	OV-US	PCAWG	TCGA-04-1349	female	deceased			69		69		C56.9				656		unknown		unknown
+DO41080	UCEC-US	PCAWG	TCGA-AP-A0LH	female	deceased			60		60		C54.1				1106		unknown		unknown
+DO28093	OV-US	PCAWG	TCGA-04-1347	female	alive	complete remission		81		86		C56.9					1919	unknown		unknown
+DO28089	OV-US	PCAWG	TCGA-24-1103	female	deceased			50		54		C56.9				1646		unknown		unknown
+DO41056	UCEC-US	PCAWG	TCGA-A5-A0GG	female	alive	complete remission		76		82		C54.1					2517	unknown		unknown
+DO29398	OV-US	PCAWG	TCGA-23-1110	female	alive	complete remission		42		46		C56.9					1658	unknown		unknown
+DO5626	BRCA-US	PCAWG	TCGA-AO-A0JM	female	alive	complete remission		40		45		C50.9					1826	unknown		unknown
+DO28053	OV-US	PCAWG	TCGA-25-2400	female	deceased			76		79		C56.9				1278		unknown		unknown
+DO4359	BRCA-US	PCAWG	TCGA-A7-A26G	female	alive			50		50		C50.9					210	unknown		unknown
+DO5661	BRCA-US	PCAWG	TCGA-BH-A1FC	female	deceased			78		78		C50.9				3472		unknown		unknown
+DO5696	BRCA-US	PCAWG	TCGA-A2-A04T	female	alive	complete remission		62		67		C50.9					1950	unknown		unknown
+DO3037	BRCA-US	PCAWG	TCGA-A1-A0SM	male	alive	complete remission		77		77		C50.9					242	unknown		unknown
+DO44919	LIHC-US	PCAWG	TCGA-FV-A2QQ	male	alive	complete remission		80		80		C22.0					0	unknown		unknown
+DO20928	KIRP-US	PCAWG	TCGA-AL-3466	male	deceased			41		41		C64.1				293		unknown		unknown
+DO20923	KIRP-US	PCAWG	TCGA-AL-3472	male	alive	complete remission		57		59		C64.1					923	unknown		unknown
+DO20905	KIRP-US	PCAWG	TCGA-AL-3473	male	alive	complete remission		55		57		C64.1					763	unknown		unknown
+DO20915	KIRP-US	PCAWG	TCGA-B9-4114	male	alive			49		49		C64.1					21	unknown		unknown
+DO44875	LIHC-US	PCAWG	TCGA-DD-A3A6	female	deceased			72		72		C22.0				3258		unknown		unknown
+DO44872	LIHC-US	PCAWG	TCGA-FV-A23B	female	alive	complete remission		70		72		C22.0					987	unknown		unknown
+DO44877	LIHC-US	PCAWG	TCGA-FV-A4ZQ	male	alive	complete remission		52		52		C22.0					12	unknown		unknown
+DO30220	OV-US	PCAWG	TCGA-23-1118	female	alive	complete remission		45		52		C56.9					2616	unknown		unknown
+DO31551	OV-US	PCAWG	TCGA-24-1552	female	deceased			77		80		C56.9				1259		unknown		unknown
+DO42209	UCEC-US	PCAWG	TCGA-BS-A0TG	female	alive	complete remission		60		65		C54.1					2035	unknown		unknown
+DO18572	KIRC-US	PCAWG	TCGA-AK-3455	female	deceased			71		71		C64.9				683		unknown		unknown
+DO43514	UCEC-US	PCAWG	TCGA-B5-A11G	female	alive	complete remission		71		79		C54.1					3077	unknown		unknown
+DO20863	KIRP-US	PCAWG	TCGA-B9-4617	male	alive	complete remission		41		41		C64.1					34	unknown		unknown
+DO43506	UCEC-US	PCAWG	TCGA-BS-A0TE	female	deceased			35		35		C54.9				146		unknown		unknown
+DO20867	KIRP-US	PCAWG	TCGA-B3-3925	male	alive	complete remission		52		52		C64.1					110	unknown		unknown
+DO20849	KIRP-US	PCAWG	TCGA-B9-4116	female	alive	complete remission		75		75		C64.1					93	unknown		unknown
+DO42256	UCEC-US	PCAWG	TCGA-AP-A054	female	deceased			64		64		C54.1				709		unknown		unknown
+DO42240	UCEC-US	PCAWG	TCGA-BS-A0V8	female	alive	complete remission		68		72		C54.1					1507	unknown		unknown
+DO44890	LIHC-US	PCAWG	TCGA-FV-A495	female	alive	complete remission		51		51		C22.0					1	unknown		unknown
+DO5745	BRCA-US	PCAWG	TCGA-GI-A2C9	female	alive	complete remission		58		59		C50.9					711	unknown		unknown
+DO44885	LIHC-US	PCAWG	TCGA-DD-A4NG	male	alive	progression		77		78		C22.0					445	unknown		unknown
+DO44883	LIHC-US	PCAWG	TCGA-DD-A3A8	male	deceased			75		75		C22.0				11		unknown		unknown
+DO44889	LIHC-US	PCAWG	TCGA-DD-A4NE	female	deceased			75		75		C22.0				660		unknown		unknown
+DO44888	LIHC-US	PCAWG	TCGA-DD-A3A9	female	deceased			64		64		C22.0				931		unknown		unknown
+DO5312	BRCA-US	PCAWG	TCGA-AQ-A04J	female	alive	complete remission		45		45		C50.9					160	unknown		unknown
+DO43074	UCEC-US	PCAWG	TCGA-D1-A16G	female	deceased			74		74		C54.1				834		unknown		unknown
+DO4036	BRCA-US	PCAWG	TCGA-A2-A0YG	female	alive	complete remission		63		64		C50.9					404	unknown		unknown
+DO4018	BRCA-US	PCAWG	TCGA-E2-A1LG	female	alive	complete remission		50		50		C50.9					350	unknown		unknown
+DO5347	BRCA-US	PCAWG	TCGA-A2-A0D4	female	alive	complete remission		37		38		C50.9					496	unknown		unknown
+DO7990	COAD-US	PCAWG	TCGA-A6-2683	female	alive	progression		57		58		C18.2					472	unknown		unknown
+DO32391	OV-US	PCAWG	TCGA-09-1666	female	alive	progression		57		61		C56.9					1752	unknown		unknown
+DO4080	BRCA-US	PCAWG	TCGA-A7-A0CE	female	alive	complete remission		57		57		C50.9					254	unknown		unknown
+DO5375	BRCA-US	PCAWG	TCGA-B6-A0RT	female	alive	complete remission		39		46		C50.9					2721	unknown		unknown
+DO21631	LAML-US	PCAWG	TCGA-AB-3012	male	alive			53		58		C92					1887	unknown		unknown
+DO10975	GBM-US	PCAWG	TCGA-06-0190	male	deceased			62		62		C71.9				317		unknown		unknown
+DO10970	GBM-US	PCAWG	TCGA-26-1438	male	alive	progression		36		36		C71.9					305	unknown		unknown
+DO22978	LIHC-US	PCAWG	TCGA-FV-A3R3	female	alive	complete remission		38		38		C22.0					4	unknown		unknown
+DO22970	LIHC-US	PCAWG	TCGA-G3-A25W	female	alive	complete remission		79		80		C22.0					391	unknown		unknown
+DO10960	GBM-US	PCAWG	TCGA-06-0214	male	deceased			66		67		C71.9				457		unknown		unknown
+DO22956	LIHC-US	PCAWG	TCGA-ES-A2HT	male	deceased			54		54		C22.0				438		unknown		unknown
+DO22953	LIHC-US	PCAWG	TCGA-CC-5262	male	alive	complete remission		67		67		C22.0					0	unknown		unknown
+DO22959	LIHC-US	PCAWG	TCGA-DD-A1EI	male	alive	complete remission		46		46		C22.0					183	unknown		unknown
+DO22929	LIHC-US	PCAWG	TCGA-BC-A216	female	alive	complete remission		62		65		C22.0					1144	unknown		unknown
+DO22932	LIHC-US	PCAWG	TCGA-EP-A2KB	female	alive	complete remission		46		46		C22.0					60	unknown		unknown
+DO21607	LAML-US	PCAWG	TCGA-AB-2991	female	alive			40		45		C92					1826	unknown		unknown
+DO22935	LIHC-US	PCAWG	TCGA-EP-A3RK	male	alive	complete remission		73		73		C22.0					13	unknown		unknown
+DO22914	LIHC-US	PCAWG	TCGA-FV-A3I1	female	alive	complete remission		81		81		C22.0					0	unknown		unknown
+DO21697	LAML-US	PCAWG	TCGA-AB-2907	male	deceased			69		69		C92				0		unknown		unknown
+DO19380	KIRC-US	PCAWG	TCGA-CJ-4870	female	alive	complete remission		58		62		C64.9					1498	unknown		unknown
+DO18056	KIRC-US	PCAWG	TCGA-CJ-5682	male	alive	progression		60		65		C64.9					1883	unknown		unknown
+DO22986	LIHC-US	PCAWG	TCGA-DD-A1EH	male	alive	progression		23		25		C22.0					1036	unknown		unknown
+DO18016	KIRC-US	PCAWG	TCGA-CZ-5453	male	alive			67		67		C64.9					25	unknown		unknown
+DO21667	LAML-US	PCAWG	TCGA-AB-3008	male	deceased			22		22		C92				822		unknown		unknown
+DO22998	LIHC-US	PCAWG	TCGA-DD-A1ED	male	alive	complete remission		68		72		C22.0					1629	unknown		unknown
+DO22994	LIHC-US	PCAWG	TCGA-DD-A1EJ	female	alive	progression		71		73		C22.0					887	unknown		unknown
+DO44285	CESC-US	PCAWG	TCGA-C5-A0TN	female	deceased			21		21		C53.9				348		unknown		unknown
+DO44273	BRCA-US	PCAWG	TCGA-A2-A3Y0	female	alive	complete remission		57		59		C50.9					859	unknown		unknown
+DO4155	BRCA-US	PCAWG	TCGA-AR-A256	female	deceased			45		45		C50.9				2854		unknown		unknown
+DO4138	BRCA-US	PCAWG	TCGA-B6-A0I1	female	deceased			73		73		C50.9				2361		unknown		unknown
+DO4185	BRCA-US	PCAWG	TCGA-A8-A075	female	alive	complete remission		42		43		C50.9					518	unknown		unknown
+DO10908	GBM-US	PCAWG	TCGA-27-2523	male	deceased			63		64		C71.9				489		unknown		unknown
+DO10900	GBM-US	PCAWG	TCGA-14-0786	female	deceased			50		51		C71.9				701		unknown		unknown
+DO46813	PRAD-US	PCAWG	TCGA-HC-7233	male	alive	progression		73		73		C61					52	unknown		unknown
+DO22854	LIHC-US	PCAWG	TCGA-EP-A26S	male	alive	complete remission		70		70		C22.0					111	unknown		unknown
+DO22838	LIHC-US	PCAWG	TCGA-ES-A2HS	male	deceased			80		80		C22.0				695		unknown		unknown
+DO22839	LIHC-US	PCAWG	TCGA-G3-A3CK	male	alive	complete remission		61		61		C22.0					27	unknown		unknown
+DO22836	LIHC-US	PCAWG	TCGA-DD-A1EB	female	alive	progression		72		77		C22.0					2017	unknown		unknown
+DO21583	LAML-US	PCAWG	TCGA-AB-2998	female	deceased			68		68		C92				31		unknown		unknown
+DO32237	OV-US	PCAWG	TCGA-24-2024	female	deceased			72		76		C56.9				1769		unknown		unknown
+DO22887	LIHC-US	PCAWG	TCGA-BC-A10Q	female	deceased			72		72		C22.0				1135		unknown		unknown
+DO22884	LIHC-US	PCAWG	TCGA-G3-A25T	female	alive	complete remission		45		48		C22.0					1175	unknown		unknown
+DO22896	LIHC-US	PCAWG	TCGA-BC-A217	female	alive	complete remission		75		76		C22.0					421	unknown		unknown
+DO22890	LIHC-US	PCAWG	TCGA-DD-A1E9	male	deceased			70		70		C22.0				2759		unknown		unknown
+DO22866	LIHC-US	PCAWG	TCGA-G3-A25V	male	alive	complete remission		68		68		C22.0					69	unknown		unknown
+DO22860	LIHC-US	PCAWG	TCGA-CC-5260	female	alive	complete remission		61		61		C22.0					0	unknown		unknown
+DO22875	LIHC-US	PCAWG	TCGA-CC-5261	male	alive	complete remission		44		44		C22.0					12	unknown		unknown
+DO21541	LAML-US	PCAWG	TCGA-AB-2978	female	alive			61		62		C92					699	unknown		unknown
+DO19228	KIRC-US	PCAWG	TCGA-A3-3324	male	alive	complete remission		51		54		C64.9					1186	unknown		unknown
+DO21924	LAML-US	PCAWG	TCGA-AB-3007	male	alive			35		39		C92					1581	unknown		unknown
+DO222303	DLBC-US	PCAWG	TCGA-FF-8046	male	alive	complete remission		51		52		C08.0					377	unknown		unknown
+DO222308	DLBC-US	PCAWG	TCGA-FF-8043	female	alive	complete remission		70		71		C83.3					580	unknown		unknown
+DO222309	DLBC-US	PCAWG	TCGA-FF-8062	female	alive	complete remission		60		60		C83.3					259	unknown		unknown
+DO222306	DLBC-US	PCAWG	TCGA-FF-8042	female	alive	complete remission		57		58		C83.3					608	unknown		unknown
+DO222307	DLBC-US	PCAWG	TCGA-FF-8061	male	alive	complete remission		42		43		C83.3					433	unknown		unknown
+DO222304	DLBC-US	PCAWG	TCGA-FF-8047	female	alive	progression		38		38		C83.3					126	unknown		unknown
+DO222305	DLBC-US	PCAWG	TCGA-FF-8041	female	alive	complete remission		28		29		C38.1					626	unknown		unknown
+DO44515	KIRP-US	PCAWG	TCGA-HE-A5NF	male	alive	complete remission		58		63		C64.1					2072	unknown		unknown
+DO44517	KIRP-US	PCAWG	TCGA-A4-A57E	male	alive			59		59		C64.1					0	unknown		unknown
+DO32596	OV-US	PCAWG	TCGA-23-1124	female	deceased			62		62		C56.9				1768		unknown		unknown
+DO7822	COAD-US	PCAWG	TCGA-AA-A01V	male	alive	progression		59		59		C18.0					31	unknown		unknown
+DO43218	UCEC-US	PCAWG	TCGA-AX-A05S	female	deceased			81		81		C54.1				413		unknown		unknown
+DO43210	UCEC-US	PCAWG	TCGA-A5-A0GJ	female	alive	complete remission		44		47		C54.1					1447	unknown		unknown
+DO7801	COAD-US	PCAWG	TCGA-CA-6718	male	alive	complete remission		46		46		C18.9					3	unknown		unknown
+DO44520	KIRP-US	PCAWG	TCGA-GL-A4EM	male	alive	complete remission		61		61		C64.1					32	unknown		unknown
+DO44525	KIRP-US	PCAWG	TCGA-GL-A59R	male	alive	complete remission		79		79		C64.1					203	unknown		unknown
+DO44528	KIRP-US	PCAWG	TCGA-HE-A5NL	male	alive	complete remission		51		51		C64.1					167	unknown		unknown
+DO5200	BRCA-US	PCAWG	TCGA-BH-A18U	female	deceased			72		72		C50.4				1563		unknown		unknown
+DO7858	COAD-US	PCAWG	TCGA-AA-A02Y	male	alive	progression		73		73		C18.0					31	unknown		unknown
+DO7831	COAD-US	PCAWG	TCGA-AA-3664	male	alive	progression		74		74		C18.2					0	unknown		unknown
+DO5249	BRCA-US	PCAWG	TCGA-A2-A04X	female	alive	complete remission		34		37		C50.9					1349	unknown		unknown
+DO43162	UCEC-US	PCAWG	TCGA-EY-A1GS	female	alive	progression		71		71		C54.1					284	unknown		unknown
+DO44496	KIRP-US	PCAWG	TCGA-B9-A44B	male	alive	progression		70		70		C64.1					64	unknown		unknown
+DO44485	KIRP-US	PCAWG	TCGA-HE-A5NH	male	alive	complete remission		62		63		C64.1					408	unknown		unknown
+DO21803	LAML-US	PCAWG	TCGA-AB-2980	male	alive			50		51		C92					699	unknown		unknown
+DO20416	KIRC-US	PCAWG	TCGA-BP-4326	female	alive	complete remission		53		57		C64.9					1625	unknown		unknown
+DO21727	LAML-US	PCAWG	TCGA-AB-2997	female	deceased			25		25		C92				0		unknown		unknown
+DO44478	KIRP-US	PCAWG	TCGA-IA-A40X	female	alive	complete remission		49		50		C64.1					430	unknown		unknown
+DO31150	OV-US	PCAWG	TCGA-13-0906	female	alive	complete remission		50		53		C56.9					1367	unknown		unknown
+DO44465	KIRP-US	PCAWG	TCGA-A4-A4ZT	female	alive	complete remission		71		71		C64.1					0	unknown		unknown
+DO44469	KIRP-US	PCAWG	TCGA-A4-A48D	male	alive	complete remission		84		84		C64.1					1	unknown		unknown
+DO44462	KIRP-US	PCAWG	TCGA-IA-A40Y	female	alive	complete remission		60		60		C64.1					62	unknown		unknown
+DO7934	COAD-US	PCAWG	TCGA-AA-A01R	male	alive	progression		47		47		C18.2					29	unknown		unknown
+DO18164	KIRC-US	PCAWG	TCGA-BP-4756	female	alive	complete remission		62		63		C64.9					374	unknown		unknown
+DO32420	OV-US	PCAWG	TCGA-09-2045	female	deceased			50		50		C56.9				1069		unknown		unknown
+DO8858	COAD-US	PCAWG	TCGA-AA-A00R	female	alive	progression		64		64		C18.0					30	unknown		unknown
+DO8842	COAD-US	PCAWG	TCGA-AZ-4315	male	alive	complete remission		61		64		C18.0					1334	unknown		unknown
+DO27453	LUSC-US	PCAWG	TCGA-60-2719	female	alive	complete remission		83		85		C34.9					932	unknown		unknown
+DO6252	CESC-US	PCAWG	TCGA-C5-A1BN	female	deceased			26		26		C53.9				166		unknown		unknown
+DO6255	CESC-US	PCAWG	TCGA-EX-A1H5	female	alive	complete remission		58		58		C53.9					178	unknown		unknown
+DO14159	HNSC-US	PCAWG	TCGA-CV-7432	male	deceased			79		79		C14.8				2570		unknown		unknown
+DO6249	CESC-US	PCAWG	TCGA-C5-A1MI	female	deceased			50		50		C53.9				1083		unknown		unknown
+DO28763	OV-US	PCAWG	TCGA-04-1514	female	deceased			45		45		C56.9				1720		unknown		unknown
+DO8898	COAD-US	PCAWG	TCGA-AA-3555	female	alive	progression		81		81		C18.9					30	unknown		unknown
+DO6231	BRCA-US	PCAWG	TCGA-EW-A1PC	female	alive	complete remission		66		66		C50.9					187	unknown		unknown
+DO40405	THCA-US	PCAWG	TCGA-DJ-A2Q2	female	alive	complete remission		57		57		C73					206	unknown		unknown
+DO15430	HNSC-US	PCAWG	TCGA-CN-5374	female	alive	complete remission		56		56		C09.9					290	unknown		unknown
+DO16769	KIRC-US	PCAWG	TCGA-B0-5094	male	deceased			62		62		C64.9				333		unknown		unknown
+DO41716	UCEC-US	PCAWG	TCGA-BK-A139	female	alive	complete remission		74		74		C54.1					239	unknown		unknown
+DO15414	HNSC-US	PCAWG	TCGA-DQ-5625	female	alive	progression		52		54		C02.9					1058	unknown		unknown
+DO39363	THCA-US	PCAWG	TCGA-BJ-A0ZB	male	alive	complete remission		66		66		C73					122	unknown		unknown
+DO15398	HNSC-US	PCAWG	TCGA-CN-6994	male	alive	complete remission		67		67		C14.8					119	unknown		unknown
+DO26062	LUAD-US	PCAWG	TCGA-50-6597	female	alive	complete remission		79		81		C34.3					1015	unknown		unknown
+DO14049	GBM-US	PCAWG	TCGA-19-2624	male	deceased			51		51		C71.9				5		unknown		unknown
+DO52307	LIHC-US	PCAWG	TCGA-PD-A5DF	female	deceased			58		58		C22.0				639		unknown		unknown
+DO6332	CESC-US	PCAWG	TCGA-DS-A0VL	female	alive	complete remission		25		25		C53.9					81	unknown		unknown
+DO6314	CESC-US	PCAWG	TCGA-C5-A2LY	female	alive	complete remission		30		36		C53.9					2383	unknown		unknown
+DO16688	KIRC-US	PCAWG	TCGA-CZ-4856	female	alive			62		62		C64.9					18	unknown		unknown
+DO5046	BRCA-US	PCAWG	TCGA-E2-A156	female	alive	complete remission		61		62		C50.9					481	unknown		unknown
+DO27334	LUSC-US	PCAWG	TCGA-66-2793	male	deceased			68		68		C34.2				306		unknown		unknown
+DO29980	OV-US	PCAWG	TCGA-13-0723	female	deceased			63		66		C56.9				1204		unknown		unknown
+DO29970	OV-US	PCAWG	TCGA-36-1570	female	alive	progression		49		50		C56.9					655	unknown		unknown
+DO27318	LUSC-US	PCAWG	TCGA-33-4586	male	deceased			57		57		C34.3				428		unknown		unknown
+DO30970	OV-US	PCAWG	TCGA-04-1367	female	alive	complete remission		50		55		C56.9					2174	unknown		unknown
+DO27326	LUSC-US	PCAWG	TCGA-66-2759	male	alive			66		68		C34.3					762	unknown		unknown
+DO39306	THCA-US	PCAWG	TCGA-BJ-A0Z2	male	alive	progression		57		57		C73					232	unknown		unknown
+DO5012	BRCA-US	PCAWG	TCGA-A8-A08B	female	alive	complete remission		52		53		C50.9					702	unknown		unknown
+DO17977	KIRC-US	PCAWG	TCGA-CJ-4918	male	deceased			64		64		C64.9				93		unknown		unknown
+DO42937	UCEC-US	PCAWG	TCGA-D1-A17K	female	alive	complete remission		74		75		C54.1					429	unknown		unknown
+DO29940	OV-US	PCAWG	TCGA-61-2000	female	alive	progression		67		68		C56.9					441	unknown		unknown
+DO40274	THCA-US	PCAWG	TCGA-DJ-A1QL	male	alive	complete remission		70		70		C73					219	unknown		unknown
+DO27279	LUSC-US	PCAWG	TCGA-66-2789	male	deceased			73		73		C34.3				123		unknown		unknown
+DO41578	UCEC-US	PCAWG	TCGA-AP-A0LD	female	alive	complete remission		63		70		C54.1					2907	unknown		unknown
+DO42881	UCEC-US	PCAWG	TCGA-AP-A052	female	deceased			59		59		C54.1				669		unknown		unknown
+DO39246	THCA-US	PCAWG	TCGA-EM-A2CU	female	alive	complete remission		47		47		C73					177	unknown		unknown
+DO39216	THCA-US	PCAWG	TCGA-DJ-A3US	female	alive	complete remission		37		38		C73					630	unknown		unknown
+DO39210	THCA-US	PCAWG	TCGA-FK-A3SD	female	alive	complete remission		61		61		C73					27	unknown		unknown
+DO41530	UCEC-US	PCAWG	TCGA-AP-A05A	female	alive	complete remission		81		84		C54.1					1199	unknown		unknown
+DO220168	SARC-US	PCAWG	TCGA-IS-A3K7	female	alive	complete remission						C55					4056	unknown		unknown
+DO220163	SARC-US	PCAWG	TCGA-IF-A4AJ	male	deceased							C40.2				767		unknown		unknown
+DO220172	SARC-US	PCAWG	TCGA-IS-A3KA	female	deceased							C55				413		unknown		unknown
+DO220174	SARC-US	PCAWG	TCGA-IW-A3M4	female	alive	progression						C55					2229	unknown		unknown
+DO220176	SARC-US	PCAWG	TCGA-IW-A3M5	female	deceased							C55				180		unknown		unknown
+DO28952	OV-US	PCAWG	TCGA-24-1544	female	deceased			71		73		C56.9				820		unknown		unknown
+DO41911	UCEC-US	PCAWG	TCGA-DI-A1NN	female	alive	complete remission		63		65		C54.1					944	unknown		unknown
+DO219106	COAD-US	PCAWG	TCGA-QG-A5YW	female	alive	complete remission		55		56		C18.0					399	unknown		unknown
+DO9940	COAD-US	PCAWG	TCGA-AA-3534	female	alive	progression		78		78		C18.2					0	unknown		unknown
+DO49009	CESC-US	PCAWG	TCGA-C5-A1BJ	female	alive	complete remission		34		46		C53.9					4385	unknown		unknown
+DO49001	CESC-US	PCAWG	TCGA-C5-A1MQ	female	alive	complete remission		35		35		C53.9					17	unknown		unknown
+DO25040	LUAD-US	PCAWG	TCGA-50-5066	male	alive			72		72		C34.1					297	unknown		unknown
+DO40664	THCA-US	PCAWG	TCGA-DJ-A13W	female	alive	complete remission		45		46		C73					444	unknown		unknown
+DO13072	GBM-US	PCAWG	TCGA-16-1063	male	deceased			72		73		C71.9				425		unknown		unknown
+DO39684	THCA-US	PCAWG	TCGA-EM-A2OV	female	alive	complete remission		64		64		C73					353	unknown		unknown
+DO25010	LUAD-US	PCAWG	TCGA-55-6972	male	alive	complete remission		72		76		C34.1					1475	unknown		unknown
+DO8658	COAD-US	PCAWG	TCGA-AA-3994	male	alive	progression		69		69		C18.9					0	unknown		unknown
+DO26354	LUAD-US	PCAWG	TCGA-38-4628	female	deceased			65		65		C34.1				1492		unknown		unknown
+DO220116	SARC-US	PCAWG	TCGA-FX-A2QS	female	alive	complete remission						C48.0					14	unknown		unknown
+DO220118	SARC-US	PCAWG	TCGA-FX-A3NJ	male	alive	complete remission						C48.0					3	unknown		unknown
+DO14343	HNSC-US	PCAWG	TCGA-CV-5432	male	alive	complete remission		68		78		C32.9					3930	unknown		unknown
+DO220122	SARC-US	PCAWG	TCGA-FX-A3RE	female	alive							C56.9					2	unknown		unknown
+DO220126	SARC-US	PCAWG	TCGA-FX-A48G	female	alive	complete remission						C55					2	unknown		unknown
+DO39635	THCA-US	PCAWG	TCGA-EL-A3T9	female	deceased			69		69		C73				174		unknown		unknown
+DO41951	UCEC-US	PCAWG	TCGA-AP-A05D	female	alive	complete remission		67		70		C54.1					1364	unknown		unknown
+DO220138	SARC-US	PCAWG	TCGA-HB-A43Z	female	alive	complete remission						C55					126	unknown		unknown
+DO220140	SARC-US	PCAWG	TCGA-HB-A5W3	female	deceased							C48.0				384		unknown		unknown
+DO28962	OV-US	PCAWG	TCGA-24-1614	female	deceased			57		61		C56.9				1470		unknown		unknown
+DO27636	LUSC-US	PCAWG	TCGA-77-7139	male	alive			56		63		C34.3					2737	unknown		unknown
+DO41943	UCEC-US	PCAWG	TCGA-B5-A0JN	female	alive	complete remission		84		89		C54.1					2068	unknown		unknown
+DO39610	THCA-US	PCAWG	TCGA-EL-A3MY	male	deceased			81		81		C73				533		unknown		unknown
+DO220157	SARC-US	PCAWG	TCGA-IE-A4EK	male	alive							C48.0					42	unknown		unknown
+DO16999	KIRC-US	PCAWG	TCGA-BP-4327	female	deceased			75		75		C64.9				109		unknown		unknown
+DO220153	SARC-US	PCAWG	TCGA-IE-A4EI	female	alive	complete remission						C49.2					272	unknown		unknown
+DO51251	SKCM-US	PCAWG	TCGA-ER-A19T	male	deceased			51		51		C44.7				270		unknown		unknown
+DO14296	HNSC-US	PCAWG	TCGA-CR-6480	male	alive	complete remission		53		53		C09.9					362	unknown		unknown
+DO26280	LUAD-US	PCAWG	TCGA-55-6982	female	deceased			79		79		C34.3				995		unknown		unknown
+DO28823	OV-US	PCAWG	TCGA-13-0727	female	deceased			71		72		C56.9				462		unknown		unknown
+DO15527	HNSC-US	PCAWG	TCGA-CR-6487	male	alive	complete remission		50		50		C09.9					234	unknown		unknown
+DO15503	HNSC-US	PCAWG	TCGA-CV-7100	male	deceased			66		66		C14.8				274		unknown		unknown
+DO8730	COAD-US	PCAWG	TCGA-AA-3977	male	alive	progression		65		65		C18.7					31	unknown		unknown
+DO14264	HNSC-US	PCAWG	TCGA-BB-4225	male	alive	progression		73		73		C01					140	unknown		unknown
+DO38229	STAD-US	PCAWG	TCGA-BR-6564	female	alive	complete remission		46		46		C16.2					25	unknown		unknown
+DO38226	STAD-US	PCAWG	TCGA-HF-7136	male	alive	progression						C16.0					0	unknown		unknown
+DO27588	LUSC-US	PCAWG	TCGA-77-6843	male	deceased			74		74		C34.1				2224		unknown		unknown
+DO38238	STAD-US	PCAWG	TCGA-D7-6519	female	alive	progression		64		65		C16.0					476	unknown		unknown
+DO39564	THCA-US	PCAWG	TCGA-E8-A416	female	alive	complete remission		51		51		C73					22	unknown		unknown
+DO14282	HNSC-US	PCAWG	TCGA-CR-7385	male	alive	complete remission		42		44		C09.9					997	unknown		unknown
+DO14242	HNSC-US	PCAWG	TCGA-BA-6873	male	alive			28		28		C02.9					113	unknown		unknown
+DO220221	SARC-US	PCAWG	TCGA-MO-A47R	female	alive	complete remission						C48.0					3	unknown		unknown
+DO39534	THCA-US	PCAWG	TCGA-EM-A3FQ	female	alive	progression		19		19		C73					150	unknown		unknown
+DO14250	HNSC-US	PCAWG	TCGA-BA-6869	male	alive	complete remission		62		62		C32.9					244	unknown		unknown
+DO26230	LUAD-US	PCAWG	TCGA-73-4666	female	alive	complete remission		52		53		C34.1					618	unknown		unknown
+DO15591	HNSC-US	PCAWG	TCGA-CV-5431	male	deceased			73		74		C32.9				522		unknown		unknown
+DO16881	KIRC-US	PCAWG	TCGA-CJ-6033	female	deceased			54		54		C64.9				224		unknown		unknown
+DO14232	HNSC-US	PCAWG	TCGA-BA-5556	female	alive	complete remission		58		58		C04.9					179	unknown		unknown
+DO14236	HNSC-US	PCAWG	TCGA-BA-6872	male	deceased			47		47		C04.9				384		unknown		unknown
+DO14238	HNSC-US	PCAWG	TCGA-CV-7090	male	alive	complete remission		39		49		C14.8					3837	unknown		unknown
+DO28873	OV-US	PCAWG	TCGA-10-0934	female	deceased			50		50		C56.9				204		unknown		unknown
+DO14204	HNSC-US	PCAWG	TCGA-CV-6433	male	alive	complete remission		57		58		C02.9					405	unknown		unknown
+DO6144	BRCA-US	PCAWG	TCGA-EW-A1J5	female	alive	complete remission		59		59		C50.9					227	unknown		unknown
+DO38190	STAD-US	PCAWG	TCGA-FP-7998	male	alive			77		77		C16.2					109	unknown		unknown
+DO40496	THCA-US	PCAWG	TCGA-ET-A3DV	female	alive	complete remission		68		77		C73					3424	unknown		unknown
+DO40484	THCA-US	PCAWG	TCGA-EM-A3AQ	female	alive	complete remission		85		85		C73					262	unknown		unknown
+DO39481	THCA-US	PCAWG	TCGA-E8-A418	female	alive	complete remission		75		75		C73					45	unknown		unknown
+DO14192	HNSC-US	PCAWG	TCGA-CR-6491	male	alive	complete remission		60		60		C04.9					350	unknown		unknown
+DO38129	SKCM-US	PCAWG	TCGA-DA-A1HW	female	alive	progression		37		37		C77.9					59	unknown		unknown
+DO14171	HNSC-US	PCAWG	TCGA-CR-7382	male	alive	complete remission		49		51		C02.9					796	unknown		unknown
+DO27484	LUSC-US	PCAWG	TCGA-60-2726	male	deceased			56		56		C34.2				358		unknown		unknown
+DO9708	COAD-US	PCAWG	TCGA-D5-6540	male	alive	complete remission		66		66		C18.0					186	unknown		unknown
+DO9700	COAD-US	PCAWG	TCGA-AA-3956	male	alive	progression		65		65		C18.0					0	unknown		unknown
+DO18988	KIRC-US	PCAWG	TCGA-B2-4099	male	alive	complete remission		83		83		C64.9					111	unknown		unknown
+DO220331	KICH-US	PCAWG	TCGA-KL-8323	female	deceased			57		57		C64.9				1158		unknown		unknown
+DO220334	KICH-US	PCAWG	TCGA-KL-8326	male	alive	complete remission		69		78		C64.9					3322	unknown		unknown
+DO220333	KICH-US	PCAWG	TCGA-KL-8325	female	deceased			56		56		C64.9				725		unknown		unknown
+DO220339	KICH-US	PCAWG	TCGA-KL-8331	female	alive	complete remission		48		56		C64.9					3010	unknown		unknown
+DO220336	KICH-US	PCAWG	TCGA-KL-8328	male	alive	complete remission		60		68		C64.9					3127	unknown		unknown
+DO220335	KICH-US	PCAWG	TCGA-KL-8327	female	alive	complete remission		46		55		C64.9					3553	unknown		unknown
+DO220338	KICH-US	PCAWG	TCGA-KL-8330	female	alive	complete remission		44		52		C64.9					3067	unknown		unknown
+DO220342	KICH-US	PCAWG	TCGA-KL-8334	female	alive	complete remission		37		43		C64.9					2536	unknown		unknown
+DO220345	KICH-US	PCAWG	TCGA-KL-8337	male	alive	complete remission		26		29		C64.9					1364	unknown		unknown
+DO220341	KICH-US	PCAWG	TCGA-KL-8333	male	alive	complete remission		69		76		C64.9					2648	unknown		unknown
+DO220340	KICH-US	PCAWG	TCGA-KL-8332	male	alive	complete remission		55		62		C64.9					2582	unknown		unknown
+DO220349	KICH-US	PCAWG	TCGA-KL-8341	male	deceased			41		41		C64.9				754		unknown		unknown
+DO220348	KICH-US	PCAWG	TCGA-KL-8340	male	alive	complete remission		34		39		C64.9					2024	unknown		unknown
+DO220354	KICH-US	PCAWG	TCGA-KL-8346	male	alive	complete remission		62		66		C64.9					1536	unknown		unknown
+DO220356	KICH-US	PCAWG	TCGA-KM-8439	male	alive	progression		30		30		C64.9					247	unknown		unknown
+DO220355	KICH-US	PCAWG	TCGA-KM-8438	female	alive	progression		45		56		C64.9					4335	unknown		unknown
+DO220350	KICH-US	PCAWG	TCGA-KL-8342	female	alive	complete remission		45		50		C64.9					1835	unknown		unknown
+DO220352	KICH-US	PCAWG	TCGA-KL-8344	male	alive	complete remission		51		53		C64.9					876	unknown		unknown
+DO220351	KICH-US	PCAWG	TCGA-KL-8343	male	alive	progression		72		76		C64.9					1815	unknown		unknown
+DO220358	KICH-US	PCAWG	TCGA-KM-8441	female	alive	complete remission		61		61		C64.9					114	unknown		unknown
+DO220357	KICH-US	PCAWG	TCGA-KM-8440	male	alive	complete remission		37		39		C64.9					994	unknown		unknown
+DO9732	COAD-US	PCAWG	TCGA-AA-3529	female	deceased			78		78		C18.7				0		unknown		unknown
+DO220359	KICH-US	PCAWG	TCGA-KM-8442	male	alive	progression		38		39		C64.9					674	unknown		unknown
+DO220361	KICH-US	PCAWG	TCGA-KM-8476	male	alive	complete remission		47		54		C64.9					2590	unknown		unknown
+DO220360	KICH-US	PCAWG	TCGA-KM-8443	male	alive	complete remission		57		60		C64.9					1128	unknown		unknown
+DO220363	KICH-US	PCAWG	TCGA-KM-8639	male	alive	complete remission		67		69		C64.9					953	unknown		unknown
+DO220362	KICH-US	PCAWG	TCGA-KM-8477	male	alive	complete remission		56		60		C64.9					1553	unknown		unknown
+DO9788	COAD-US	PCAWG	TCGA-A6-2681	female	alive	complete remission		73		74		C18.9					552	unknown		unknown
+DO8447	COAD-US	PCAWG	TCGA-A6-6781	male	alive	complete remission		43		43		C18.9					158	unknown		unknown
+DO496	BLCA-US	PCAWG	TCGA-GD-A2C5	female	alive			53		53		C67.9					235	unknown		unknown
+DO498	BLCA-US	PCAWG	TCGA-DK-A1AE	male	alive	progression		84		84		C67.9					218	unknown		unknown
+DO28273	OV-US	PCAWG	TCGA-13-0890	female	alive	complete remission		56		61		C56.9					2068	unknown		unknown
+DO483	BLCA-US	PCAWG	TCGA-DK-A1A7	female	alive	progression		67		67		C67.9					273	unknown		unknown
+DO472	BLCA-US	PCAWG	TCGA-DK-A1A6	male	alive	complete remission		53		55		C67.9					955	unknown		unknown
+DO16269	KIRC-US	PCAWG	TCGA-BP-4968	male	alive	complete remission		40		44		C64.9					1746	unknown		unknown
+DO479	BLCA-US	PCAWG	TCGA-CF-A3MF	male	alive	complete remission		34		34		C67.9					0	unknown		unknown
+DO477	BLCA-US	PCAWG	TCGA-DK-A1A5	male	deceased			79		79		C67.9				65		unknown		unknown
+DO41229	UCEC-US	PCAWG	TCGA-B5-A11I	female	alive	progression		65		70		C54.1					2038	unknown		unknown
+DO42544	UCEC-US	PCAWG	TCGA-AX-A1CI	female	alive	complete remission		61		67		C54.1					2207	unknown		unknown
+DO41217	UCEC-US	PCAWG	TCGA-AJ-A23M	female	alive	progression		61		61		C54.1					36	unknown		unknown
+DO16248	KIRC-US	PCAWG	TCGA-CW-6093	male	alive	complete remission		73		79		C64.9					2431	unknown		unknown
+DO42536	UCEC-US	PCAWG	TCGA-EY-A1GW	female	alive	progression		73		73		C54.1					260	unknown		unknown
+DO28233	OV-US	PCAWG	TCGA-10-0937	female	deceased			44		45		C56.9				608		unknown		unknown
+DO30550	OV-US	PCAWG	TCGA-24-1419	female	alive	complete remission		62		62		C56.9					239	unknown		unknown
+DO43859	UCEC-US	PCAWG	TCGA-B5-A1MY	female	deceased			62		62		C54.1				361		unknown		unknown
+DO16233	KIRC-US	PCAWG	TCGA-CJ-4899	male	alive	complete remission		42		46		C64.9					1528	unknown		unknown
+DO31869	OV-US	PCAWG	TCGA-09-2050	female	alive	complete remission		65		70		C56.9					2163	unknown		unknown
+DO28289	OV-US	PCAWG	TCGA-13-0912	female	alive	progression		58		60		C56.9					1036	unknown		unknown
+DO220449	KICH-US	PCAWG	TCGA-KN-8422	female	alive	complete remission		28		30		C64.9					775	unknown		unknown
+DO43811	UCEC-US	PCAWG	TCGA-D1-A1NU	female	alive	complete remission		74		74		C54.1					312	unknown		unknown
+DO9876	COAD-US	PCAWG	TCGA-AA-A00N	male	deceased			75		75		C18.0				122		unknown		unknown
+DO220468	KICH-US	PCAWG	TCGA-KN-8424	female	alive	complete remission		42		47		C64.9					1983	unknown		unknown
+DO220474	KICH-US	PCAWG	TCGA-KN-8425	male	alive	complete remission		53		59		C64.9					2211	unknown		unknown
+DO220479	KICH-US	PCAWG	TCGA-KN-8427	male	alive	complete remission		54		54		C64.9					18	unknown		unknown
+DO220478	KICH-US	PCAWG	TCGA-KN-8426	male	alive	progression		50		50		C64.9					108	unknown		unknown
+DO220484	KICH-US	PCAWG	TCGA-KN-8428	male	deceased			71		71		C64.9				1590		unknown		unknown
+DO220490	KICH-US	PCAWG	TCGA-KN-8429	female	alive	progression		38		43		C64.9					2064	unknown		unknown
+DO18839	KIRC-US	PCAWG	TCGA-B2-4102	male	alive	complete remission		61		61		C64.9					15	unknown		unknown
+DO42432	UCEC-US	PCAWG	TCGA-BS-A0TD	female	alive	complete remission		65		70		C54.9					2003	unknown		unknown
+DO43763	UCEC-US	PCAWG	TCGA-A5-A0GA	female	deceased			67		67		C54.1				543		unknown		unknown
+DO42424	UCEC-US	PCAWG	TCGA-A5-A0GE	female	alive	complete remission		38		45		C54.1					2717	unknown		unknown
+DO575	BLCA-US	PCAWG	TCGA-FD-A3N6	female	alive	complete remission		43		43		C67.3					242	unknown		unknown
+DO42400	UCEC-US	PCAWG	TCGA-BS-A0TC	female	alive	complete remission		69		75		C54.3					2260	unknown		unknown
+DO16136	KIRC-US	PCAWG	TCGA-AK-3428	male	alive	complete remission		62		68		C64.9					2223	unknown		unknown
+DO561	BLCA-US	PCAWG	TCGA-BT-A2LA	male	alive	complete remission		54		54		C67.1					180	unknown		unknown
+DO31769	OV-US	PCAWG	TCGA-25-2391	female	deceased			57		61		C56.9				1492		unknown		unknown
+DO43739	UCEC-US	PCAWG	TCGA-BS-A0U9	female	alive	complete remission		59		63		C54.1					1749	unknown		unknown
+DO28119	OV-US	PCAWG	TCGA-04-1331	female	deceased			78		81		C56.9				1336		unknown		unknown
+DO555	BLCA-US	PCAWG	TCGA-DK-A3IL	female	alive	complete remission		79		79		C67.2					121	unknown		unknown
+DO220423	KICH-US	PCAWG	TCGA-KN-8418	female	alive	complete remission		41		50		C64.9					3474	unknown		unknown
+DO16113	KIRC-US	PCAWG	TCGA-B2-4101	male	alive	complete remission		52		52		C64.9					90	unknown		unknown
+DO16110	KIRC-US	PCAWG	TCGA-A3-3308	female	alive	complete remission		77		77		C64.9					16	unknown		unknown
+DO220433	KICH-US	PCAWG	TCGA-KN-8419	male	alive	complete remission		43		44		C64.9					714	unknown		unknown
+DO548	BLCA-US	PCAWG	TCGA-DK-A1AA	male	alive	complete remission		57		57		C67.9					214	unknown		unknown
+DO220439	KICH-US	PCAWG	TCGA-KN-8421	female	alive	complete remission		47		54		C64.9					2674	unknown		unknown
+DO536	BLCA-US	PCAWG	TCGA-BL-A13J	male	deceased			65		65		C67.4				81		unknown		unknown
+DO41199	UCEC-US	PCAWG	TCGA-AX-A0J1	female	alive	complete remission		80		85		C54.1					2004	unknown		unknown
+DO522	BLCA-US	PCAWG	TCGA-H4-A2HQ	female	alive	progression		64		64		C67.9					205	unknown		unknown
+DO41157	UCEC-US	PCAWG	TCGA-AX-A2H5	female	alive			67		72		C54.1					2167	unknown		unknown
+DO42464	UCEC-US	PCAWG	TCGA-BG-A18C	female	alive			72		72		C54.1					169	unknown		unknown
+DO219585	THCA-US	PCAWG	TCGA-DJ-A13L	male	alive	complete remission		85		85		C73					303	unknown		unknown
+DO219580	LIHC-US	PCAWG	TCGA-MR-A520	male	alive	complete remission		58		58		C22.0					19	unknown		unknown
+DO220568	KICH-US	PCAWG	TCGA-KO-8409	male	alive	complete remission		69		75		C64.9					2445	unknown		unknown
+DO220572	KICH-US	PCAWG	TCGA-KO-8410	female	alive	complete remission		74		81		C64.9					2670	unknown		unknown
+DO220577	KICH-US	PCAWG	TCGA-KO-8411	male	alive	complete remission		58		66		C64.9					3141	unknown		unknown
+DO29850	OV-US	PCAWG	TCGA-24-1466	female	deceased			74		77		C56.9				1373		unknown		unknown
+DO28521	OV-US	PCAWG	TCGA-25-1632	female	deceased			68		72		C56.9				1799		unknown		unknown
+DO220599	KICH-US	PCAWG	TCGA-KO-8416	male	alive	complete remission		41		46		C64.9					1873	unknown		unknown
+DO42825	UCEC-US	PCAWG	TCGA-B5-A11H	female	alive	complete remission		67		73		C54.1					2317	unknown		unknown
+DO27208	LUSC-US	PCAWG	TCGA-22-5492	female	deceased			73		74		C34.1				506		unknown		unknown
+DO17848	KIRC-US	PCAWG	TCGA-BP-4977	male	alive	complete remission		57		58		C64.9					454	unknown		unknown
+DO29820	OV-US	PCAWG	TCGA-36-1571	female	deceased			53		54		C56.9				695		unknown		unknown
+DO15198	HNSC-US	PCAWG	TCGA-CR-7391	female	alive	complete remission		36		38		C02.9					913	unknown		unknown
+DO40147	THCA-US	PCAWG	TCGA-L6-A4ET	female	alive	complete remission		49		49		C73					34	unknown		unknown
+DO8264	COAD-US	PCAWG	TCGA-CA-6717	male	alive	complete remission		57		57		C18.2					10	unknown		unknown
+DO220509	KICH-US	PCAWG	TCGA-KN-8431	female	alive	complete remission		35		35		C64.9					-2	unknown		unknown
+DO220510	KICH-US	PCAWG	TCGA-KN-8432	female	alive			86		86		C64.9					76	unknown		unknown
+DO220519	KICH-US	PCAWG	TCGA-KN-8434	female	alive	complete remission		65		68		C64.9					1125	unknown		unknown
+DO41446	UCEC-US	PCAWG	TCGA-AP-A0LL	female	alive	progression		56		61		C54.1					2141	unknown		unknown
+DO695	BLCA-US	PCAWG	TCGA-BT-A20Q	male	deceased			73		73		C67.0				593		unknown		unknown
+DO220525	KICH-US	PCAWG	TCGA-KN-8435	male	alive	complete remission		59		66		C64.9					2727	unknown		unknown
+DO689	BLCA-US	PCAWG	TCGA-BT-A20V	female	deceased			59		59		C67.2				154		unknown		unknown
+DO220535	KICH-US	PCAWG	TCGA-KN-8437	female	alive	complete remission		42		48		C64.9					2304	unknown		unknown
+DO39127	THCA-US	PCAWG	TCGA-FK-A3S3	female	alive	complete remission		43		46		C73					1401	unknown		unknown
+DO675	BLCA-US	PCAWG	TCGA-BT-A20P	female	deceased			81		81		C67.0				544		unknown		unknown
+DO27120	LUSC-US	PCAWG	TCGA-21-5782	female	deceased			68		70		C34.3				962		unknown		unknown
+DO220549	KICH-US	PCAWG	TCGA-KO-8405	male	alive	complete remission		29		35		C64.9					2279	unknown		unknown
+DO220554	KICH-US	PCAWG	TCGA-KO-8406	female	alive	complete remission		17		23		C64.9					2404	unknown		unknown
+DO669	BLCA-US	PCAWG	TCGA-C4-A0F7	male	deceased			77		77		C67.9				62		unknown		unknown
+DO220556	KICH-US	PCAWG	TCGA-KO-8407	male	alive	complete remission		42		49		C64.9					2820	unknown		unknown
+DO27128	LUSC-US	PCAWG	TCGA-66-2756	male	alive	complete remission		68		68		C34.1					30	unknown		unknown
+DO639	BLCA-US	PCAWG	TCGA-FD-A3N5	male	alive			69		69		C67.4					272	unknown		unknown
+DO40193	THCA-US	PCAWG	TCGA-FE-A3PD	female	alive	complete remission		17		22		C73					1913	unknown		unknown
+DO52171	LIHC-US	PCAWG	TCGA-BW-A5NO	male	alive	complete remission		50		50		C22.0					20	unknown		unknown
+DO52172	LIHC-US	PCAWG	TCGA-BW-A5NP	female	alive	progression		26		26		C22.0					0	unknown		unknown
+DO40167	THCA-US	PCAWG	TCGA-BJ-A191	female	alive	complete remission		49		49		C73					147	unknown		unknown
+DO804	BLCA-US	PCAWG	TCGA-BT-A20T	male	deceased			63		63		C67.3				453		unknown		unknown
+DO15110	HNSC-US	PCAWG	TCGA-CN-4737	male	alive	complete remission		19		19		C02.9					240	unknown		unknown
+DO29760	OV-US	PCAWG	TCGA-13-1487	female	deceased			74		75		C56.9				681		unknown		unknown
+DO30750	OV-US	PCAWG	TCGA-24-1557	female	deceased			49		52		C56.9				1213		unknown		unknown
+DO27104	LUSC-US	PCAWG	TCGA-18-4721	male	alive	complete remission		74		81		C34.3					2754	unknown		unknown
+DO17791	KIRC-US	PCAWG	TCGA-CJ-4639	female	alive	complete remission		49		55		C64.9					2308	unknown		unknown
+DO17751	KIRC-US	PCAWG	TCGA-BP-5010	male	deceased			63		63		C64.9				878		unknown		unknown
+DO28412	OV-US	PCAWG	TCGA-24-1562	female	deceased			67		70		C56.9				1384		unknown		unknown
+DO17722	KIRC-US	PCAWG	TCGA-B0-5693	female	alive	complete remission		47		52		C64.9					1852	unknown		unknown
+DO220608	KICH-US	PCAWG	TCGA-KO-8417	female	alive	complete remission		30		35		C64.9					1945	unknown		unknown
+DO27067	LUSC-US	PCAWG	TCGA-52-7812	male	deceased			68		68		C34.9				835		unknown		unknown
+DO39046	THCA-US	PCAWG	TCGA-EM-A2CP	female	alive	complete remission		26		26		C73					91	unknown		unknown
+DO39022	THCA-US	PCAWG	TCGA-DJ-A2Q8	female	alive	complete remission		47		47		C73					215	unknown		unknown
+DO41343	UCEC-US	PCAWG	TCGA-EO-A1Y8	female	alive	complete remission		87		87		C54.1					328	unknown		unknown
+DO39020	THCA-US	PCAWG	TCGA-FY-A2QD	female	alive	complete remission		61		61		C73					38	unknown		unknown
+DO42673	UCEC-US	PCAWG	TCGA-AP-A051	female	alive	complete remission		69		75		C54.1					2545	unknown		unknown
+DO39016	THCA-US	PCAWG	TCGA-EL-A3H1	female	deceased			66		66		C73				1500		unknown		unknown
+DO8360	COAD-US	PCAWG	TCGA-AD-6964	male	alive	progression		58		58		C18.2					23	unknown		unknown
+DO15046	HNSC-US	PCAWG	TCGA-CX-7086	male	alive	complete remission		53		53		C04.9					237	unknown		unknown
+DO27025	LUSC-US	PCAWG	TCGA-66-2744	male	alive	complete remission		71		71		C34.3					30	unknown		unknown
+DO15014	HNSC-US	PCAWG	TCGA-CV-5973	female	alive	complete remission		62		66		C02.9					1737	unknown		unknown
+DO15022	HNSC-US	PCAWG	TCGA-CN-5365	male	deceased			38		38		C09.9				351		unknown		unknown
+DO30650	OV-US	PCAWG	TCGA-13-0751	female	deceased			44		48		C56.9				1678		unknown		unknown
+DO39084	THCA-US	PCAWG	TCGA-FE-A233	female	alive	complete remission		18		20		C73					751	unknown		unknown
+DO41398	UCEC-US	PCAWG	TCGA-E6-A1LZ	female	alive	complete remission		76		79		C54.1					1289	unknown		unknown
+DO40069	THCA-US	PCAWG	TCGA-DJ-A4UT	female	alive	complete remission		32		33		C73					371	unknown		unknown
+DO720	BLCA-US	PCAWG	TCGA-FT-A3EE	female	deceased			80		80		C67.5				99		unknown		unknown
+DO39062	THCA-US	PCAWG	TCGA-BJ-A28T	female	alive	complete remission		34		34		C73					85	unknown		unknown
+DO27081	LUSC-US	PCAWG	TCGA-34-2600	female	deceased			76		81		C34.3				1874		unknown		unknown
+DO39072	THCA-US	PCAWG	TCGA-ET-A4KN	female	alive	complete remission		51		51		C73					122	unknown		unknown
+DO39070	THCA-US	PCAWG	TCGA-BJ-A28V	female	alive			80		80		C73					-210	unknown		unknown
+DO52029	HNSC-US	PCAWG	TCGA-BA-A4IH	male	alive	complete remission		57		57		C10.9					201	unknown		unknown

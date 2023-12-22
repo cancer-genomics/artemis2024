@@ -1,0 +1,106 @@
+---
+title: "PCAWGROCs"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+ROCs for PCAWG T vs N
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+#load_all("~/Dropbox/useful.stuff.aa")           # Load
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+
+ploidy<-fread(here("data","TCGA","combined_meta.csv"))
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+pcawg3<-fread(here("data","PCAWG","artemis_PCAWG2.csv"))
+pcawg3<-pcawg3 %>% tibble() %>% select(-V1)
+pcawg2<-rbind(pcawg2,pcawg3)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$`id`)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(id,Project),by=c("id"="id"))
+pcawg<-pcawg %>% mutate(project_id=if_else(type=="healthy","Normal",Project))
+pcawg<-pcawg %>% select(-Project)
+test<-pcawg %>% gather(key=feature,value=count,-id,-type,-project_id)
+
+#Add info needed to center/scale by family
+test$fam<-sapply(str_split(test$feature,"#"),"[",2)
+test<-test %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+test$bigfam<-sapply(str_split(test$fam,"_"),"[",1)
+test<-test %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA",bigfam))
+test<-test %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"TEs",bigfam))
+
+
+test<-test %>% group_by(id,type,project_id,bigfam)%>%summarize(c=scale(count)[,1],f=feature)
+test<-test %>% rename("count"="c") %>% rename("feature"="f")
+pcawg<-test %>% ungroup() %>% select(-bigfam) %>% spread(key=feature,value=count)
+pcawg<-pcawg %>% ungroup()
+```
+
+```{r pcawg_roc, echo=FALSE, fig.width=6, fig.height=6, dev=c("png", "pdf")}
+
+recipe_seq <- recipe(type ~ ., data=pcawg) %>%
+    update_role(id, new_role = "ID") %>%  
+    update_role(project_id, new_role = "ID") 
+
+
+
+glmnetGrid <- expand.grid(
+    alpha = 1,
+    lambda = 10^seq(-5, -1, length.out = 100))
+
+
+#A control object
+set.seed(1234)
+ctrl_all <- trainControl(method = "repeatedcv",
+                     number = 5,
+                     repeats = 10,
+                     verboseIter = TRUE,
+                     savePredictions="final",
+                     classProbs=TRUE,
+                     index=createMultiFolds(pcawg$type, 5, 10),
+                     summaryFunction = twoClassSummary)
+
+
+#Train model -- only did this once
+set.seed(1234)
+model_delfi <- caret::train(recipe_seq,
+                          data = pcawg,
+                          method="glmnet",
+                          tuneGrid=glmnetGrid,
+                          trControl = ctrl_all)
+
+
+
+
+train_preds<-get_cv_preds(pcawg,model_delfi)
+train_preds<-inner_join(train_preds,pcawg %>% select(id,type,project_id),by=c("id","type"))
+train_preds<-write.csv(train_preds,here("data","PCAWG","Classification_preds.csv"))
+
+saveRDS(model_delfi,here("data","PCAWG","PCAWG_Classification.rds"))
+
+
+```
+
+
+

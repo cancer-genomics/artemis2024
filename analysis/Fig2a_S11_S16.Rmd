@@ -1,0 +1,330 @@
+---
+title: "2A_S11_S16"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+Make the heatmap figure and curate some correlations for the text
+Also some figures on healthy variation
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+```
+
+Assemble the data
+```{r}
+#I just need to get everything put together
+#All samples
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+#Noushin's data
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy2<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230928.rds"))
+
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+exc2<-exc %>% filter(icgc_donor_id %in% ploidy$`ICGC Donor`|icgc_donor_id %in% ploidy2$icgc_donor_id)
+
+#ploidy<-ploidy %>% filter(!`ICGC Donor` %in% exc$icgc_donor_id)
+missing<-ploidy %>% filter(is.na(ploidy))
+
+ploidy2<-inner_join(ploidy2,all_samples,by=c("icgc_specimen_id"="Specimen ID"))
+missing2<-ploidy2 %>% filter(is.na(ploidy))
+
+ploidy$icgc_donor_id<-ploidy$`ICGC Donor`
+nms<-intersect(colnames(ploidy),colnames(ploidy2))
+ploidy<-rbind(ploidy %>% select(nms),ploidy2%>%select(nms))
+#Verified from TCGA that for the types we have, this is all the samples here in the metadata (if we didn't do blacklisting)
+#ploidy %>% group_by(Project) %>% summarize(n=n()) %>% print(n=100)
+ploidy<-ploidy %>% filter(!`icgc_donor_id` %in% exc$icgc_donor_id)
+
+#Stage
+clin<-fread(here("data","TCGA","clinical.cases_selection.2023-10-19","clinical.tsv"))
+clin<-clin %>% filter(treatment_type=="Pharmaceutical Therapy, NOS") #It's not clear why every pt has two rows, for Pharm and Rad
+clin<-clin %>% select(case_submitter_id,race,ajcc_pathologic_stage)
+ploidy<-inner_join(ploidy,clin,by=c("bcr_patient_barcode"="case_submitter_id"))
+
+ploidy<-ploidy %>% rename("id"="icgc_donor_id")
+ploidy<-ploidy %>% select(race,ajcc_pathologic_stage,Project,breakpoint.count,wgd.frac,multi.copy.frac,single.copy.frac,geq6.frac,geq5.frac,geq4.frac,nondiploid.frac,imbalance.frac,loh.frac,non.modal.frac,modal.ploidy,entropy,ploidy,purity,n.clonal,tmb,bcr_patient_barcode,id)
+
+
+ploidy<-ploidy %>% mutate(ajcc_pathologic_stage=if_else(ajcc_pathologic_stage=="'--","NA",ajcc_pathologic_stage))
+
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+pcawg3<-fread(here("data","PCAWG","artemis_PCAWG2.csv"))
+pcawg3<-pcawg3 %>% tibble() %>% select(-V1)
+pcawg2<-rbind(pcawg2,pcawg3)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg2<-pcawg %>% gather(key=feature,value=count,-id,-type)
+
+pcawg2$id<-sapply(str_split(pcawg2$id,"_"),"[",1)
+pcawg2<-pcawg2 %>% spread(key=type,value=count)
+pcawg2<-pcawg2 %>% filter(!is.na(cancer))
+pcawg2<-pcawg2 %>% filter(!is.na(healthy))
+
+pcawg2$T_N_ratio<-pcawg2$cancer/pcawg2$healthy
+
+pcawg2$fam<-sapply(str_split(pcawg2$feature,"#"),"[",2)
+pcawg2$fam<-sapply(str_split(pcawg2$fam,"_"),"[",1)
+pcawg2<-pcawg2 %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+pcawg2<-pcawg2 %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA Elements",fam))
+pcawg2<-pcawg2 %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable Elements",fam))
+
+test<-pcawg2 %>% filter(id=="DO10172")
+test %>% group_by(fam) %>% summarize(n=n(),p=n/1280)
+#m<-pcawg2 %>% group_by(feature)%>%summarize(m=median(T_N_ratio)) %>% arrange(m)
+ploidy<-ploidy %>% filter(Project != "SKCM-US")
+
+ploidy<-ploidy %>% filter(id %in% pcawg2$id)
+pcawg2<-pcawg2 %>% filter(id %in% ploidy$id)
+
+#At this point both ploidy and pcawg2 have the same 525 cases and including the blacklist patients, this is the correct number expected
+#write.csv(ploidy,here("data","TCGA","combined_meta.csv"))
+
+data<-fread(here("data","Kmer_Distributions","chr_distribution.csv"))
+data<-data %>% select(-V1)
+data$total_kmers<-data$occurrences*data$kmer_count
+data_y<-data %>% filter(chr=="chrY")
+data_y<-data_y %>% group_by(feature)%>% summarize(total_kmers_y=sum(total_kmers))
+
+data<-data %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+data_y<-inner_join(data,data_y,by="feature")
+data_y$perc<-data_y$total_kmers_y/data_y$total_kmers
+data_y<-data_y %>% filter(perc>.75)
+data<-data %>% filter(!feature %in% data_y$feature)
+
+data2<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data2<-data2 %>% select(-V1)
+data2$total_kmers<-data2$occurrences*data2$kmer_count
+data_y<-data2 %>% filter(chr=="chrY")
+data_y<-data_y %>% group_by(feature)%>% summarize(total_kmers_y=sum(total_kmers))
+data2<-data2 %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+data_y<-inner_join(data2,data_y,by="feature")
+data_y$perc<-data_y$total_kmers_y/data_y$total_kmers
+data_y<-data_y %>% filter(perc>.75)
+data2<-data2 %>% filter(!feature %in% data_y$feature)
+
+
+data<-rbind(data,data2)
+data$total_kmers<-data$total_kmers/(30*.86) #86% of 30 million reads
+
+#This will remove some very chrY dominated features
+pcawg3<-inner_join(pcawg2,data,by="feature")
+pcawg3$OE_healthy<-pcawg3$healthy/pcawg3$total_kmers
+
+
+m<-pcawg3 %>% group_by(feature)%>%summarize(range=IQR(OE_healthy),cv=sd(OE_healthy)/mean(OE_healthy)) %>% arrange(-cv)
+
+pcawg3$feature<-factor(pcawg3$feature,levels=m$feature)
+pcawg3$fam<-factor(pcawg3$fam,levels=unique(pcawg3$fam))
+pcawg3<-pcawg3 %>% mutate(T_N_ratio=if_else(is.na(T_N_ratio),1,T_N_ratio))
+pcawg3<-pcawg3 %>% mutate(T_N_ratio=if_else(is.infinite(T_N_ratio),cancer,T_N_ratio))
+
+#Do a version with all 1280 features for heatmap purposes
+
+#m<-pcawg2 %>% group_by(feature)%>%summarize(range=IQR(OE_healthy),cv=sd(OE_healthy)/mean(OE_healthy)) %>% arrange(-cv)
+
+pcawg2$fam<-factor(pcawg2$fam,levels=unique(pcawg2$fam))
+pcawg2<-pcawg2 %>% mutate(T_N_ratio=if_else(is.na(T_N_ratio),1,T_N_ratio))
+pcawg2<-pcawg2 %>% mutate(T_N_ratio=if_else(is.infinite(T_N_ratio),cancer,T_N_ratio))
+
+```
+
+```{r Healthy_Var, echo=FALSE,include = FALSE,fig.width=20, fig.height=5, dev=c("png", "pdf")}
+
+a<-ggplot(pcawg3,aes(x=feature,y=OE_healthy,color=fam))+theme_classic()+theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())+geom_boxplot(outlier.size = .1)+theme(legend.position="bottom")+ylab("Ratio of Observed to Expected\nin Normal Samples")+xlab("Repeat Element")+scale_color_brewer(type="qual")
+
+
+
+```
+
+```{r CV, echo=FALSE,include = FALSE,fig.width=20, fig.height=2, dev=c("png", "pdf")}
+
+m<-inner_join(m,pcawg3 %>% filter(id=="DO23608")%>%select(feature,fam),by="feature")
+m$feature<-factor(m$feature,levels=levels(pcawg3$feature))
+
+c<-ggplot(m,aes(x=feature,y=cv,color=fam))+theme_classic()+theme(axis.text.x=element_blank(),axis.ticks.x=element_blank(),legend.position="none",axis.title.x=element_blank())+geom_point(size=.5)+
+  ylab("Coefficient of\nVariation")+scale_color_brewer(type="qual")#geom_segment(aes(x=feature,xend=feature,y=0,yend=cv))+
+
+```
+
+```{r comp, echo=FALSE,include = FALSE,fig.width=20, fig.height=7, dev=c("png", "pdf")}
+
+library(cowplot)
+plot_grid(c,a,align="hv",axis="left",ncol=1,rel_heights=c(1,4))
+```
+
+
+```{r Healthy_Var_Top, echo=FALSE,include = FALSE,fig.width=12, fig.height=3, dev=c("png", "pdf")}
+top<-m$feature[1:10]
+ptop<-pcawg3 %>% filter(feature %in% top)
+ptop$fam<-factor(ptop$fam,levels=unique(pcawg3$fam))
+ptop$name<-sapply(str_split(ptop$feature,"#"),"[",1)
+ptop$name<-factor(ptop$name,levels=sapply(str_split(levels(m$feature)[1:10],"#"),"[",1))
+ggplot(ptop,aes(x=name,y=OE_healthy,color=fam))+theme_classic()+geom_boxplot(outlier.shape=NA)+geom_jitter(size=.2)+theme(legend.position="none")+scale_color_manual(values=c("#7fc97f","#beaed4","#f0027f"))+xlab("")+ylab("Ratio of Observed to Expected\nin Normal Samples")+scale_y_sqrt()
+
+```
+
+
+
+Now only include samples for which we have Noushin's metrics
+```{r T_N_Heatmap_Orig2, echo=FALSE,include = FALSE,fig.width=16, fig.height=20,dev=c("png", "pdf")}
+library(ComplexHeatmap)
+library(circlize)
+ht_opt$ROW_ANNO_PADDING = unit(.5, "cm")
+ht_opt$HEATMAP_LEGEND_PADDING=unit(.5, "cm")
+p<-ploidy %>% filter(!is.na(tmb))
+
+meta<-ploidy %>% filter(id %in% p$id)
+pcawg2<-pcawg2 %>% filter(id %in% p$id)
+TN<-pcawg2 %>% select(id,feature,T_N_ratio)%>%spread(key=feature,value=T_N_ratio)
+TN<-TN %>% filter(id %in% ploidy$id)
+
+TN<-tibble(TN)
+order<-TN$id
+TN_mat<-as.matrix(TN %>% select(-id))
+feature_order<-colnames(TN_mat)
+names<-inner_join(tibble(feature=colnames(TN_mat)),pcawg2 %>% filter(id=="DO23608")%>%select(feature,fam),by="feature")
+novelty<-read_csv(here("data","NoveltyTables","Novel_Elements.csv"))
+novelty<-novelty %>% select(feature,group) %>% rename("Novel"="group")
+novelty<-novelty %>% mutate(Novel=if_else(Novel=="Novel","Newly identified as altered in cancer",Novel))
+novelty<-novelty %>% mutate(Novel=if_else(Novel=="Prior demonstration in TCGA/PCAWG","Prior evidence in TCGA/PCAWG",Novel))
+novelty<-novelty %>% mutate(Novel=if_else(Novel=="Subfamily Evidence","Prior evidence for subfamily",Novel))
+
+names<-inner_join(names,novelty,by="feature")
+
+rownames(TN_mat)<-order
+stats<-inner_join(tibble(id=rownames(TN_mat)),meta,by=c("id"="id"))
+
+#save_data_1<-names
+#write.csv(save_data_1,here("output","Figure_Data_Files","Fig2_Top_Annotation.csv"))
+
+#save_data_2<-stats
+#save_data_2<-save_data_2 %>% select(id,entropy,non.modal.frac,nondiploid.frac,ploidy,loh.frac,modal.ploidy,tmb,breakpoint.c#ount,Project)
+#write.csv(save_data_2,here("output","Figure_Data_Files","Fig2_Side_Annotation.csv"))
+
+#save_data_3<-TN
+#write.csv(save_data_3,here("output","Figure_Data_Files","Fig2_Heatmap.csv"))
+
+
+
+top=HeatmapAnnotation(fam=names$fam,col=list(fam=c("Satellite"="#c51b7d","RNA Elements"="#e9a3c9","SINE"="#fde0ef","Transposable Elements"="#e6f5d0",LINE="#a1d76a",LTR="#4d9221")))
+top2=HeatmapAnnotation(Evidence=names$Novel,col=list(Evidence=c("Newly identified as altered in cancer"="gold","Prior evidence in TCGA/PCAWG"="midnightblue","Prior evidence for subfamily"="coral")))
+
+print("YES")
+stats<-stats %>% mutate(Project=if_else(Project %in% c("COAD-US","READ-US"),"Colorectal",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("LUAD-US"),"Lung Adeno",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("LUSC-US"),"Lung Squam",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("LIHC-US"),"Liver",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("BRCA-US"),"Breast",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("OV-US"),"Ovarian",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("PRAD-US"),"Prostate",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("HNSC-US"),"Head/Neck Squam",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("THCA-US"),"Thyroid",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("BLCA-US"),"Bladder",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("STAD-US"),"Gastric",Project))
+stats<-stats %>% mutate(Project=if_else(Project %in% c("CESC-US"),"Cervical",Project))
+
+
+side=rowAnnotation(type=stats$`Project`,col=list(type=c("Lung Adeno"="gray","Lung Squam"="darkorange","Colorectal"="pink","Liver"="green","Breast"="purple","Ovarian"="red","Prostate"="deepskyblue","Head/Neck Squam"="deeppink","Thyroid"="darkgoldenrod","Bladder"="black","Gastric"="cyan1","Cervical"="aquamarine")))
+#side2=rowAnnotation(
+#side2=rowAnnotation(sex=stats$`Gender`,col=list(sex=c("Female"="pink","Male"="gray")))
+#these three are pretty correlated, so I'll just plot Mutations for now (TMB is missing a few samples)
+#quantile(stats$`tmb`, probs = seq(0, 1, by= 0.01),na.rm=TRUE)
+col_fun_01 = colorRamp2(c(6.00,3268.52 ), c( "white","orange"))
+side4=rowAnnotation(`Tumor Mutation Burden`=stats$`tmb`,col = list(`Tumor Mutation Burden` = col_fun_01))
+
+
+#quantile(stats$`ploidy`, probs = seq(0, 1, by= 0.01),na.rm=TRUE)
+col_fun_02 = colorRamp2(c(1.6408,5.1496), c( "white","darkviolet"))
+side10=rowAnnotation(Ploidy=stats$`ploidy`,col = list(Ploidy = col_fun_02))
+
+#quantile(stats$`entropy`, probs = seq(0, 1, by= 0.01),na.rm=TRUE)
+col_fun_03 = colorRamp2(c(0.000000,2.344940), c( "white","indianred"))
+side11=rowAnnotation(Entropy=stats$`entropy`,col = list(Entropy = col_fun_03))
+
+col_fun_04 = colorRamp2(c(0,1), c( "white","deeppink"))
+side12=rowAnnotation(`Non-Modal Fraction`=stats$`non.modal.frac`,col = list(`Non-Modal Fraction` = col_fun_04))
+side15=rowAnnotation(`Loss of Heterozygosity Fraction`=stats$`loh.frac`,col = list(`Loss of Heterozygosity Fraction` = col_fun_04))
+side18=rowAnnotation(`Non-diploid Fraction`=stats$`nondiploid.frac`,col = list(`Non-diploid Fraction` = col_fun_04))
+
+#quantile(stats$breakpoint.count, probs = seq(0, 1, by= 0.01),na.rm=TRUE)
+col_fun_05 = colorRamp2(c(0.00,517.04), c( "white","green"))
+side16=rowAnnotation(`Breakpoint Count`=stats$`breakpoint.count`,col=list(`Breakpoint Count`=col_fun_05))
+
+#quantile(stats$modal.ploidy, probs = seq(0, 1, by= 0.01),na.rm=TRUE)
+col_fun_06 = colorRamp2(c(1,5), c( "white","blue"))
+side17=rowAnnotation(`Modal Ploidy`=stats$`modal.ploidy`,col = list(`Modal Ploidy` = col_fun_06))
+
+#quantile(pcawg2$T_N_ratio, probs = seq(0, 1, by= 0.01))
+#99th percentile is 1.5944360
+#1st percentile is 0.6695060
+col_fun = colorRamp2(c(0.7006717, 1, 1.5095822), c("blue", "white", "red"))
+
+
+fams<-inner_join(tibble(id=order),stats %>% select(id,Project))
+top=HeatmapAnnotation(`Repeat Family`=names$fam,col=list(`Repeat Family`=c("Satellite"="#c51b7d","RNA Elements"="#e9a3c9","SINE"="#fde0ef","Transposable Elements"="#e6f5d0",LINE="#a1d76a",LTR="#4d9221")))
+print("YES2")
+
+
+a4<-Heatmap(TN_mat,name="Kmer Count Ratio (Tumor:Normal)",show_row_dend=FALSE,show_column_dend=FALSE,show_row_names=FALSE,show_column_names=FALSE,
+            left_annotation=c(side11, side12, side18,side10,side15,side17,side4,side16),row_split=fams$Project,top_annotation=c(top2,top),
+            col=col_fun,column_title = NULL,cluster_row_slices = FALSE,gap=unit(.1, "cm"))
+a5 = draw(a4)#,heatmap_legend_side="right", annotation_legend_side="right",
+           #legend_grouping = "original")
+
+print("YES4")
+
+```
+
+
+Make a Normal_Normal heatmap
+```{r N_N_Heatmap_Orig_size, echo=FALSE,include = FALSE,fig.width=10, fig.height=6,dev=c("png", "pdf")}
+
+features<-fread(here("data","Downsamples","artemis_half_normal.csv"))
+features<-features %>% select(-V1) %>% tibble()
+features$sample<-sapply(str_split(features$id,"_"),"[",4)
+features$id<-sapply(str_split(features$id,"_"),"[",1)
+features<-features %>% gather(key=feature,value=count,-id,-sample) %>% spread(key=sample,value=count)
+features$ratio<-features$ds1/features$ds2
+features<-features %>% mutate(ratio=if_else(is.na(ratio),1,ratio)) #all the NAs were from 0/0, and the point here is they're the same
+features<-features %>% mutate(ratio=if_else(is.infinite(ratio),1,ratio)) #The one Infinite was from tiny number 0, and the point here is they're essentially the same
+
+
+features<-features %>% select(-ds1,-ds2) %>% spread(key=feature,value=ratio)
+features<-features %>% select(-id)
+features2<-as.matrix(features)
+colnames(features2)<-colnames(features)
+features2<-features2[ ,feature_order]
+
+
+sum(feature_order==colnames(features2)) #should be 1280 if everything is matching
+
+col_clust<-column_order(a4)
+
+nn<-Heatmap(features2,name="Kmer Count Ratio\n(Normal Sample 1:Normal Sample 2)",show_row_dend=FALSE,show_column_dend=FALSE,show_row_names=FALSE,show_column_names=FALSE,top_annotation=c(top2,top),
+            col=col_fun,column_title = "Ratio of Subsampled Normal:Normal Kmer Repeat Landscape",row_title="Normal Samples (n=100)",cluster_row_slices = FALSE,column_order=col_clust)
+nn = draw(nn)
+
+```
+
+
+
+

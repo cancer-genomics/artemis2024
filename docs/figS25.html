@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>S25</title>
+
+<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">annapragada2024_artemis_code</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">S25</h1>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2023-12-22
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>annapragada2024_artemis_code/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version
+1.6.2). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231222code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231222)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231222code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231222)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong1d0c4f5">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong> 1d0c4f5
+</a>
+</p>
+</div>
+<div id="strongRepositoryversionstrong1d0c4f5"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version 1d0c4f5.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    code/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  analysis/Fig2a_S11_S16.Rmd
+    Untracked:  analysis/Fig2b_S7.Rmd
+    Untracked:  analysis/Fig2c_S8a.Rmd
+    Untracked:  analysis/Fig2d_S10_LINE1.Rmd
+    Untracked:  analysis/Fig2e_S13.Rmd
+    Untracked:  analysis/Fig3a.Rmd
+    Untracked:  analysis/Fig3b.Rmd
+    Untracked:  analysis/Fig4_Epi.Rmd
+    Untracked:  analysis/Fig5_LUCAS.Rmd
+    Untracked:  analysis/SessionInfo.Rmd
+    Untracked:  analysis/figS12.Rmd
+    Untracked:  analysis/figS14.Rmd
+    Untracked:  analysis/figS15.Rmd
+    Untracked:  analysis/figS17.Rmd
+    Untracked:  analysis/figS18_epi.Rmd
+    Untracked:  analysis/figS20_Ideogram.Rmd
+    Untracked:  analysis/figS21a_featureimp.Rmd
+    Untracked:  analysis/figS21bc_stability.Rmd
+    Untracked:  analysis/figS22_liver.Rmd
+    Untracked:  analysis/figS23_24_lungval.Rmd
+    Untracked:  analysis/figS25.Rmd
+    Untracked:  analysis/figS2_S3abc.Rmd
+    Untracked:  analysis/figS3d_S4.Rmd
+    Untracked:  analysis/figS5_S6_simulations.Rmd
+    Untracked:  analysis/figS8bc.Rmd
+    Untracked:  analysis/figS9.Rmd
+    Untracked:  code/ARTEMIS_Pipeline/
+    Untracked:  code/Table1.Rmd
+    Untracked:  code/Table2.Rmd
+    Untracked:  code/Tissue_Models/
+    Untracked:  code/cfDNA_Models/
+    Untracked:  code/rlucas/
+    Untracked:  code/useful.stuff.aa/
+    Untracked:  data/CN_Analysis/
+    Untracked:  data/Cristiano_Detection/
+    Untracked:  data/Cristiano_TOO/
+    Untracked:  data/Downsamples/
+    Untracked:  data/Epi/
+    Untracked:  data/Epi_Reference_Bins.csv
+    Untracked:  data/Extended Data Fig.12_recurrence_analysis_Mathios_etal.xlsx
+    Untracked:  data/Final_LUCAS_Ensemble/
+    Untracked:  data/Final_Liver_Risk_Ensemble/
+    Untracked:  data/GSEA/
+    Untracked:  data/Get_Numbers/
+    Untracked:  data/Kmer_Distributions/
+    Untracked:  data/LINE1/
+    Untracked:  data/LUCAS_Stability_Analysis/
+    Untracked:  data/Liver_Published_delfi-results_risk.csv
+    Untracked:  data/Lung_Monitoring/
+    Untracked:  data/Mathios_Published/
+    Untracked:  data/Mathios_batching.xlsx
+    Untracked:  data/NoveltyTables/
+    Untracked:  data/PCAWG/
+    Untracked:  data/Plasma_CV_meta_HiSeq.csv
+    Untracked:  data/Plasma_CV_meta_Novaseq.csv
+    Untracked:  data/Simulation/
+    Untracked:  data/Supp_Tables/
+    Untracked:  data/TCGA/
+    Untracked:  data/cfDNA_manifest_HiSeq.txt
+    Untracked:  data/focal_pcawg/
+    Untracked:  data/lucas_nova_artemis.csv
+    Untracked:  data/process_pcawg/
+
+Unstaged changes:
+    Modified:   README.md
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/license.Rmd
+    Deleted:    output/README.md
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code>library(here)</code></pre>
+<pre><code>here() starts at /Users/akshayaannapragada/Dropbox/ScannedNotes/VelculescuLab/Cancer Genomics Lab/plasma_repeats/annapragada2024_artemis_code</code></pre>
+<pre class="r"><code>library(data.table)
+library(tidyverse)</code></pre>
+<pre><code>── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>✔ ggplot2 3.3.5     ✔ purrr   0.3.4
+✔ tibble  3.1.6     ✔ dplyr   1.0.8
+✔ tidyr   1.2.0     ✔ stringr 1.4.0
+✔ readr   2.0.1     ✔ forcats 0.5.1</code></pre>
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::between()   masks data.table::between()
+✖ dplyr::filter()    masks stats::filter()
+✖ dplyr::first()     masks data.table::first()
+✖ dplyr::lag()       masks stats::lag()
+✖ dplyr::last()      masks data.table::last()
+✖ purrr::transpose() masks data.table::transpose()</code></pre>
+<pre class="r"><code>library(devtools)</code></pre>
+<pre><code>Loading required package: usethis</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(ggpubr)
+library(cowplot)</code></pre>
+<pre><code>
+Attaching package: &#39;cowplot&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:ggpubr&#39;:
+
+    get_legend</code></pre>
+<pre class="r"><code>load_all(here(&quot;code&quot;,&quot;useful.stuff.aa&quot;))           # Load</code></pre>
+<pre><code>ℹ Loading useful.stuff.aa</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>Loading required package: lattice</code></pre>
+<pre><code>
+Attaching package: &#39;caret&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:purrr&#39;:
+
+    lift</code></pre>
+<pre class="r"><code>library(recipes)</code></pre>
+<pre><code>
+Attaching package: &#39;recipes&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:devtools&#39;:
+
+    check</code></pre>
+<pre><code>The following object is masked from &#39;package:stringr&#39;:
+
+    fixed</code></pre>
+<pre><code>The following object is masked from &#39;package:stats&#39;:
+
+    step</code></pre>
+<pre class="r"><code>library(pROC)</code></pre>
+<pre><code>Type &#39;citation(&quot;pROC&quot;)&#39; for a citation.</code></pre>
+<pre><code>
+Attaching package: &#39;pROC&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    cov, smooth, var</code></pre>
+<pre class="r"><code>library(gbm)</code></pre>
+<pre><code>Loaded gbm 2.1.8</code></pre>
+<pre class="r"><code>library(readxl)
+
+dat&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;lung_dynamics_artemis.csv&quot;))
+#dat&lt;-dat %&gt;% filter(id != &quot;PGDX7348P1_Amended&quot; &amp; id != &quot;PGDX7348P2_Amended&quot;) #something is weird
+dat&lt;-dat %&gt;% select(-V1)
+e&lt;-fread(here(&quot;data&quot;,&quot;Kmer_Distributions&quot;,&quot;Expected.csv&quot;))
+e&lt;-e %&gt;% filter(total_kmers&gt;1000)
+e$fam&lt;-sapply(str_split(e$feature,&quot;#&quot;),&quot;[&quot;,2)
+e$fam&lt;-sapply(str_split(e$fam,&quot;_&quot;),&quot;[&quot;,1)
+e&lt;-e %&gt;% mutate(fam=if_else(is.na(fam),&quot;Satellite&quot;,fam))
+e&lt;-e %&gt;% mutate(fam=if_else(fam %in% c(&quot;rRNA&quot;,&quot;snRNA&quot;,&quot;scRNA&quot;,&quot;tRNA&quot;,&quot;srpRNA&quot;),&quot;RNA/DNA Elements&quot;,fam))
+e&lt;-e %&gt;% mutate(fam=if_else(fam %in% c(&quot;DNA&quot;,&quot;DNA?&quot;,&quot;RC&quot;,&quot;Retroposon&quot;),&quot;RNA/DNA Elements&quot;,fam))
+artemis&lt;-dat %&gt;% select(id,e$feature)
+test&lt;-artemis %&gt;% gather(key=feature,value=count,-id)
+test&lt;-inner_join(test,e %&gt;% select(feature,fam),by=&quot;feature&quot;)
+test&lt;-test %&gt;% group_by(id,fam) %&gt;% summarize(c=scale(count)[,1],f=feature)</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;id&#39;, &#39;fam&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre class="r"><code>test&lt;-test %&gt;% ungroup() %&gt;% select(-fam)
+test&lt;-test %&gt;% spread(key=f,value=c)
+artemis&lt;-test
+
+
+delfi&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;delfi_features.csv&quot;))
+delfi$id&lt;-gsub(&quot;_Amended&quot;,&quot;&quot;,delfi$id)
+dat&lt;-inner_join(artemis,delfi,by=&quot;id&quot;)
+
+epi&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;lung_dynamics_epi.csv&quot;))
+epi$id&lt;-gsub(&quot;_Amended&quot;,&quot;&quot;,epi$id)
+dat&lt;-inner_join(dat,epi,by=&quot;id&quot;)
+
+
+#These are the models we actually want
+model&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;ARTEMIS_Ensemble.rds&quot;))
+model2&lt;-readRDS(here(&quot;data&quot;,&quot;Mathios_Published&quot;,&quot;model_seq_glm.rds&quot;))
+model3&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;ARTEMIS_single_DELFI_SSLs_Ensemble.rds&quot;))
+
+#I have to generate some SSL scores though to use:
+s1&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;Cov_GBM.rds&quot;))
+s2&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;Ratios_ssl.rds&quot;))
+s3&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;zscores_ssl.rds&quot;))
+s4&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;Epi_ssl.rds&quot;))
+s5&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;LINE_ssl.rds&quot;))
+s6&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;LTR_ssl.rds&quot;))
+s7&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;SINE_ssl.rds&quot;))
+s8&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;Sat_ssl.rds&quot;))
+s9&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;RNA_TE_ssl.rds&quot;))
+
+d&lt;-tibble(id=dat$id,Cov_GBM=predict(s1,dat,type=&quot;prob&quot;)$cancer,Ratios_ssl=predict(s2,dat,type=&quot;prob&quot;)$cancer,
+          zscores_ssl=predict(s3,dat,type=&quot;prob&quot;)$cancer,Epi_ssl=predict(s4,dat,type=&quot;prob&quot;)$cancer,LINE_ssl=predict(s5,dat,type=&quot;prob&quot;)$cancer,
+          LTR_ssl=predict(s6,dat,type=&quot;prob&quot;)$cancer,SINE_ssl=predict(s7,dat,type=&quot;prob&quot;)$cancer,Sat_ssl=predict(s8,dat,type=&quot;prob&quot;)$cancer,RNA_TE_ssl=predict(s9,dat,type=&quot;prob&quot;)$cancer)
+
+
+meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))
+
+scores&lt;-tibble(Artemis_Score=predict(model,d %&gt;% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl),type=&quot;prob&quot;)$cancer,
+    id=dat$id,
+    delfi_score=predict(model2,dat,type=&quot;prob&quot;)$cancer)</code></pre>
+<pre><code>Warning: &#39;keep_original_cols&#39; was added to `step_pca()` after this recipe was created.
+Regenerate your recipe to avoid this warning.</code></pre>
+<pre class="r"><code>d&lt;-inner_join(d,scores,by=&quot;id&quot;)
+d$combo_score&lt;-predict(model3,d %&gt;% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type=&quot;prob&quot;)$cancer
+d&lt;-d %&gt;% select(id,Artemis_Score,delfi_score,combo_score)
+data1&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;meta2.csv&quot;))
+data2&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;dynamics.csv&quot;))
+
+meta&lt;-tibble(right_join(data1,data2 %&gt;% select(-Patient),by=c(&quot;Patient Timepoint&quot;=&quot;Timepoint ID&quot;)))
+meta&lt;-inner_join(d,meta,by=c(&quot;id&quot;=&quot;sample&quot;))
+
+
+
+meta$`Neg Median healthy correlation`&lt;- -1*(meta$`Median healthy correlation`)
+#meta&lt;-inner_join(meta,scores,by=c(&quot;id&quot;=&quot;id&quot;))
+m&lt;-meta %&gt;% select(Patient,`Max MAF`,`day`,category,
+  `Initial radiographic response to treatment`,Artemis_Score,`Timepoint Significance`,`Days since Treatment`,`Neg Median healthy correlation`,delfi_score,combo_score)
+
+
+m&lt;-m %&gt;% gather(key=&quot;feature&quot;,value=&quot;amount&quot;,`Max MAF`,Artemis_Score,`Neg Median healthy correlation`,combo_score,delfi_score)
+
+PFS_order&lt;-c(&quot;CGPLLU244&quot;,&quot;CGPLLU246&quot;,&quot;CGLU316&quot;,&quot;CGPLLU13&quot;,&quot;CGPLLU245&quot;,&quot;CGPLLU267&quot;,&quot;CGPLLU89&quot;,
+  &quot;CGLU369&quot;,&quot;CGPLLU271&quot;,&quot;CGPLLU266&quot;,&quot;CGPLLU86&quot;,&quot;CGPLLU14&quot;,&quot;CGPLLU88&quot;,&quot;CGPLLU43&quot;,&quot;CGLU344&quot;,&quot;CGPLLU269&quot;,
+  &quot;CGPLLU265&quot;,&quot;CGPLLU264&quot;,&quot;CGLU373&quot;)
+coef_order&lt;-c(unique(m$feature)[1],unique(m$feature)[3],&quot;ARTEMIS-DELFI Score&quot;,&quot;DELFI Score&quot;,&quot;ARTEMIS Score&quot;)
+m$Patient&lt;-factor(m$Patient,levels=PFS_order)
+m&lt;-m %&gt;% mutate(feature=if_else(feature==&quot;Artemis_Score&quot;,&quot;ARTEMIS Score&quot;,feature))
+m&lt;-m %&gt;% mutate(feature=if_else(feature==&quot;delfi_score&quot;,&quot;DELFI Score&quot;,feature))
+m&lt;-m %&gt;% mutate(feature=if_else(feature==&quot;combo_score&quot;,&quot;ARTEMIS-DELFI Score&quot;,feature))
+
+m$feature&lt;-factor(m$feature,levels=coef_order)
+
+#m&lt;-m %&gt;% filter(Patient != &quot;CGPLLU88&quot;) #This is the one missing stuff</code></pre>
+<pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
+
+m2&lt;-inner_join(m,PFS,by=&quot;Patient&quot;)
+
+dat&lt;-m2 %&gt;% filter(`Timepoint Significance`==&quot;Post treatment&quot; &amp; feature==&quot;ARTEMIS Score&quot;)
+
+dat2&lt;-dat %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat3&lt;-dat %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=max(`Days since Treatment`))
+
+dat4&lt;-m2 %&gt;% filter(`Timepoint Significance`==&quot;Pre treatment&quot; &amp; feature==&quot;ARTEMIS Score&quot;)
+dat4&lt;-dat4 %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat0&lt;-inner_join(m2,dat4,by=c(&quot;Patient&quot;,&quot;Days since Treatment&quot;))
+dat0&lt;-dat0 %&gt;% filter(feature==&quot;ARTEMIS Score&quot;)
+dat0$baseline&lt;-dat0$amount
+dat&lt;-inner_join(dat,dat2,by=c(&quot;Patient&quot;,&quot;Days since Treatment&quot;))
+
+library(survival)</code></pre>
+<pre><code>
+Attaching package: &#39;survival&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:caret&#39;:
+
+    cluster</code></pre>
+<pre class="r"><code>library(survminer)</code></pre>
+<pre><code>
+Attaching package: &#39;survminer&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:survival&#39;:
+
+    myeloma</code></pre>
+<pre class="r"><code>dat$surv_pfs&lt;-dat$`Progression-free Survival (months)`
+dat$censor_pfs&lt;-if_else(dat$`Progression-free Survival (months)`==&quot;Ongoing&quot;,0,1)
+dat3$last_time&lt;-dat3$`Days since Treatment`
+dat&lt;-inner_join(dat,dat3 %&gt;% select(Patient,last_time),by=&quot;Patient&quot;)
+dat&lt;-inner_join(dat,dat0 %&gt;% select(Patient,baseline),by=&quot;Patient&quot;)
+dat&lt;-dat %&gt;% mutate(surv_pfs=if_else(surv_pfs==&quot;Ongoing&quot;,last_time/30.5,as.numeric(surv_pfs)))</code></pre>
+<pre><code>Warning in replace_with(out, !condition, false, &quot;`false`&quot;, &quot;length of
+`condition`&quot;): NAs introduced by coercion</code></pre>
+<pre class="r"><code>d&lt;-as.data.frame(dat)
+
+d$survival &lt;- with(d, Surv(surv_pfs, censor_pfs))
+d$perc&lt;-((d$amount-d$baseline)/d$baseline)
+
+#med&lt;- -0.3
+med&lt;- (m2 %&gt;% filter(feature==&quot;ARTEMIS Score&quot; &amp; `Timepoint Significance`==&quot;Pre treatment&quot;) %&gt;% summarize(m=median(amount)))$m
+
+d&lt;-d %&gt;% mutate(med_grp=if_else(amount&lt;=med,0,1))
+fit &lt;- survfit(survival ~ med_grp, data = d)
+fig &lt;- ggsurvplot(fit, data = d,
+           surv.median.line = &quot;hv&quot;, ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
+           ## or brewer color (e.g.: &quot;Dark2&quot;), or ggsci color (e.g.: &quot;jco&quot;)
+           ##palette = c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
+           legend=c(0.75, 0.8),
+           legend.title=&quot;&quot;, 
+           palette=c(&quot;blue&quot;, &quot;red&quot;),
+           legend.labs=c(&quot;ARTEMIS Low&quot;, &quot;ARTEMIS High&quot;),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab(&quot;Progression-Free Survival&quot;) +
+    xlab(&quot;Months&quot;)
+  medians &lt;- surv_median(fit)$median</code></pre>
+<pre><code>Warning: `select_()` was deprecated in dplyr 0.7.0.
+
+Warning: Please use `select()` instead.</code></pre>
+<pre class="r"><code>  breaks &lt;- round(sort(c(seq(0, max(d$surv_pfs), by=max(d$surv_pfs)/2), medians)),0)
+#breaks &lt;- breaks[ breaks != 1000 ]
+  breaks&lt;-round(breaks,1)
+  fig$plot &lt;- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre class="r"><code>  X2 &lt;- survdiff(Surv(surv_pfs,censor_pfs) ~ med_grp, data=d)$chisq
+  p &lt;- round(1-pchisq(X2, df=1), 4)
+  if(p &lt; 0.001){
+      plabel &lt;- &quot;P &lt; 0.001&quot;
+  } else {
+      plabel &lt;- paste0(&quot;P = &quot;, round(p, 3))
+  }
+  fig$plot &lt;- fig$plot + annotate(&quot;text&quot;, x=max(dat$surv_pfs)/3, y=0.6, label=plabel,
+                                size=5)
+  a&lt;-fig$plot
+  a</code></pre>
+<p><img src="figure/figS25.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>overall_1&lt;-a+ggtitle(&quot;ARTEMIS Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
+
+m2&lt;-inner_join(m,PFS,by=&quot;Patient&quot;)
+
+dat&lt;-m2 %&gt;% filter(`Timepoint Significance`==&quot;Post treatment&quot; &amp; feature==&quot;ARTEMIS-DELFI Score&quot;)
+
+dat2&lt;-dat %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat3&lt;-dat %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=max(`Days since Treatment`))
+
+dat4&lt;-m2 %&gt;% filter(`Timepoint Significance`==&quot;Pre treatment&quot; &amp; feature==&quot;ARTEMIS-DELFI Score&quot;)
+dat4&lt;-dat4 %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat0&lt;-inner_join(m2,dat4,by=c(&quot;Patient&quot;,&quot;Days since Treatment&quot;))
+dat0&lt;-dat0 %&gt;% filter(feature==&quot;ARTEMIS-DELFI Score&quot;)
+dat0$baseline&lt;-dat0$amount
+dat&lt;-inner_join(dat,dat2,by=c(&quot;Patient&quot;,&quot;Days since Treatment&quot;))
+
+library(survival)
+library(survminer)
+dat$surv_pfs&lt;-dat$`Progression-free Survival (months)`
+dat$censor_pfs&lt;-if_else(dat$`Progression-free Survival (months)`==&quot;Ongoing&quot;,0,1)
+dat3$last_time&lt;-dat3$`Days since Treatment`
+dat&lt;-inner_join(dat,dat3 %&gt;% select(Patient,last_time),by=&quot;Patient&quot;)
+dat&lt;-inner_join(dat,dat0 %&gt;% select(Patient,baseline),by=&quot;Patient&quot;)
+dat&lt;-dat %&gt;% mutate(surv_pfs=if_else(surv_pfs==&quot;Ongoing&quot;,last_time/30.5,as.numeric(surv_pfs)))</code></pre>
+<pre><code>Warning in replace_with(out, !condition, false, &quot;`false`&quot;, &quot;length of
+`condition`&quot;): NAs introduced by coercion</code></pre>
+<pre class="r"><code>d&lt;-as.data.frame(dat)
+
+d$survival &lt;- with(d, Surv(surv_pfs, censor_pfs))
+d$perc&lt;-((d$amount-d$baseline)/d$baseline)
+
+#med&lt;- -0.3
+med&lt;- (m2 %&gt;% filter(feature==&quot;ARTEMIS-DELFI Score&quot; &amp; `Timepoint Significance`==&quot;Pre treatment&quot;) %&gt;% summarize(m=median(amount)))$m
+
+d&lt;-d %&gt;% mutate(med_grp=if_else(amount&lt;=med,0,1))
+fit &lt;- survfit(survival ~ med_grp, data = d)
+fig &lt;- ggsurvplot(fit, data = d,
+           surv.median.line = &quot;hv&quot;, ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
+           ## or brewer color (e.g.: &quot;Dark2&quot;), or ggsci color (e.g.: &quot;jco&quot;)
+           ##palette = c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
+           legend=c(0.75, 0.8),
+           legend.title=&quot;&quot;, 
+           palette=c(&quot;blue&quot;, &quot;red&quot;),
+           legend.labs=c(&quot;ARTEMIS-DELFI Low&quot;, &quot;ARTEMIS-DELFI High&quot;),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab(&quot;Progression-Free Survival&quot;) +
+    xlab(&quot;Months&quot;)
+  medians &lt;- surv_median(fit)$median
+  breaks &lt;- round(sort(c(seq(0, max(d$surv_pfs), by=max(d$surv_pfs)/2), medians)),0)
+#breaks &lt;- breaks[ breaks != 1000 ]
+  breaks&lt;-round(breaks,1)
+  fig$plot &lt;- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre class="r"><code>  X2 &lt;- survdiff(Surv(surv_pfs,censor_pfs) ~ med_grp, data=d)$chisq
+  p &lt;- round(1-pchisq(X2, df=1), 4)
+  if(p &lt; 0.001){
+      plabel &lt;- &quot;P &lt; 0.001&quot;
+  } else {
+      plabel &lt;- paste0(&quot;P = &quot;, round(p, 3))
+  }
+  fig$plot &lt;- fig$plot + annotate(&quot;text&quot;, x=max(dat$surv_pfs)/3, y=0.6, label=plabel,
+                                size=5)
+  a&lt;-fig$plot
+  a</code></pre>
+<p><img src="figure/figS25.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>overall_2&lt;-a+ggtitle(&quot;ARTEMIS-DELFI Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
+
+m2&lt;-inner_join(m,PFS,by=&quot;Patient&quot;)
+
+dat&lt;-m2 %&gt;% filter(`Timepoint Significance`==&quot;Post treatment&quot; &amp; feature==&quot;DELFI Score&quot;)
+
+dat2&lt;-dat %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat3&lt;-dat %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=max(`Days since Treatment`))
+
+dat4&lt;-m2 %&gt;% filter(`Timepoint Significance`==&quot;Pre treatment&quot; &amp; feature==&quot;DELFI Score&quot;)
+dat4&lt;-dat4 %&gt;% dplyr::group_by(Patient) %&gt;% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat0&lt;-inner_join(m2,dat4,by=c(&quot;Patient&quot;,&quot;Days since Treatment&quot;))
+dat0&lt;-dat0 %&gt;% filter(feature==&quot;ARTEMIS Score&quot;)
+dat0$baseline&lt;-dat0$amount
+dat&lt;-inner_join(dat,dat2,by=c(&quot;Patient&quot;,&quot;Days since Treatment&quot;))
+
+library(survival)
+library(survminer)
+dat$surv_pfs&lt;-dat$`Progression-free Survival (months)`
+dat$censor_pfs&lt;-if_else(dat$`Progression-free Survival (months)`==&quot;Ongoing&quot;,0,1)
+dat3$last_time&lt;-dat3$`Days since Treatment`
+dat&lt;-inner_join(dat,dat3 %&gt;% select(Patient,last_time),by=&quot;Patient&quot;)
+dat&lt;-inner_join(dat,dat0 %&gt;% select(Patient,baseline),by=&quot;Patient&quot;)
+dat&lt;-dat %&gt;% mutate(surv_pfs=if_else(surv_pfs==&quot;Ongoing&quot;,last_time/30.5,as.numeric(surv_pfs)))</code></pre>
+<pre><code>Warning in replace_with(out, !condition, false, &quot;`false`&quot;, &quot;length of
+`condition`&quot;): NAs introduced by coercion</code></pre>
+<pre class="r"><code>d&lt;-as.data.frame(dat)
+
+d$survival &lt;- with(d, Surv(surv_pfs, censor_pfs))
+d$perc&lt;-((d$amount-d$baseline)/d$baseline)
+
+#med&lt;- -0.3
+med&lt;- (m2 %&gt;% filter(feature==&quot;DELFI Score&quot; &amp; `Timepoint Significance`==&quot;Pre treatment&quot;) %&gt;% summarize(m=median(amount)))$m
+
+d&lt;-d %&gt;% mutate(med_grp=if_else(amount&lt;=med,0,1))
+fit &lt;- survfit(survival ~ med_grp, data = d)
+fig &lt;- ggsurvplot(fit, data = d,
+           surv.median.line = &quot;hv&quot;, ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
+           ## or brewer color (e.g.: &quot;Dark2&quot;), or ggsci color (e.g.: &quot;jco&quot;)
+           ##palette = c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
+           legend=c(0.75, 0.8),
+           legend.title=&quot;&quot;, 
+           palette=c(&quot;blue&quot;, &quot;red&quot;),
+           legend.labs=c(&quot;DELFI Low&quot;, &quot;DELFI High&quot;),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab(&quot;Progression-Free Survival&quot;) +
+    xlab(&quot;Months&quot;)
+  medians &lt;- surv_median(fit)$median
+  breaks &lt;- round(sort(c(seq(0, max(d$surv_pfs), by=max(d$surv_pfs)/2), medians)),0)
+#breaks &lt;- breaks[ breaks != 1000 ]
+  breaks&lt;-round(breaks,1)
+  fig$plot &lt;- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre class="r"><code>  X2 &lt;- survdiff(Surv(surv_pfs,censor_pfs) ~ med_grp, data=d)$chisq
+  p &lt;- round(1-pchisq(X2, df=1), 4)
+  if(p &lt; 0.001){
+      plabel &lt;- &quot;P &lt; 0.001&quot;
+  } else {
+      plabel &lt;- paste0(&quot;P = &quot;, round(p, 3))
+  }
+  fig$plot &lt;- fig$plot + annotate(&quot;text&quot;, x=max(dat$surv_pfs)/3, y=0.6, label=plabel,
+                                size=5)
+  a&lt;-fig$plot
+  a</code></pre>
+<p><img src="figure/figS25.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>overall_3&lt;-a+ggtitle(&quot;DELFI Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] survminer_0.4.9            survival_3.2-13           
+ [3] readxl_1.3.1               gbm_2.1.8                 
+ [5] pROC_1.17.0.1              recipes_0.1.16            
+ [7] caret_6.0-88               lattice_0.20-44           
+ [9] useful.stuff.aa_0.0.0.9000 cowplot_1.1.1             
+[11] ggpubr_0.4.0               devtools_2.4.2            
+[13] usethis_2.0.1              forcats_0.5.1             
+[15] stringr_1.4.0              dplyr_1.0.8               
+[17] purrr_0.3.4                readr_2.0.1               
+[19] tidyr_1.2.0                tibble_3.1.6              
+[21] ggplot2_3.3.5              tidyverse_1.3.1           
+[23] data.table_1.14.0          here_1.0.1                
+[25] workflowr_1.6.2           
+
+loaded via a namespace (and not attached):
+  [1] backports_1.2.1      plyr_1.8.6           splines_4.0.5       
+  [4] listenv_0.8.0        digest_0.6.27        foreach_1.5.1       
+  [7] htmltools_0.5.2      fansi_0.5.0          magrittr_2.0.1      
+ [10] memoise_2.0.0        tzdb_0.1.2           openxlsx_4.2.4      
+ [13] remotes_2.4.0        globals_0.14.0       modelr_0.1.8        
+ [16] gower_0.2.2          prettyunits_1.1.1    colorspace_2.0-2    
+ [19] rvest_1.0.1          haven_2.4.3          xfun_0.25           
+ [22] callr_3.7.0          crayon_1.4.1         jsonlite_1.7.2      
+ [25] zoo_1.8-9            iterators_1.0.13     glue_1.6.2          
+ [28] gtable_0.3.0         ipred_0.9-11         car_3.0-11          
+ [31] pkgbuild_1.2.0       shape_1.4.6          future.apply_1.8.1  
+ [34] abind_1.4-5          scales_1.2.1         DBI_1.1.1           
+ [37] rstatix_0.7.0        Rcpp_1.0.7           xtable_1.8-4        
+ [40] bit_4.0.4            foreign_0.8-81       km.ci_0.5-2         
+ [43] stats4_4.0.5         lava_1.6.10          prodlim_2019.11.13  
+ [46] glmnet_4.1-2         httr_1.4.2           ellipsis_0.3.2      
+ [49] farver_2.1.0         pkgconfig_2.0.3      nnet_7.3-16         
+ [52] sass_0.4.0           dbplyr_2.1.1         utf8_1.2.2          
+ [55] labeling_0.4.2       tidyselect_1.1.1     rlang_1.1.1         
+ [58] reshape2_1.4.4       later_1.3.0          munsell_0.5.0       
+ [61] cellranger_1.1.0     tools_4.0.5          cachem_1.0.6        
+ [64] cli_3.6.1            generics_0.1.0       broom_0.7.9         
+ [67] evaluate_0.14        fastmap_1.1.0        yaml_2.2.1          
+ [70] bit64_4.0.5          ModelMetrics_1.2.2.2 processx_3.5.2      
+ [73] knitr_1.33           fs_1.5.0             zip_2.2.0           
+ [76] survMisc_0.5.5       future_1.22.1        nlme_3.1-152        
+ [79] xml2_1.3.2           compiler_4.0.5       rstudioapi_0.13     
+ [82] curl_4.3.2           testthat_3.0.4       ggsignif_0.6.2      
+ [85] reprex_2.0.1         bslib_0.3.0          stringi_1.7.4       
+ [88] highr_0.9            ps_1.6.0             desc_1.3.0          
+ [91] Matrix_1.3-4         KMsurv_0.1-5         vctrs_0.4.0         
+ [94] pillar_1.6.2         lifecycle_1.0.3      jquerylib_0.1.4     
+ [97] httpuv_1.6.2         R6_2.5.1             promises_1.2.0.1    
+[100] gridExtra_2.3        rio_0.5.27           parallelly_1.27.0   
+[103] sessioninfo_1.1.1    codetools_0.2-18     MASS_7.3-54         
+[106] assertthat_0.2.1     pkgload_1.2.1        rprojroot_2.0.2     
+[109] withr_2.5.0          parallel_4.0.5       hms_1.1.0           
+[112] grid_4.0.5           rpart_4.1-15         timeDate_3043.102   
+[115] class_7.3-19         rmarkdown_2.10       carData_3.0-4       
+[118] git2r_0.28.0         lubridate_1.7.10    </code></pre>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

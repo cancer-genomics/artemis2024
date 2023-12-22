@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Home</title>
+
+<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">annapragada2024_artemis_code</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Home</h1>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2023-12-22
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>annapragada2024_artemis_code/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version
+1.6.2). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong1d0c4f5">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong> 1d0c4f5
+</a>
+</p>
+</div>
+<div id="strongRepositoryversionstrong1d0c4f5"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version 1d0c4f5.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    code/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  analysis/Fig2a_S11_S16.Rmd
+    Untracked:  analysis/Fig2b_S7.Rmd
+    Untracked:  analysis/Fig2c_S8a.Rmd
+    Untracked:  analysis/Fig2d_S10_LINE1.Rmd
+    Untracked:  analysis/Fig2e_S13.Rmd
+    Untracked:  analysis/Fig3a.Rmd
+    Untracked:  analysis/Fig3b.Rmd
+    Untracked:  analysis/Fig4_Epi.Rmd
+    Untracked:  analysis/Fig5_LUCAS.Rmd
+    Untracked:  analysis/SessionInfo.Rmd
+    Untracked:  analysis/figS12.Rmd
+    Untracked:  analysis/figS14.Rmd
+    Untracked:  analysis/figS15.Rmd
+    Untracked:  analysis/figS17.Rmd
+    Untracked:  analysis/figS18_epi.Rmd
+    Untracked:  analysis/figS20_Ideogram.Rmd
+    Untracked:  analysis/figS21a_featureimp.Rmd
+    Untracked:  analysis/figS21bc_stability.Rmd
+    Untracked:  analysis/figS22_liver.Rmd
+    Untracked:  analysis/figS23_24_lungval.Rmd
+    Untracked:  analysis/figS25.Rmd
+    Untracked:  analysis/figS2_S3abc.Rmd
+    Untracked:  analysis/figS3d_S4.Rmd
+    Untracked:  analysis/figS5_S6_simulations.Rmd
+    Untracked:  analysis/figS8bc.Rmd
+    Untracked:  analysis/figS9.Rmd
+    Untracked:  code/ARTEMIS_Pipeline/
+    Untracked:  code/Table1.Rmd
+    Untracked:  code/Table2.Rmd
+    Untracked:  code/Tissue_Models/
+    Untracked:  code/cfDNA_Models/
+    Untracked:  code/rlucas/
+    Untracked:  code/useful.stuff.aa/
+    Untracked:  data/CN_Analysis/
+    Untracked:  data/Cristiano_Detection/
+    Untracked:  data/Cristiano_TOO/
+    Untracked:  data/Downsamples/
+    Untracked:  data/Epi/
+    Untracked:  data/Epi_Reference_Bins.csv
+    Untracked:  data/Extended Data Fig.12_recurrence_analysis_Mathios_etal.xlsx
+    Untracked:  data/Final_LUCAS_Ensemble/
+    Untracked:  data/Final_Liver_Risk_Ensemble/
+    Untracked:  data/GSEA/
+    Untracked:  data/Get_Numbers/
+    Untracked:  data/Kmer_Distributions/
+    Untracked:  data/LINE1/
+    Untracked:  data/LUCAS_Stability_Analysis/
+    Untracked:  data/Liver_Published_delfi-results_risk.csv
+    Untracked:  data/Lung_Monitoring/
+    Untracked:  data/Mathios_Published/
+    Untracked:  data/Mathios_batching.xlsx
+    Untracked:  data/NoveltyTables/
+    Untracked:  data/PCAWG/
+    Untracked:  data/Plasma_CV_meta_HiSeq.csv
+    Untracked:  data/Plasma_CV_meta_Novaseq.csv
+    Untracked:  data/Simulation/
+    Untracked:  data/Supp_Tables/
+    Untracked:  data/TCGA/
+    Untracked:  data/cfDNA_manifest_HiSeq.txt
+    Untracked:  data/focal_pcawg/
+    Untracked:  data/lucas_nova_artemis.csv
+    Untracked:  data/process_pcawg/
+
+Unstaged changes:
+    Modified:   README.md
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/license.Rmd
+    Deleted:    output/README.md
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/index.Rmd</code>) and HTML
+(<code>docs/index.html</code>) files. If you’ve configured a remote Git
+repository (see <code>?wflow_git_remote</code>), click on the hyperlinks
+in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+1d0c4f5
+</td>
+<td>
+shay-279
+</td>
+<td>
+2023-12-22
+</td>
+<td>
+Start workflowr project.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="citation" class="section level1">
+<h1>Citation</h1>
+<p>Annapragada, A.V. Niknafs, N. White, J.R. Bruhm, D.C., Cherry, C.,
+Medina, J.E., Adleff, V., Hruban C., Mathios, D., Foda, Z.H., Phallen,
+J., Scharpf, R.B., Velculescu, V.E. Genome-wide repeat landscapes in
+cancer and cell-free DNA.</p>
+</div>
+<div id="abstract" class="section level1">
+<h1>Abstract</h1>
+<p>Genetic changes in repetitive sequences are a hallmark of cancer and
+other diseases but characterizing these has been challenging using
+standard sequencing approaches. We developed a de novo kmer finding
+approach to identify repeat elements from whole genome sequencing. Using
+this method, we analyzed 1.2 billion kmers in 2837 samples from 1975
+individuals, including those with lung, breast, colorectal, ovarian,
+liver, gastric, head and neck, bladder, cervical, thyroid, and prostate
+cancer, and found tumor-specific changes in 1280 repeat element types in
+these patients. These included changes to known repeats as well as 820
+elements that were not previously known to be altered in human cancer.
+Repeat elements were enriched in regions of driver genes and their
+representation was altered by structural changes as well as epigenetic
+states. Machine learning analyses using genome-wide repeat landscapes
+and fragmentation profiles in cfDNA detected patients with early-stage
+lung or liver cancers and could be used to noninvasively identify the
+tissue of origin of tumors. These analyses reveal widespread changes in
+repeat landscapes of human cancers and provide an approach for their
+detection and characterization.</p>
+</div>
+<div id="feature-generation-pipelines" class="section level1">
+<h1>Feature Generation Pipelines</h1>
+<p>The code and a README needed to run the ARTEMIS pipeline for new
+samples may be found in <a
+href="../code/ARTEMIS_Pipeline">code/ARTEMIS_Pipeline</a>. Briefly this
+includes (1) de novo kmer finding to generate 1.2 billion kmers in 1280
+repeat element features, (2) compiling kmer repeat landscapes for a
+cohort of samples (used in tissue and cfDNA), and (3) compiling coverage
+at regions of high density of epigenetic marks (used in cfDNA).</p>
+<p>We have previously published the code needed to run the DELFI
+pipeline, please see: <a
+href="https://github.com/cancer-genomics/reproduce_lucas_wflow/tree/master/code/preprocessing"
+class="uri">https://github.com/cancer-genomics/reproduce_lucas_wflow/tree/master/code/preprocessing</a></p>
+</div>
+<div id="training-artemis-and-artemis-delfi-models"
+class="section level1">
+<h1>Training ARTEMIS and ARTEMIS-DELFI Models</h1>
+<p>The code needed to train the ARTEMIS models for classification of
+PCAWG tissue may be found in <a
+href="../code/Tissue_Models">code/Tissue_Models</a></p>
+<p>The ARTEMIS and DELFI features, the code needed to train (and
+externally validate in the case of the lung detection model) the cfDNA
+models presented in this study, and a README may be found in <a
+href="../code/cfDNA_Models">code/cfDNA_Models</a></p>
+</div>
+<div id="documentation" class="section level1">
+<h1>Documentation</h1>
+<p>We have provided a README describing the structure of this workflowr,
+as well as READMEs within subfolders as needed.</p>
+<p>A list of R-related dependencies for reproducing the figures in the
+LUCAS manuscript is available in the <a
+href="../docs/SessionInfo.html">SessionInfo</a> document. Most of the R
+packages are available from Bioconductor or CRAN.</p>
+<p>There are two packages that we wrote with useful functions -
+useful.stuff.aa and rlucas. Copies of both are available in the <a
+href="../code">code</a> folder. rlucas was originally made available in
+the code/ folder of <a
+href="https://github.com/cancer-genomics/reproduce_lucas_wflow"
+class="uri">https://github.com/cancer-genomics/reproduce_lucas_wflow</a>.</p>
+</div>
+<div id="figures" class="section level1">
+<h1>Figures</h1>
+<ul>
+<li>Figure 1: <a href="../docs/Fig1.pdf">PDF</a></li>
+<li>Figure 2:
+<ul>
+<li>A: <a href="../analysis/Fig2a_S11_S16.Rmd">Code</a>, <a
+href="../docs/figure/Fig2a_S11_S16.Rmd/T_N_Heatmap_Orig2-1.pdf">PDF</a></li>
+<li>B: <a href="../analysis/Fig2b_S7.Rmd">Code</a>, <a
+href="../docs/figure/Fig2b_S7.Rmd/SV_all-1.pdf">PDF</a></li>
+<li>C: <a href="../analysis/Fig2c_S8a.Rmd">Code</a>, <a
+href="../docs/figure/Fig2c_S8a.Rmd/comp2-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/Fig2c_S8a.Rmd/comp_legend-1.pdf">PDF part
+2</a></li>
+<li>D: <a href="../analysis/Fig2d_S10_LINE1.Rmd">Code</a>, <a
+href="../docs/figure/Fig2d_S10_LINE1.Rmd/main-1.pdf">PDF</a></li>
+<li>E: <a href="../analysis/Fig2e_S13.Rmd">Code</a>, <a
+href="../docs/figure/Fig2e_S13.Rmd/KM_overall_plot-1.pdf">PDF</a></li>
+</ul></li>
+<li>Figure 3:
+<ul>
+<li>A: <a href="../analysis/Fig3a.Rmd">Code</a>, <a
+href="../docs/figure/Fig3a.Rmd/composite-1.pdf">PDF</a></li>
+<li>B: <a href="../analysis/Fig3b.Rmd">Code</a>, <a
+href="../docs/figure/Fig3b.Rmd/comp-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/Fig3b.Rmd/legend-1.pdf">PDF part 2</a></li>
+</ul></li>
+<li>Figure 4: <a href="../analysis/Fig4_Epi.Rmd">Code</a>, <a
+href="../docs/figure/Fig4_Epi.Rmd/composite-1.pdf">PDF</a></li>
+<li>Figure 5: <a href="../analysis/Fig5_LUCAS.Rmd">Code</a>
+<ul>
+<li>A: <a
+href="../docs/figure/Fig5_LUCAS.Rmd/CV_boxplots-2.pdf">PDF</a></li>
+<li>B: <a
+href="../docs/figure/Fig5_LUCAS.Rmd/all_ROCs-1.pdf">PDF</a></li>
+<li>C: <a
+href="../docs/figure/Fig5_LUCAS.Rmd/plotEV_extra-1.pdf">PDF</a></li>
+</ul></li>
+</ul>
+</div>
+<div id="tables" class="section level1">
+<h1>Tables</h1>
+<ul>
+<li>Table 1: <a href="../code/Table1.Rmd">Code</a></li>
+<li>Table 2: <a href="../code/Table2.Rmd">Code</a></li>
+</ul>
+</div>
+<div id="supplementary-figures" class="section level1">
+<h1>Supplementary Figures</h1>
+<ul>
+<li>S1: <a href="../docs/S1.pdf">PDF</a></li>
+<li>S2: <a href="../analysis/figS2_S3abc.Rmd">Code</a>, <a
+href="../docs/figure/figS2_S3abc.Rmd/size-1.pdf">PDF</a></li>
+<li>S3:
+<ul>
+<li>A: <a href="../analysis/figS2_S3abc.Rmd">Code</a>, <a
+href="../docs/figure/figS2_S3abc.Rmd/boxplots-1.pdf">PDF</a></li>
+<li>B: <a href="../analysis/figS2_S3abc.Rmd">Code</a>, <a
+href="../docs/figure/figS2_S3abc.Rmd/Hist-1.pdf">PDF</a></li>
+<li>C: <a href="../analysis/figS2_S3abc.Rmd">Code</a>, <a
+href="../docs/figure/figS2_S3abc.Rmd/lollipops-1.pdf">PDF</a></li>
+<li>D: <a href="../analysis/figS3d_S4.Rmd">Code</a>, <a
+href="../docs/figure/figS3d_S4.Rmd/cosmic-5.pdf">PDF</a></li>
+</ul></li>
+<li>S4: <a href="../analysis/figS3d_S4.Rmd">Code</a>, <a
+href="../docs/figure/figS3d_S4.Rmd/KEGG-1.pdf">PDF</a></li>
+<li>S5: <a href="../analysis/figS5_S6_simulations.Rmd">Code</a>, <a
+href="../docs/figure/figS5_S6_simulations.Rmd/Sim_Matrix-1.pdf">PDF part
+1</a>, <a
+href="../docs/figure/figS5_S6_simulations.Rmd/Sim_Matrix_SINE-1.pdf">PDF
+part 2</a></li>
+<li>S6: <a href="../analysis/figS5_S6_simulations.Rmd">Code</a>, <a
+href="../docs/figure/figS5_S6_simulations.Rmd/altemose-1.pdf">PDF</a></li>
+<li>S7: <a href="../analysis/Fig2b_S7.Rmd">Code</a>, <a
+href="../docs/figure/Fig2b_S7.Rmd/Arm_CN_aggregate2-1.pdf">PDF</a></li>
+<li>S8:
+<ul>
+<li>A: <a href="../analysis/Fig2c_S8a.Rmd">Code</a>, <a
+href="../docs/figure/Fig2c_S8a.Rmd/p2-1.pdf">PDF</a></li>
+<li>B: <a href="../analysis/figS8bc.Rmd">Code</a>, <a
+href="../docs/figure/figS8bc.Rmd/MCCC1_p2-2.pdf">PDF part 1</a>, <a
+href="../docs/figure/figS8bc.Rmd/MCCC1_p2-1.pdf">PDF part 2</a>, <a
+href="../docs/figure/figS8bc.Rmd/p32-1.pdf">PDF part 3</a></li>
+<li>C: <a href="../analysis/figS8bc.Rmd">Code</a>, <a
+href="../docs/figure/figS8bc.Rmd/comp2-1.pdf">PDF</a></li>
+</ul></li>
+<li>S9: <a href="../analysis/figS9.Rmd">Code</a>, <a
+href="../docs/figure/figS9.Rmd/T_N_Heatmap_Orig_size-1.pdf">PDF</a></li>
+<li>S10: <a href="../analysis/Fig2d_S10_LINE1.Rmd">Code</a>, <a
+href="../docs/figure/Fig2d_S10_LINE1.Rmd/scatter-1.pdf">PDF part 1</a>,
+<a href="../docs/figure/Fig2d_S10_LINE1.Rmd/bar-1.pdf">PDF part
+2</a></li>
+<li>S11: <a href="../analysis/Fig2a_S11_S16.Rmd">Code</a>, <a
+href="../docs/figure/Fig2a_S11_S16.Rmd/comp-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/Fig2a_S11_S16.Rmd/Healthy_Var_Top-1.pdf">PDF part
+2</a></li>
+<li>S12: <a href="../analysis/figS12.Rmd">Code</a>, <a
+href="../docs/figure/figS12.Rmd/overall-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/figS12.Rmd/race-1.pdf">PDF part 2</a>, <a
+href="../docs/figure/figS12.Rmd/all-1.pdf">PDF part 3</a></li>
+<li>S13: <a href="../analysis/Fig2e_S13.Rmd">Code</a>, <a
+href="../docs/figure/Fig2e_S13.Rmd/Scores_By_Type-1.png">PDF part 1</a>,
+<a href="../docs/figure/Fig2e_S13.Rmd/KM_group_plot-1.pdf">PDF part
+2</a></li>
+<li>S14: <a href="../analysis/figS14.Rmd">Code</a>, <a
+href="../docs/figure/figS14.Rmd/OS_ALL-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/figS14.Rmd/PFS_ALL-1.pdf">PDF part 2</a></li>
+<li>S15: <a href="../analysis/figS15.Rmd">Code</a>, <a
+href="../docs/figure/figS15.Rmd/TN-2.pdf">PDF</a></li>
+<li>S16: <a href="../analysis/Fig2a_S11_S16.Rmd">Code</a>, <a
+href="../docs/figure/Fig2a_S11_S16.Rmd/N_N_Heatmap_Orig_size-1.pdf">PDF</a></li>
+<li>S17: <a href="../analysis/figS17.Rmd">Code</a>, <a
+href="../docs/figure/figS17.Rmd/batch-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/figS17.Rmd/cor-1.pdf">PDF part 2</a>, <a
+href="../docs/figure/figS17.Rmd/MA-1.pdf">PDF part 3</a></li>
+<li>S18: <a href="../analysis/figS18_epi.Rmd">Code</a>, <a
+href="../docs/figure/figS18_epi.Rmd/epi3-1.pdf">PDF</a></li>
+<li>S19: <a href="../docs/S19.pdf">PDF</a></li>
+<li>S20: <a href="../analysis/figS20_Ideogram.Rmd">Code</a>, <a
+href="../docs/figure/figS20_Ideogram.Rmd/ideo-1.pdf">PDF</a></li>
+<li>S21: <a href="../analysis/figS21a_featureimp.Rmd">Code part 1</a>,
+<a href="../docs/figure/figS21a_featureimp.Rmd/imp-1.pdf">PDF part
+1</a>, <a href="../analysis/figS21bc_stability.Rmd">Code part 2 and
+3</a>, <a
+href="../docs/figure/figS21bc_stability.Rmd/score_plots-1.pdf">PDF part
+2</a>, <a
+href="../docs/figure/figS21bc_stability.Rmd/score_plots-2.pdf">PDF part
+3</a></li>
+<li>S22: <a href="../analysis/figS22_liver.Rmd">Code</a>, <a
+href="../docs/figure/figS22_liver.Rmd/CV_boxplots-1.pdf">PDF part 1</a>,
+<a href="../docs/figure/figS22_liver.Rmd/all_ROCs-1.pdf">PDF part
+2</a></li>
+<li>S23: <a href="../analysis/figS23_24_lungval.Rmd">Code</a>, <a
+href="../docs/figure/figS23_24_lungval.Rmd/all_ROCs2-1.pdf">PDF</a></li>
+<li>S24: <a href="../analysis/figS23_24_lungval.Rmd">Code</a>, <a
+href="../docs/figure/figS23_24_lungval.Rmd/recurrence-1.pdf">PDF</a></li>
+<li>S25: <a href="../analysis/figS25.Rmd">Code</a>, <a
+href="../docs/figure/figS25.Rmd/PFS-1.pdf">PDF part 1</a>, <a
+href="../docs/figure/figS25.Rmd/horizontal-1.pdf">PDF part 2</a></li>
+</ul>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

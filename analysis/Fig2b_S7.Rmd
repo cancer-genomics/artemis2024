@@ -1,0 +1,205 @@
+---
+title: "2B_S7"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(RColorBrewer)
+```
+
+
+```{r}
+kmer<-fread(here("data","CN_Analysis","PCAWG_Arm_kmercounts.csv"))
+kmer<-kmer %>% select(-V1)
+
+
+```
+
+```{r}
+library(readxl)
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+#Noushin's data
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+exc2<-exc %>% filter(icgc_donor_id %in% ploidy$`ICGC Donor`)
+
+ploidy<-ploidy %>% filter(!`ICGC Donor` %in% exc$icgc_donor_id)
+
+clin<-fread(here("data","TCGA","clinical.cases_selection.2023-10-19","clinical.tsv"))
+clin<-clin %>% filter(treatment_type=="Pharmaceutical Therapy, NOS") #It's not clear why every pt has two rows, for Pharm and Rad
+clin<-clin %>% select(case_submitter_id,race,ajcc_pathologic_stage,gender)
+ploidy<-inner_join(ploidy,clin,by=c("donor_barcode"="case_submitter_id"))
+
+
+```
+
+Apply a sample's somatic gains/losses and re-do counts, get ratio
+```{r}
+CN<-fread(here("data","CN_analysis","CN_Profiles.csv"))
+CN<-CN %>% select(-V1)
+
+#we need to use the sample_barcode from ploidy as this is the individual and sepcifices Tumor
+CN$barcode<-substring(CN$Sample,1,16)
+
+#ploidy %>% filter(!sample_barcode %in% CN$barcode)
+#4 samples seem to be missing CN data, of these 4 there is normal data for 3. Of note, all 4 Noushin couldn't calculate ploidy metrics either.
+
+CN<-CN %>% filter(barcode %in% ploidy$sample_barcode)
+
+CN<-inner_join(CN %>% select(chrom,CN_ave,barcode),ploidy %>% select(sample_barcode,`ICGC Donor`,project_id),by=c("barcode"="sample_barcode"))
+CN<-CN %>% rename("arm"="chrom")
+CN<-CN %>% filter(arm != "chrXq" & arm != "chrXp")
+```
+
+```{r Arm_CN_all, fig.width=12,fig.height=12, dev=c("png", "pdf")}
+kmer<-kmer %>% gather(key=arm,value=count,-id)
+kmer$type<-sapply(str_split(kmer$id,"_"),"[",2)
+kmer$id<-sapply(str_split(kmer$id,"_"),"[",1)
+kmer<-kmer %>% spread(key=type,value=count)
+kmer$ratio<-kmer$tumor/kmer$normal
+CN<-CN %>% rename("id"="ICGC Donor")
+
+kmer$arm<-sapply(str_split(kmer$arm,"::"),"[",1)
+dat<-inner_join(kmer,CN,by=c("id","arm"))
+dat$ratio<-2*(dat$ratio) #adjust from ratio to expected tumor copy number
+prep <- dat %>%
+  group_by(arm) %>%
+  mutate(
+    slope = round(lm(ratio ~ CN_ave)$coefficients[2], 2),
+    significance = summary(lm(ratio ~ CN_ave))$coefficients[2, 4],
+    x = 4,   # x coordinate for slope label
+    y = 7     # y coordinate for slope label
+  )
+prep<-prep %>% filter(id=="DO29850")
+prep$slope_label<-paste0("Observed Slope = ",prep$slope)
+
+dat$arm<-factor(dat$arm,levels=paste0("chr",rep(c(1:22),each=2),rep(c("p","q"),22)))
+prep$arm<-factor(prep$arm,levels=paste0("chr",rep(c(1:22),each=2),rep(c("p","q"),22)))
+
+```
+
+
+```{r Arm_CN_aggregate, fig.width=8,fig.height=5, dev=c("png", "pdf")}
+prep <- dat %>%
+  mutate(
+    slope = round(lm(ratio ~ CN_ave)$coefficients[2], 2),
+    significance = summary(lm(ratio ~ CN_ave))$coefficients[2, 4],
+    x = 4,   # x coordinate for slope label
+    y = 7.5     # y coordinate for slope label
+  )
+prep<-prep %>% filter(id=="DO29850" & arm=="chr10p")
+prep$slope_label<-paste0("Observed Slope = ",prep$slope)
+
+
+```
+
+```{r Arm_CN_aggregate2, fig.width=8,fig.height=5, dev=c("png", "pdf")}
+ggplot(dat,aes(x=CN_ave,y=ratio))+geom_point()+geom_point()+theme_classic()+
+  geom_abline(aes(slope=1,intercept=0,color="Fit Predicted by Copy Number Alone"))+
+  geom_smooth(
+  data = dat, aes(x = CN_ave, y = ratio,color="Observed Fit"),  # grouping variable does the plots for us!
+  method = "lm", se = FALSE, 
+  formula = y ~ x
+) +theme(legend.position="bottom",legend.title=element_blank())+scale_color_manual(values=c("red","blue"))+xlab("Average Arm Level Copy-Number")+ylab("Expected Arm Copy Number\nin Tumor Based on Kmer Counts")+
+  geom_text(
+   data = prep, aes(x = x, y = y, label = slope_label,hjust=0),size=5)+
+geom_vline(xintercept=2,color="gray",linetype="dashed")+geom_hline(yintercept=2,linetype="dashed",color="gray")+stat_cor(method="spearman",data=dat,size=5,label.x=4,label.y=7.8)
+
+```
+
+######################
+Look at the breakpoint overlap stuff now
+
+```{r SV_all, fig.width=8,fig.height=14, dev=c("png", "pdf")}
+#dat<-fread(here("data","CN_Analysis","SV_overlaps_alltypes.csv"))
+#dat<-dat %>% filter(Num_var !=0 & Type_Var=="All Variants")
+#write.csv(dat,here("data","CN_Analysis","SV_overlaps_alltypes_small.csv"))
+#for github I have saved the filtered version as the file
+dat<-fread(here("data","CN_Analysis","SV_overlaps_alltypes.csv"))
+dat<-dat %>% select(-V1)
+dat$true_perc<-dat$true_overlap/dat$Num_var
+dat$random_perc<-dat$random_overlap/dat$Num_var
+
+
+d<-fread(here("data","Kmer_Distributions","Expected.csv"))
+d$fam<-sapply(str_split(d$feature,"#"),"[",2)
+d<-d %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+d$bigfam<-sapply(str_split(d$fam,"_"),"[",1)
+d<-d %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA Elements",bigfam))
+d<-d %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable Elements",bigfam))
+d<-d %>% select(-V1)
+d<-d %>% filter()
+dat<-dat %>% filter(feature %in% d$feature)
+#dat<-dat %>% select(-V1)
+dat<-dat %>% select(feature,sample,true_perc,random_perc,Type_Var) %>% gather(key=perc,value=p,true_perc,random_perc)
+m<-compare_means(p~perc,data=dat,group.by=c("feature"),p.adjust.method="BH",paired=T,ref.group="random_perc",alternative="greater")
+m2<-compare_means(p~perc,data=dat,group.by=c("feature"),p.adjust.method="BH",paired=T,ref.group="random_perc",alternative="less")
+
+m<-inner_join(m,d,by="feature")
+m2<-inner_join(m2,d,by="feature")
+
+
+#m<-m %>% filter(p.adj<.05)
+#m2<-m2%>% filter(p.adj<.05)
+
+m$dir<-"Enriched"
+m2$dir<-"Depleted"
+
+bpt<-rbind(m,m2)
+bpt<-bpt %>% select(feature,p.adj,fam,bigfam,dir)
+
+bpt<-bpt %>% spread(key=dir,value=p.adj)
+
+bpt<-bpt %>% mutate(p.adj=if_else(Depleted<Enriched,Depleted,Enriched))
+bpt<-bpt %>% mutate(Dir=if_else(Depleted<Enriched,"Depleted","Enriched"))
+bpt<-bpt %>% mutate(Dir=if_else(p.adj<.05,Dir,"Not Significant"))
+
+bpt$p<- -log10(bpt$p.adj)
+bpt_order<-bpt %>% arrange(-p)
+bpt$feature<-factor(bpt$feature,levels=bpt_order$feature)
+bpt<-bpt %>% mutate(bigfam=if_else(bigfam=="Transposable Elements","TEs",bigfam))
+bpt<-bpt %>% mutate(bigfam=if_else(bigfam=="RNA Elements","RNA",bigfam))
+
+
+novel<-fread(here("data","NoveltyTables","Novel_Elements.csv"),header=T)
+novel<-novel %>% filter(group=="Novel")
+bpt<-bpt %>% mutate(Novelty=if_else(feature %in% novel$feature,"Newly identified","Prior evidence"))
+
+bpt<-bpt %>% mutate(p=if_else(p>15,15,p))
+
+
+plot1<-ggplot(bpt,aes(x=feature,y=p,color=Dir,shape=Novelty))+geom_point(size=1)+theme_classic()+facet_grid(bigfam~.,scales="free",space="free",switch="y")+
+  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank())+coord_flip()+
+  ylab("p-val (-log10)")+xlab("")+
+  theme(legend.position="bottom",strip.text.y.left = element_text(angle=0,size=14),strip.placement="outside",legend.text=element_text(size=13),legend.title=element_text(size=14))+labs(color="",shape="")+scale_color_manual(values=c("darkred","darkgoldenrod3","gray"))+scale_shape_manual(values=c(19,1))+guides(color=guide_legend(nrow=3,byrow=TRUE,override.aes = list(size = 4)),shape=guide_legend(nrow=2,byrow=TRUE,override.aes = list(size = 4)))
+
+library(grid)
+q<-ggplotGrob(plot1)
+lg <- linesGrob(x=unit(c(1,1),"npc"), y=unit(c(0,1),"npc"), 
+                   gp=gpar(col="white", lwd=2))
+
+for (k in grep("strip-l",q$layout$name)) {
+  q$grobs[[k]]$grobs[[1]]$children[[1]] <- lg
+}
+
+grid.draw(q)
+
+#save_data<-bpt
+#write.csv(save_data %>% select(feature,p,Dir,Novelty,bigfam),here("output","Figure_Data_Files","Fig2B.csv"))
+
+```
+
+

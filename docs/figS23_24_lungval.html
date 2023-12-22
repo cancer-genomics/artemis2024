@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>S23_24</title>
+
+<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">annapragada2024_artemis_code</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">S23_24</h1>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2023-12-22
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>annapragada2024_artemis_code/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version
+1.6.2). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20231222code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20231222)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20231222code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20231222)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong1d0c4f5">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong> 1d0c4f5
+</a>
+</p>
+</div>
+<div id="strongRepositoryversionstrong1d0c4f5"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version 1d0c4f5.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    code/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  analysis/Fig2a_S11_S16.Rmd
+    Untracked:  analysis/Fig2b_S7.Rmd
+    Untracked:  analysis/Fig2c_S8a.Rmd
+    Untracked:  analysis/Fig2d_S10_LINE1.Rmd
+    Untracked:  analysis/Fig2e_S13.Rmd
+    Untracked:  analysis/Fig3a.Rmd
+    Untracked:  analysis/Fig3b.Rmd
+    Untracked:  analysis/Fig4_Epi.Rmd
+    Untracked:  analysis/Fig5_LUCAS.Rmd
+    Untracked:  analysis/SessionInfo.Rmd
+    Untracked:  analysis/figS12.Rmd
+    Untracked:  analysis/figS14.Rmd
+    Untracked:  analysis/figS15.Rmd
+    Untracked:  analysis/figS17.Rmd
+    Untracked:  analysis/figS18_epi.Rmd
+    Untracked:  analysis/figS20_Ideogram.Rmd
+    Untracked:  analysis/figS21a_featureimp.Rmd
+    Untracked:  analysis/figS21bc_stability.Rmd
+    Untracked:  analysis/figS22_liver.Rmd
+    Untracked:  analysis/figS23_24_lungval.Rmd
+    Untracked:  analysis/figS25.Rmd
+    Untracked:  analysis/figS2_S3abc.Rmd
+    Untracked:  analysis/figS3d_S4.Rmd
+    Untracked:  analysis/figS5_S6_simulations.Rmd
+    Untracked:  analysis/figS8bc.Rmd
+    Untracked:  analysis/figS9.Rmd
+    Untracked:  code/ARTEMIS_Pipeline/
+    Untracked:  code/Table1.Rmd
+    Untracked:  code/Table2.Rmd
+    Untracked:  code/Tissue_Models/
+    Untracked:  code/cfDNA_Models/
+    Untracked:  code/rlucas/
+    Untracked:  code/useful.stuff.aa/
+    Untracked:  data/CN_Analysis/
+    Untracked:  data/Cristiano_Detection/
+    Untracked:  data/Cristiano_TOO/
+    Untracked:  data/Downsamples/
+    Untracked:  data/Epi/
+    Untracked:  data/Epi_Reference_Bins.csv
+    Untracked:  data/Extended Data Fig.12_recurrence_analysis_Mathios_etal.xlsx
+    Untracked:  data/Final_LUCAS_Ensemble/
+    Untracked:  data/Final_Liver_Risk_Ensemble/
+    Untracked:  data/GSEA/
+    Untracked:  data/Get_Numbers/
+    Untracked:  data/Kmer_Distributions/
+    Untracked:  data/LINE1/
+    Untracked:  data/LUCAS_Stability_Analysis/
+    Untracked:  data/Liver_Published_delfi-results_risk.csv
+    Untracked:  data/Lung_Monitoring/
+    Untracked:  data/Mathios_Published/
+    Untracked:  data/Mathios_batching.xlsx
+    Untracked:  data/NoveltyTables/
+    Untracked:  data/PCAWG/
+    Untracked:  data/Plasma_CV_meta_HiSeq.csv
+    Untracked:  data/Plasma_CV_meta_Novaseq.csv
+    Untracked:  data/Simulation/
+    Untracked:  data/Supp_Tables/
+    Untracked:  data/TCGA/
+    Untracked:  data/cfDNA_manifest_HiSeq.txt
+    Untracked:  data/focal_pcawg/
+    Untracked:  data/lucas_nova_artemis.csv
+    Untracked:  data/process_pcawg/
+
+Unstaged changes:
+    Modified:   README.md
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/license.Rmd
+    Deleted:    output/README.md
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code>library(here)</code></pre>
+<pre><code>here() starts at /Users/akshayaannapragada/Dropbox/ScannedNotes/VelculescuLab/Cancer Genomics Lab/plasma_repeats/annapragada2024_artemis_code</code></pre>
+<pre class="r"><code>library(data.table)
+library(tidyverse)</code></pre>
+<pre><code>── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>✔ ggplot2 3.3.5     ✔ purrr   0.3.4
+✔ tibble  3.1.6     ✔ dplyr   1.0.8
+✔ tidyr   1.2.0     ✔ stringr 1.4.0
+✔ readr   2.0.1     ✔ forcats 0.5.1</code></pre>
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::between()   masks data.table::between()
+✖ dplyr::filter()    masks stats::filter()
+✖ dplyr::first()     masks data.table::first()
+✖ dplyr::lag()       masks stats::lag()
+✖ dplyr::last()      masks data.table::last()
+✖ purrr::transpose() masks data.table::transpose()</code></pre>
+<pre class="r"><code>library(devtools)</code></pre>
+<pre><code>Loading required package: usethis</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(ggpubr)
+library(cowplot)</code></pre>
+<pre><code>
+Attaching package: &#39;cowplot&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:ggpubr&#39;:
+
+    get_legend</code></pre>
+<pre class="r"><code>library(RColorBrewer)
+
+library(readxl)</code></pre>
+<pre class="r"><code>load_all(here(&quot;code&quot;,&quot;useful.stuff.aa&quot;))           # Load</code></pre>
+<pre><code>ℹ Loading useful.stuff.aa</code></pre>
+<pre class="r"><code>load_all(here(&quot;code&quot;,&quot;rlucas&quot;))           # Load</code></pre>
+<pre><code>ℹ Loading rlucas</code></pre>
+<pre class="r"><code>model_names&lt;-c(&quot;ARTEMIS_Ensemble&quot;,&quot;ARTEMIS_single_DELFI_SSLs_Ensemble&quot;)
+#model_names&lt;-c(&quot;ARTEMIS_Ensemble&quot;,&quot;Mathios_DELFI&quot;,&quot;ARTEMIS_single_DELFI_SSLs_Ensemble&quot;)
+
+#colors&lt;-c(&quot;#66c2a5&quot;,&quot;#8da0cb&quot;,&quot;#fc8d62&quot;)
+colors&lt;-c(&quot;#1b9e77&quot;,&quot;#d95f02&quot;)
+
+meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))
+meta&lt;-meta %&gt;% select(-V1)
+
+#Add in Mathios Published scores
+model&lt;-readRDS(here(&quot;data&quot;,&quot;Mathios_Published&quot;,&quot;model_seq_glm.rds&quot;))
+#cv&lt;-fread(here(&quot;data&quot;,&quot;Models&quot;,&quot;Mathios_Published&quot;,&quot;Mathios_S2.csv&quot;))
+cv&lt;-colData(se) %&gt;%
+    as_tibble() %&gt;%
+    mutate(lab_id=colnames(se)) %&gt;%
+    filter(!is.na(score_seq)) %&gt;%
+    select(lab_id, score_seq)
+
+cv&lt;-inner_join(lucas_meta %&gt;% filter(Training==&quot;YES&quot;) %&gt;% select(cg_id,id,type),cv,by=c(&quot;cg_id&quot;=&quot;lab_id&quot;)) %&gt;% rename(&quot;score&quot;=&quot;score_seq&quot;)
+cv$model&lt;-&quot;Mathios_Published&quot;
+cv$set&lt;-&quot;SSL&quot;
+data&lt;-fread(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Results&quot;,&quot;Cross_Validation_scores.csv&quot;))
+data&lt;-data %&gt;% select(-V1)
+data&lt;-rbind(data,cv %&gt;% select(-cg_id))
+#########
+data&lt;-data %&gt;% filter(model %in% model_names)
+
+val_dat&lt;-fread(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Results&quot;,&quot;Test_set_scores.csv&quot;))
+val_dat&lt;-val_dat %&gt;% select(-V1)
+#The mathios publication didn&#39;t have scores for ahn_bu
+v&lt;-fread(here(&quot;data&quot;,&quot;Mathios_Published&quot;,&quot;validation_preds.csv&quot;))
+v&lt;-inner_join(meta %&gt;% select(id,type),v %&gt;% select(id,cancer),by=c(&quot;id&quot;=&quot;id&quot;)) %&gt;% rename(&quot;score&quot;=&quot;cancer&quot;)
+v$model&lt;-&quot;Mathios_Published&quot;
+v$set&lt;-&quot;SSL&quot;
+
+#get IDs not in Mathios
+ids&lt;-unique((val_dat %&gt;% filter(!id %in% v$id))$id)
+#read in the test set features
+t&lt;-fread(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Cohorts&quot;,&quot;LUCAS_Test.csv&quot;))
+#get only the missing ids and needed features
+t&lt;-t %&gt;% filter(id %in% ids) %&gt;% select(id,type,starts_with(&quot;ratio&quot;),starts_with(&quot;zscore&quot;))
+preds&lt;-predict(model,t,type=&quot;prob&quot;)</code></pre>
+<pre><code>Warning: &#39;keep_original_cols&#39; was added to `step_pca()` after this recipe was created.
+Regenerate your recipe to avoid this warning.</code></pre>
+<pre class="r"><code>t&lt;-tibble(id=t$id,type=t$type,score=preds$cancer,model=&quot;Mathios_Published&quot;,set=&quot;SSL&quot;)
+val_dat&lt;-rbind(val_dat,v,t)
+#######
+val_dat&lt;-val_dat %&gt;% filter(model %in% model_names)
+#val_dat %&gt;% dplyr::group_by(model) %&gt;% dplyr::summarize(r=roc(type,score)$auc[1])
+#data %&gt;% dplyr::group_by(model) %&gt;% dplyr::summarize(r=roc(type,score)$auc[1])
+cv_dat&lt;-data</code></pre>
+<pre class="r"><code>lucas_extra_val&lt;-val_dat %&gt;% filter(!id %in% v$id &amp; id %in% lucas_meta$id)
+jhu_val&lt;-val_dat %&gt;% filter(id %in% v$id)</code></pre>
+<pre><code>New names:</code></pre>
+<p><img src="figure/figS23_24_lungval.Rmd/recurrence-1.png" width="960" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))
+meta&lt;-meta %&gt;% select(-V1)
+
+data&lt;-jhu_val
+
+data&lt;-inner_join(data,meta %&gt;% select(Stage,Subtype,id),by=&quot;id&quot;)
+
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;IA&quot;,&quot;IB&quot;,&quot;I&quot;,&quot;IA-2&quot;),&quot;Lung Cancer\n Stage I&quot;,&quot;Non-Cancer&quot;))
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;IIA&quot;,&quot;IIB&quot;,&quot;II&quot;),&quot;Lung Cancer\n Stage II&quot;,group))
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;III&quot;,&quot;IIIA&quot;,&quot;IIIB&quot;,&quot;IIIC&quot;,&quot;IV&quot;),&quot;Lung Cancer\n Stage III/IV&quot;,group))
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;Unk&quot;),&quot;Lung Cancer\n Stage Unknown&quot;,group))
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;Benign&quot;),&quot;Benign Lung\n Nodule&quot;,group))</code></pre>
+<pre class="r"><code>data&lt;-data %&gt;% select(id,model,score)
+data&lt;-inner_join(data,meta %&gt;% select(Stage,id,type),by=&quot;id&quot;)
+
+data&lt;-data %&gt;% filter(Stage != &quot;Unk&quot;)
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;IA&quot;,&quot;IB&quot;,&quot;I&quot;,&quot;IA-2&quot;),&quot;Stage I&quot;,&quot;Non-Cancer&quot;))
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;IIA&quot;,&quot;IIB&quot;,&quot;II&quot;),&quot;Stage II&quot;,group))
+data&lt;-data %&gt;% mutate(group=if_else(Stage %in% c(&quot;III&quot;,&quot;IIIA&quot;,&quot;IIIB&quot;,&quot;IIIC&quot;,&quot;IV&quot;),&quot;Stage III/IV&quot;,group))
+
+m&lt;-unique(data$model)
+c&lt;-c(&quot;Stage I&quot;,&quot;Stage II&quot;,&quot;Stage III/IV&quot;)
+h&lt;-c(&quot;Non-Cancer&quot;)
+
+dat_full&lt;-tibble(type=&quot;test&quot;,sens=-1,spec=-1,model=&quot;test&quot;,set=&quot;test&quot;,cancer=&quot;test&quot;,healthy=&quot;test&quot;)
+
+k&lt;-1
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d&lt;-data %&gt;% filter(model==m[k]) %&gt;% filter(group %in% c(c[i],h[j]))
+    dat&lt;-format_roc(d$type,d$score,&quot;&quot;)
+    dat$model&lt;-m[k]
+    dat$set&lt;-paste0(c[i],&quot; vs. &quot;,h[j])
+    dat$cancer&lt;-paste0(c[i])
+    dat$healthy&lt;-paste0(h[j])
+    dat_full&lt;-rbind(dat_full,dat)
+  }
+}</code></pre>
+<pre><code>Setting direction: controls &lt; cases
+Setting direction: controls &lt; cases
+Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>dat_full&lt;-dat_full %&gt;% filter(type != &quot;test&quot;)
+d&lt;-data %&gt;% filter(model==m[k]) 
+dat&lt;-format_roc(d$type,d$score,&quot;&quot;)</code></pre>
+<pre><code>Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>dat$model&lt;-m[k]
+dat$set&lt;-&quot;All cancer vs. Non-Cancer&quot;
+dat$cancer&lt;-&quot;All cancer&quot;
+dat$healthy&lt;-&quot;Non-Cancer&quot;
+dat_full&lt;-rbind(dat_full,dat)
+
+k&lt;-2
+for (i in 1:length(c)) {
+  for (j in 1:length(h)) {
+    d&lt;-data %&gt;% filter(model==m[k]) %&gt;% filter(group %in% c(c[i],h[j]))
+    dat&lt;-format_roc(d$type,d$score,&quot;&quot;)
+    dat$model&lt;-m[k]
+    dat$set&lt;-paste0(c[i],&quot; vs. &quot;,h[j])
+    dat$cancer&lt;-paste0(c[i])
+    dat$healthy&lt;-paste0(h[j])
+    dat_full&lt;-rbind(dat_full,dat)
+  }
+}</code></pre>
+<pre><code>Setting direction: controls &lt; cases
+Setting direction: controls &lt; cases
+Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>d&lt;-data %&gt;% filter(model==m[k]) 
+dat&lt;-format_roc(d$type,d$score,&quot;&quot;)</code></pre>
+<pre><code>Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>dat$model&lt;-m[k]
+dat$set&lt;-&quot;All cancer vs. Non-Cancer&quot;
+dat$cancer&lt;-&quot;All cancer&quot;
+dat$healthy&lt;-&quot;Non-Cancer&quot;
+dat_full&lt;-rbind(dat_full,dat)
+
+
+
+dat_full&lt;-dat_full %&gt;% group_by(model,set) %&gt;% arrange(sens)
+dat_full&lt;-dat_full %&gt;% mutate(type=if_else(sens==0 &amp; spec==1,type,&quot; &quot;))
+dat_full&lt;-dat_full %&gt;% mutate(jit=if_else(model==m[1],.07, 1))
+dat_full&lt;-dat_full %&gt;% mutate(jit=if_else(model==m[2],.13, jit))
+#dat_full&lt;-dat_full %&gt;% mutate(jit=if_else(model==m[3],.19, jit))
+dat_full$model&lt;-factor(dat_full$model,levels=model_names)</code></pre>
+<pre class="r"><code>l&lt;-dat_full %&gt;% filter(set==&quot;All cancer vs. Non-Cancer&quot;)
+l&lt;-l %&gt;% group_by(model)%&gt;%dplyr::summarize(n=unique(type)) %&gt;% filter(n != &quot; &quot;)</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre class="r"><code>l$n&lt;-gsub(&quot;: &quot;,&quot;&quot;,l$n)
+
+A &lt;- dat_full %&gt;% filter(set==&quot;All cancer vs. Non-Cancer&quot;) %&gt;% 
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.80&quot;, &quot;1.0&quot;))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.75&quot;, &quot;1.0&quot;))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_text(size=15)) +
+    xlab(&quot;Specificity&quot;) + ylab(&quot;Sensitivity&quot;) +
+    guides(color=guide_legend(title=&quot;AUC: (95% CI)&quot;, hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5))+ggtitle(&quot;All Cancers&quot;)+
+    scale_color_manual(labels=l$n,values=colors)
+
+C&lt;-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)</code></pre>
+<pre class="r"><code>l&lt;-dat_full %&gt;% filter(set==&quot;Stage I vs. Non-Cancer&quot;)
+l&lt;-l %&gt;% group_by(model)%&gt;%dplyr::summarize(n=unique(type)) %&gt;% filter(n != &quot; &quot;)</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre class="r"><code>l$n&lt;-gsub(&quot;: &quot;,&quot;&quot;,l$n)
+A &lt;- dat_full %&gt;% filter(set==&quot;Stage I vs. Non-Cancer&quot;) %&gt;%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.80&quot;, &quot;1.0&quot;))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.75&quot;, &quot;1.0&quot;))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab(&quot;Specificity&quot;) + ylab(&quot;Sensitivity&quot;) +
+    guides(color=guide_legend(title=&quot;&quot;, hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5,size=12))+ggtitle(&quot;Stage I\n(n=60 lung cancer, n=400 non-cancer)&quot;)+
+    scale_color_manual(labels=l$n,values=colors)
+
+C1&lt;-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)</code></pre>
+<pre class="r"><code>l&lt;-dat_full %&gt;% filter(set==&quot;Stage II vs. Non-Cancer&quot;)
+l&lt;-l %&gt;% group_by(model)%&gt;%dplyr::summarize(n=unique(type)) %&gt;% filter(n != &quot; &quot;)</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre class="r"><code>l$n&lt;-gsub(&quot;: &quot;,&quot;&quot;,l$n)
+A &lt;- dat_full %&gt;% filter(set==&quot;Stage II vs. Non-Cancer&quot;) %&gt;%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.80&quot;, &quot;1.0&quot;))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.75&quot;, &quot;1.0&quot;))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab(&quot;Specificity&quot;) + ylab(&quot;Sensitivity&quot;) +
+    guides(color=guide_legend(title=&quot;AUC: (95% CI)&quot;, hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5,size=12))+ggtitle(&quot;Stage II\n(n=16 lung cancer, n=400 non-cancer)&quot;)+
+    scale_color_manual(labels=l$n,values=colors)
+
+C2&lt;-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)</code></pre>
+<pre class="r"><code>l&lt;-dat_full %&gt;% filter(set==&quot;Stage III/IV vs. Non-Cancer&quot;)
+l&lt;-l %&gt;% group_by(model)%&gt;%dplyr::summarize(n=unique(type)) %&gt;% filter(n != &quot; &quot;)</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;model&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre class="r"><code>l$n&lt;-gsub(&quot;: &quot;,&quot;&quot;,l$n)
+A &lt;- dat_full %&gt;% filter(set==&quot;Stage III/IV vs. Non-Cancer&quot;) %&gt;%
+    ggplot(aes(spec, sens, group=model,color=model,label=type)) +
+    geom_line(aes(color=model), size=1.1) +
+    scale_x_reverse(expand=c(0, 0.01),
+                    breaks=c(0, 0.25, 0.5, 0.80, 1),
+                    labels=as.character(
+                        c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.80&quot;, &quot;1.0&quot;))) +
+    scale_y_continuous(expand=c(0, 0.01),
+                       breaks=c(0, 0.25, 0.5, 0.75, 1),
+                       labels=as.character(
+                           c(&quot;0&quot;, &quot;.25&quot;, &quot;.50&quot;, &quot;.75&quot;, &quot;1.0&quot;))) +
+    theme_classic(base_size=15) +
+    theme(panel.grid=element_blank(),
+          legend.position=c(.6,.2),
+          aspect.ratio=0.8,
+          legend.text.align=1,
+          legend.title=element_blank(),
+          legend.text=element_text(size=10)) +
+    xlab(&quot;Specificity&quot;) + ylab(&quot;Sensitivity&quot;) +
+    guides(color=guide_legend(title=&quot;AUC: (95% CI)&quot;, hjust=1)) + theme(strip.background = element_blank(), plot.title = element_text(hjust = 0.5,size=12))+ggtitle(&quot;Stage III/IV\n(n=11 lung cancer, n=400 non-cancer)&quot;)+
+    scale_color_manual(labels=l$n,values=colors)
+
+C3&lt;-ggdraw(A)#+draw_plot(B,.5,.2,.4,.4)</code></pre>
+<pre class="r"><code>#x&lt;-plot_grid(C1,C2,C3,nrow=2)
+x2&lt;-plot_grid(C1,C2,C3,nrow=1)
+
+#r&lt;-plot_grid(C,x,rel_widths=c(1,2))
+#r
+
+#Get legend
+l&lt;-get_legend(A+scale_color_manual(labels=c(&quot;ARTEMIS&quot;,&quot;ARTEMIS+DELFI&quot;),values=colors)+theme(legend.position=&quot;top&quot;,legend.title=element_blank(),legend.text=element_text(size=14)))</code></pre>
+<pre><code>Scale for &#39;colour&#39; is already present. Adding another scale for &#39;colour&#39;,
+which will replace the existing scale.</code></pre>
+<pre class="r"><code>legend&lt;-l
+
+#plot_grid(x,l,rel_heights=c(10,1),ncol=1)</code></pre>
+<pre class="r"><code>plot_grid(x2,l,rel_heights=c(10,1),ncol=1)</code></pre>
+<p><img src="figure/figS23_24_lungval.Rmd/all_ROCs2-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.5 (2021-03-31)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] rlucas_0.0.3               useful.stuff.aa_0.0.0.9000
+ [3] readxl_1.3.1               RColorBrewer_1.1-2        
+ [5] cowplot_1.1.1              ggpubr_0.4.0              
+ [7] devtools_2.4.2             usethis_2.0.1             
+ [9] forcats_0.5.1              stringr_1.4.0             
+[11] dplyr_1.0.8                purrr_0.3.4               
+[13] readr_2.0.1                tidyr_1.2.0               
+[15] tibble_3.1.6               ggplot2_3.3.5             
+[17] tidyverse_1.3.1            data.table_1.14.0         
+[19] here_1.0.1                 workflowr_1.6.2           
+
+loaded via a namespace (and not attached):
+  [1] backports_1.2.1             plyr_1.8.6                 
+  [3] splines_4.0.5               listenv_0.8.0              
+  [5] GenomeInfoDb_1.26.7         digest_0.6.27              
+  [7] foreach_1.5.1               htmltools_0.5.2            
+  [9] fansi_0.5.0                 magrittr_2.0.1             
+ [11] memoise_2.0.0               tzdb_0.1.2                 
+ [13] openxlsx_4.2.4              remotes_2.4.0              
+ [15] globals_0.14.0              recipes_0.1.16             
+ [17] modelr_0.1.8                gower_0.2.2                
+ [19] matrixStats_0.61.0          prettyunits_1.1.1          
+ [21] colorspace_2.0-2            rvest_1.0.1                
+ [23] haven_2.4.3                 xfun_0.25                  
+ [25] callr_3.7.0                 crayon_1.4.1               
+ [27] RCurl_1.98-1.4              jsonlite_1.7.2             
+ [29] survival_3.2-13             iterators_1.0.13           
+ [31] glue_1.6.2                  gtable_0.3.0               
+ [33] ipred_0.9-11                zlibbioc_1.36.0            
+ [35] XVector_0.30.0              DelayedArray_0.16.3        
+ [37] car_3.0-11                  pkgbuild_1.2.0             
+ [39] shape_1.4.6                 future.apply_1.8.1         
+ [41] BiocGenerics_0.36.1         abind_1.4-5                
+ [43] scales_1.2.1                DBI_1.1.1                  
+ [45] rstatix_0.7.0               Rcpp_1.0.7                 
+ [47] foreign_0.8-81              lava_1.6.10                
+ [49] prodlim_2019.11.13          stats4_4.0.5               
+ [51] glmnet_4.1-2                httr_1.4.2                 
+ [53] ellipsis_0.3.2              farver_2.1.0               
+ [55] pkgconfig_2.0.3             nnet_7.3-16                
+ [57] sass_0.4.0                  dbplyr_2.1.1               
+ [59] utf8_1.2.2                  caret_6.0-88               
+ [61] reshape2_1.4.4              tidyselect_1.1.1           
+ [63] rlang_1.1.1                 later_1.3.0                
+ [65] munsell_0.5.0               cellranger_1.1.0           
+ [67] tools_4.0.5                 cachem_1.0.6               
+ [69] cli_3.6.1                   generics_0.1.0             
+ [71] broom_0.7.9                 evaluate_0.14              
+ [73] fastmap_1.1.0               yaml_2.2.1                 
+ [75] ModelMetrics_1.2.2.2        processx_3.5.2             
+ [77] knitr_1.33                  fs_1.5.0                   
+ [79] zip_2.2.0                   future_1.22.1              
+ [81] nlme_3.1-152                xml2_1.3.2                 
+ [83] compiler_4.0.5              rstudioapi_0.13            
+ [85] curl_4.3.2                  testthat_3.0.4             
+ [87] ggsignif_0.6.2              reprex_2.0.1               
+ [89] bslib_0.3.0                 stringi_1.7.4              
+ [91] highr_0.9                   ps_1.6.0                   
+ [93] desc_1.3.0                  lattice_0.20-44            
+ [95] Matrix_1.3-4                vctrs_0.4.0                
+ [97] pillar_1.6.2                lifecycle_1.0.3            
+ [99] jquerylib_0.1.4             bitops_1.0-7               
+[101] httpuv_1.6.2                GenomicRanges_1.42.0       
+[103] R6_2.5.1                    promises_1.2.0.1           
+[105] rio_0.5.27                  parallelly_1.27.0          
+[107] IRanges_2.24.1              sessioninfo_1.1.1          
+[109] codetools_0.2-18            MASS_7.3-54                
+[111] assertthat_0.2.1            pkgload_1.2.1              
+[113] SummarizedExperiment_1.20.0 rprojroot_2.0.2            
+[115] withr_2.5.0                 S4Vectors_0.28.1           
+[117] GenomeInfoDbData_1.2.4      parallel_4.0.5             
+[119] hms_1.1.0                   grid_4.0.5                 
+[121] rpart_4.1-15                timeDate_3043.102          
+[123] class_7.3-19                rmarkdown_2.10             
+[125] MatrixGenerics_1.2.1        carData_3.0-4              
+[127] git2r_0.28.0                pROC_1.17.0.1              
+[129] Biobase_2.50.0              lubridate_1.7.10           </code></pre>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

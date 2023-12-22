@@ -1,0 +1,570 @@
+---
+title: "3B"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+```{r LUSC, fig.width=8,fig.height=10}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+library(scales)
+plasma<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+plasma<-plasma %>% select(-V1)
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+
+meta<-meta %>% filter(id %in% selected$id)
+
+plasma<-plasma %>% filter(id %in% meta$id)
+
+
+plasma<-inner_join(plasma, meta %>% select(type,Subtype,id),by="id")
+
+plasma<-plasma %>% filter(Subtype=="Squamous"|type=="healthy")
+
+test<-plasma %>% gather(key=feature,value=count,-id,-type,-Subtype)
+
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+e<-e %>% filter(total_kmers>1000)
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+
+test<-inner_join(test,e %>% select(feature,fam),by="feature")
+test$count<-as.numeric(test$count)
+test<-test %>% group_by(id,fam,type) %>% summarize(c=scale(count)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+
+plasma<-test
+plasma$cohort<-"Plasma"
+plasma<-plasma %>% mutate(type=if_else(type=="cancer","LUSC","Non-cancer"))
+
+
+
+
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+ploidy<-ploidy %>% filter(!`ICGC Donor` %in% exc$icgc_donor_id)
+
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$`ICGC Donor`)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(`ICGC Donor`,project_id),by=c("id"="ICGC Donor"))
+####
+pcawg<-pcawg %>% filter(project_id %in% c("PCAWG-TCGA-LUSC-US"))
+pcawg<-pcawg %>% select(-project_id)
+test<-pcawg %>% gather(key=feature,value=count,-id,-type)
+
+#Add info needed to center/scale by family
+test$fam<-sapply(str_split(test$feature,"#"),"[",2)
+test<-test %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+test$bigfam<-sapply(str_split(test$fam,"_"),"[",1)
+test<-test %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA",bigfam))
+test<-test %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"TEs",bigfam))
+
+
+pcawg<-test %>% group_by(id,type,bigfam)%>%summarize(c=scale(count)[,1],f=feature)
+#test<-test %>% rename("count"="c") %>% rename("feature"="f")
+#pcawg<-test %>% ungroup() %>% select(-bigfam) %>% spread(key=feature,value=count)
+pcawg<-pcawg %>% ungroup()
+
+pcawg$cohort<-"PCAWG"
+pcawg<-pcawg %>% mutate(type=if_else(type=="cancer","LUSC","Non-cancer")) %>% select(-bigfam)
+
+plasma_h_med<-plasma %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+plasma_meds<-plasma %>% group_by(f) %>% summarize(max=max(c),min=min(c))
+plasma_meds<-inner_join(plasma_h_med,plasma_meds,by="f")
+plasma_meds$hi_diff<-plasma_meds$max-plasma_meds$m
+plasma_meds$low_diff<-plasma_meds$m-plasma_meds$min
+plasma_meds<-plasma_meds %>% mutate(c=if_else(hi_diff>low_diff,m-hi_diff,m+low_diff))
+plasma_meds$id<-"test"
+plasma_meds$type<-"Non-cancer"
+plasma_meds$cohort<-"Plasma"
+#plasma_h_med<-plasma %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+#plasma<-inner_join(plasma,plasma_h_med,by="f")
+#plasma$c<-plasma$c-plasma$m
+#plasma<-plasma %>% select(-m)
+
+pcawg_h_med<-pcawg %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+pcawg_meds<-pcawg %>% group_by(f) %>% summarize(max=max(c),min=min(c))
+pcawg_meds<-inner_join(pcawg_h_med,pcawg_meds,by="f")
+pcawg_meds$hi_diff<-pcawg_meds$max-pcawg_meds$m
+pcawg_meds$low_diff<-pcawg_meds$m-pcawg_meds$min
+pcawg_meds<-pcawg_meds %>% mutate(c=if_else(hi_diff>low_diff,m-hi_diff,m+low_diff))
+pcawg_meds$id<-"test"
+pcawg_meds$type<-"Non-cancer"
+pcawg_meds$cohort<-"PCAWG"
+
+#pcawg_h_med<-pcawg %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+#pcawg<-inner_join(pcawg,pcawg_h_med,by="f")
+#pcawg$c<-pcawg$c-pcawg$m
+#pcawg<-pcawg %>% select(-m)
+
+data<-rbind(plasma,pcawg)
+data<-data %>% filter(f %in% e$feature)
+good_f<-compare_means(c~type, plasma,group.by="f") %>% filter(p<.05)
+
+
+
+top<-fread(here("data","Supp_Tables","s6_All_features.csv"))
+top<-top %>% select(feature,fam,bigfam,contains("LUSC"))
+tops<- top %>% filter(LUSC_p<.05) %>% filter(feature %in% good_f$f) %>% filter(feature %in% e$feature)
+top<-top %>% filter(LUSC_p<.05) %>% filter(feature %in% good_f$f) %>% filter(feature %in% e$feature) %>% slice_max(order_by=abs(LUSC_effsize),n=5)
+
+data2<-data %>% filter(f %in% tops$feature)
+data2<-data2 %>% group_by(f,cohort,type) %>% summarize(n=median(c))
+data2<-data2 %>% spread(key=type,value=n)
+data2<-data2 %>% mutate(cancer_high=if_else(LUSC>`Non-cancer`,"TRUE","FALSE"))
+data2<-data2 %>% select(f,cohort,cancer_high) %>% spread(key=cohort,value=cancer_high)
+nrow(data2 %>% filter(PCAWG == Plasma))
+nrow(data2)
+
+data<-data %>% filter(f %in% top$feature)
+data$type<-factor(data$type,levels=c("Non-cancer","LUSC"))
+data<-inner_join(data,top,by=c("f"="feature"))
+top$feature<-gsub("#","\n",top$feature)
+data$f<-gsub("#","\n",data$f)
+top$feature<-gsub("_","\n",top$feature)
+data$f<-gsub("_","\n",data$f)
+
+data$f<-factor(data$f,levels=top$feature)
+
+#data<-data %>% filter(bigfam=="LINE")
+pcawg<-data %>% filter(cohort=="PCAWG")
+plasma<-data %>% filter(cohort=="Plasma")
+pcawg_meds$f<-gsub("#","\n",pcawg_meds$f)
+plasma_meds$f<-gsub("#","\n",plasma_meds$f)
+pcawg_meds$f<-gsub("_","\n",pcawg_meds$f)
+plasma_meds$f<-gsub("_","\n",plasma_meds$f)
+pcawg_meds<-pcawg_meds %>% filter(f %in% pcawg$f)
+plasma_meds<-plasma_meds %>% filter(f %in% plasma$f)
+
+pcawg_meds$f<-factor(pcawg_meds$f,levels=top$feature)
+plasma_meds$f<-factor(plasma_meds$f,levels=top$feature)
+
+
+
+library(cowplot)
+
+
+sc_a<-ggplot(pcawg,aes(x=type,y=c,fill=type))+facet_wrap(vars(f),nrow=1,scales="free")+theme_classic(base_size =12)+geom_boxplot(outlier.shape=NA,alpha=.5)+geom_jitter(color="black",size=.3,alpha=.25)+theme(legend.position="none",strip.placement = "outside",strip.background = element_blank(),strip.text=element_text(size=12),axis.text.x=element_blank())+xlab("")+ylab("")+scale_fill_discrete(type=c("indianred","plum"))+stat_compare_means(method = "wilcox.test",label = "p.format",size=4,label.x.npc="middle",label.y.npc=.95)+geom_blank(data=pcawg_meds)
+
+
+
+sc_b<-ggplot(plasma,aes(x=type,y=c,fill=type))+facet_wrap(vars(f),nrow=1,scales="free")+theme_classic(base_size =12)+geom_boxplot(outlier.shape=NA,alpha=.5)+geom_jitter(color="black",size=.3,alpha=.25)+theme(legend.position="none",strip.text=element_blank(),axis.text.x=element_blank())+#stat_compare_means(label.x.npc="middle",label.y.npc=.15)+
+  xlab("")+ylab("")+scale_fill_discrete(type=c("indianred","plum"))+
+  stat_compare_means(method = "wilcox.test",label = "p.format",size=4,label.x.npc="middle",label.y.npc=.95)+geom_blank(data=plasma_meds)
+
+
+
+lusc<-plot_grid(sc_a,sc_b,ncol=1,rel_heights=c(1,1))
+
+#save_data_1a<-inner_join(plasma,lucas_meta %>% select(id,cg_id),by="id")
+#save_data_1a$id<-save_data_1a$cg_id
+#save_data_1a$cg_id<-NULL
+
+#save_data_1<-rbind(pcawg,save_data_1a)
+#save_data_1<-save_data_1 %>% select(id,type,c,f)
+#save_data_1$panel<-"Lung Squamous Cell Cancer"
+
+```
+
+```{r LUAD, fig.width=8,fig.height=10}
+plasma<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+plasma<-plasma %>% select(-V1)
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+
+meta<-meta %>% filter(id %in% selected$id)
+
+plasma<-plasma %>% filter(id %in% meta$id)
+
+
+plasma<-inner_join(plasma, meta %>% select(type,Subtype,id),by="id")
+
+plasma<-plasma %>% filter(Subtype=="Adenocarcinoma"|type=="healthy")
+
+test<-plasma %>% gather(key=feature,value=count,-id,-type,-Subtype)
+
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+e<-e %>% filter(total_kmers>1000)
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+
+test<-inner_join(test,e %>% select(feature,fam),by="feature")
+test$count<-as.numeric(test$count)
+test<-test %>% group_by(id,fam,type) %>% summarize(c=scale(count)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+
+plasma<-test
+plasma$cohort<-"Plasma"
+plasma<-plasma %>% mutate(type=if_else(type=="cancer","LUAD","Non-cancer"))
+
+
+
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+ploidy<-ploidy %>% filter(!`ICGC Donor` %in% exc$icgc_donor_id)
+
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$`ICGC Donor`)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(`ICGC Donor`,project_id),by=c("id"="ICGC Donor"))
+####
+pcawg<-pcawg %>% filter(project_id %in% c("PCAWG-TCGA-LUAD-US"))
+pcawg<-pcawg %>% select(-project_id)
+test<-pcawg %>% gather(key=feature,value=count,-id,-type)
+
+#Add info needed to center/scale by family
+test$fam<-sapply(str_split(test$feature,"#"),"[",2)
+test<-test %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+test$bigfam<-sapply(str_split(test$fam,"_"),"[",1)
+test<-test %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA",bigfam))
+test<-test %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"TEs",bigfam))
+
+
+pcawg<-test %>% group_by(id,type,bigfam)%>%summarize(c=scale(count)[,1],f=feature)
+#test<-test %>% rename("count"="c") %>% rename("feature"="f")
+#pcawg<-test %>% ungroup() %>% select(-bigfam) %>% spread(key=feature,value=count)
+pcawg<-pcawg %>% ungroup()
+
+pcawg$cohort<-"PCAWG"
+pcawg<-pcawg %>% mutate(type=if_else(type=="cancer","LUAD","Non-cancer")) %>% select(-bigfam)
+
+plasma_h_med<-plasma %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+plasma_meds<-plasma %>% group_by(f) %>% summarize(max=max(c),min=min(c))
+plasma_meds<-inner_join(plasma_h_med,plasma_meds,by="f")
+plasma_meds$hi_diff<-plasma_meds$max-plasma_meds$m
+plasma_meds$low_diff<-plasma_meds$m-plasma_meds$min
+plasma_meds<-plasma_meds %>% mutate(c=if_else(hi_diff>low_diff,m-hi_diff,m+low_diff))
+plasma_meds$id<-"test"
+plasma_meds$type<-"Non-cancer"
+plasma_meds$cohort<-"Plasma"
+#plasma_h_med<-plasma %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+#plasma<-inner_join(plasma,plasma_h_med,by="f")
+#plasma$c<-plasma$c-plasma$m
+#plasma<-plasma %>% select(-m)
+
+pcawg_h_med<-pcawg %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+pcawg_meds<-pcawg %>% group_by(f) %>% summarize(max=max(c),min=min(c))
+pcawg_meds<-inner_join(pcawg_h_med,pcawg_meds,by="f")
+pcawg_meds$hi_diff<-pcawg_meds$max-pcawg_meds$m
+pcawg_meds$low_diff<-pcawg_meds$m-pcawg_meds$min
+pcawg_meds<-pcawg_meds %>% mutate(c=if_else(hi_diff>low_diff,m-hi_diff,m+low_diff))
+pcawg_meds$id<-"test"
+pcawg_meds$type<-"Non-cancer"
+pcawg_meds$cohort<-"PCAWG"
+
+#pcawg_h_med<-pcawg %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+#pcawg<-inner_join(pcawg,pcawg_h_med,by="f")
+#pcawg$c<-pcawg$c-pcawg$m
+#pcawg<-pcawg %>% select(-m)
+
+data<-rbind(plasma,pcawg)
+data<-data %>% filter(f %in% e$feature)
+good_f<-compare_means(c~type, plasma,group.by="f") %>% filter(p<.05)
+
+
+top<-fread(here("data","Supp_Tables","s6_All_features.csv"))
+top<-top %>% select(feature,fam,bigfam,contains("LUAD"))
+tops<- top %>% filter(LUAD_p<.05) %>% filter(feature %in% good_f$f) %>% filter(feature %in% e$feature)
+top<-top %>% filter(LUAD_p<.05) %>% filter(feature %in% good_f$f) %>% filter(feature %in% e$feature) %>% slice_max(order_by=abs(LUAD_effsize),n=5)
+
+data2<-data %>% filter(f %in% tops$feature)
+data2<-data2 %>% group_by(f,cohort,type) %>% summarize(n=median(c))
+data2<-data2 %>% spread(key=type,value=n)
+data2<-data2 %>% mutate(cancer_high=if_else(LUAD>`Non-cancer`,"TRUE","FALSE"))
+data2<-data2 %>% select(f,cohort,cancer_high) %>% spread(key=cohort,value=cancer_high)
+nrow(data2 %>% filter(PCAWG == Plasma))
+nrow(data2)
+
+
+
+data<-data %>% filter(f %in% top$feature)
+data$type<-factor(data$type,levels=c("Non-cancer","LUAD"))
+data<-inner_join(data,top,by=c("f"="feature"))
+top$feature<-gsub("#","\n",top$feature)
+data$f<-gsub("#","\n",data$f)
+top$feature<-gsub("_","\n",top$feature)
+data$f<-gsub("_","\n",data$f)
+top$feature<-paste0(top$feature,"\n")
+data$f<-paste0(data$f,"\n")
+
+data$f<-factor(data$f,levels=top$feature)
+
+#data<-data %>% filter(bigfam=="LINE")
+pcawg<-data %>% filter(cohort=="PCAWG")
+plasma<-data %>% filter(cohort=="Plasma")
+pcawg_meds$f<-gsub("#","\n",pcawg_meds$f)
+plasma_meds$f<-gsub("#","\n",plasma_meds$f)
+pcawg_meds$f<-gsub("_","\n",pcawg_meds$f)
+plasma_meds$f<-gsub("_","\n",plasma_meds$f)
+pcawg_meds$f<-paste0(pcawg_meds$f,"\n")
+plasma_meds$f<-paste0(plasma_meds$f,"\n")
+pcawg_meds<-pcawg_meds %>% filter(f %in% pcawg$f)
+plasma_meds<-plasma_meds %>% filter(f %in% plasma$f)
+
+pcawg_meds$f<-factor(pcawg_meds$f,levels=top$feature)
+plasma_meds$f<-factor(plasma_meds$f,levels=top$feature)
+library(cowplot)
+
+
+lu_a<-ggplot(pcawg,aes(x=type,y=c,fill=type))+facet_wrap(vars(f),nrow=1,scales="free")+theme_classic(base_size =12)+geom_boxplot(outlier.shape=NA,alpha=.5)+geom_jitter(color="black",size=.3,alpha=.25)+theme(legend.position="none",strip.placement = "outside",strip.background = element_blank(),strip.text=element_text(size=12),axis.text.x=element_blank())+xlab("")+ylab("")+scale_fill_discrete(type=c("indianred","plum"))+stat_compare_means(method = "wilcox.test",label = "p.format",size=4,label.x.npc="middle",label.y.npc=.95)+geom_blank(data=pcawg_meds)
+
+
+
+lu_b<-ggplot(plasma,aes(x=type,y=c,fill=type))+facet_wrap(vars(f),nrow=1,scales="free")+theme_classic(base_size =12)+geom_boxplot(outlier.shape=NA,alpha=.5)+geom_jitter(color="black",size=.3,alpha=.25)+theme(legend.position="bottom",strip.text=element_blank(),axis.text.x=element_blank())+#stat_compare_means(label.x.npc="middle",label.y.npc=.15)+
+  xlab("")+ylab("")+scale_fill_discrete(type=c("indianred","plum"),labels=c("Non-cancer","Cancer"),name="")+
+  stat_compare_means(method = "wilcox.test",label = "p.format",size=4,label.x.npc="middle",label.y.npc=.95)+geom_blank(data=plasma_meds)
+
+legend<-get_legend(lu_b)
+lu_b<-lu_b+theme(legend.position="none")
+library(cowplot)
+luad<-plot_grid(lu_a,lu_b,ncol=1,rel_heights=c(1,1))
+
+#save_data_2a<-inner_join(plasma,lucas_meta %>% select(id,cg_id),by="id")
+#save_data_2a$id<-save_data_2a$cg_id
+#save_data_2a$cg_id<-NULL
+
+#save_data_2<-rbind(pcawg,save_data_2a)
+#save_data_2<-save_data_2 %>% select(id,type,c,f)
+#save_data_2$panel<-"Lung Adenocarcinoma"
+
+
+```
+
+```{r LIHC, fig.width=8,fig.height=10}
+plasma<-fread(here("data","Final_Liver_Risk_Ensemble","Liver_artemis.csv"))
+plasma<-plasma %>% select(-V1)
+meta<-fread(here("data","Plasma_CV_meta_Novaseq.csv"))
+
+selected<-meta %>% filter(Liver==TRUE)
+
+meta<-meta %>% filter(id %in% selected$id)
+
+plasma<-plasma %>% filter(id %in% meta$id)
+
+
+plasma<-inner_join(plasma, meta %>% select(type,Subtype,id),by="id")
+
+plasma<-plasma %>% filter(Subtype != "Non-cancer" )
+
+test<-plasma %>% gather(key=feature,value=count,-id,-type,-Subtype)
+
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+e<-e %>% filter(total_kmers>1000)
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+
+test<-inner_join(test,e %>% select(feature,fam),by="feature")
+test$count<-as.numeric(test$count)
+test<-test %>% group_by(id,fam,type) %>% summarize(c=scale(count)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+
+plasma<-test
+plasma$cohort<-"Plasma"
+plasma<-plasma %>% mutate(type=if_else(type=="cancer","LIHC","Non-cancer"))
+
+
+
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+ploidy<-ploidy %>% filter(!`ICGC Donor` %in% exc$icgc_donor_id)
+
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$`ICGC Donor`)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(`ICGC Donor`,project_id),by=c("id"="ICGC Donor"))
+####
+pcawg<-pcawg %>% filter(project_id %in% c("PCAWG-TCGA-LIHC-US"))
+pcawg<-pcawg %>% select(-project_id)
+test<-pcawg %>% gather(key=feature,value=count,-id,-type)
+
+#Add info needed to center/scale by family
+test$fam<-sapply(str_split(test$feature,"#"),"[",2)
+test<-test %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+test$bigfam<-sapply(str_split(test$fam,"_"),"[",1)
+test<-test %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA",bigfam))
+test<-test %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"TEs",bigfam))
+
+
+pcawg<-test %>% group_by(id,type,bigfam)%>%summarize(c=scale(count)[,1],f=feature)
+#test<-test %>% rename("count"="c") %>% rename("feature"="f")
+#pcawg<-test %>% ungroup() %>% select(-bigfam) %>% spread(key=feature,value=count)
+pcawg<-pcawg %>% ungroup()
+
+pcawg$cohort<-"PCAWG"
+pcawg<-pcawg %>% mutate(type=if_else(type=="cancer","LIHC","Non-cancer")) %>% select(-bigfam)
+
+plasma_h_med<-plasma %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+plasma_meds<-plasma %>% group_by(f) %>% summarize(max=max(c),min=min(c))
+plasma_meds<-inner_join(plasma_h_med,plasma_meds,by="f")
+plasma_meds$hi_diff<-plasma_meds$max-plasma_meds$m
+plasma_meds$low_diff<-plasma_meds$m-plasma_meds$min
+plasma_meds<-plasma_meds %>% mutate(c=if_else(hi_diff>low_diff,m-hi_diff,m+low_diff))
+plasma_meds$id<-"test"
+plasma_meds$type<-"Non-cancer"
+plasma_meds$cohort<-"Plasma"
+#plasma_h_med<-plasma %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+#plasma<-inner_join(plasma,plasma_h_med,by="f")
+#plasma$c<-plasma$c-plasma$m
+#plasma<-plasma %>% select(-m)
+
+pcawg_h_med<-pcawg %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+pcawg_meds<-pcawg %>% group_by(f) %>% summarize(max=max(c),min=min(c))
+pcawg_meds<-inner_join(pcawg_h_med,pcawg_meds,by="f")
+pcawg_meds$hi_diff<-pcawg_meds$max-pcawg_meds$m
+pcawg_meds$low_diff<-pcawg_meds$m-pcawg_meds$min
+pcawg_meds<-pcawg_meds %>% mutate(c=if_else(hi_diff>low_diff,m-hi_diff,m+low_diff))
+pcawg_meds$id<-"test"
+pcawg_meds$type<-"Non-cancer"
+pcawg_meds$cohort<-"PCAWG"
+
+#pcawg_h_med<-pcawg %>% filter(type=="Non-cancer") %>% group_by(f) %>% summarize(m=median(c))
+#pcawg<-inner_join(pcawg,pcawg_h_med,by="f")
+#pcawg$c<-pcawg$c-pcawg$m
+#pcawg<-pcawg %>% select(-m)
+
+data<-rbind(plasma,pcawg)
+data<-data %>% filter(f %in% e$feature)
+good_f<-compare_means(c~type, plasma,group.by="f") %>% filter(p<.05)
+
+top<-fread(here("data","Supp_Tables","s6_All_features.csv"))
+top<-top %>% select(feature,fam,bigfam,contains("LIHC"))
+tops<- top %>% filter(LIHC_p<.05) %>% filter(feature %in% good_f$f) %>% filter(feature %in% e$feature)
+top<-top %>% filter(LIHC_p<.05) %>% filter(feature %in% good_f$f) %>% filter(feature %in% e$feature) %>% slice_max(order_by=abs(LIHC_effsize),n=5)
+
+data2<-data %>% filter(f %in% tops$feature)
+data2<-data2 %>% group_by(f,cohort,type) %>% summarize(n=median(c))
+data2<-data2 %>% spread(key=type,value=n)
+data2<-data2 %>% mutate(cancer_high=if_else(LIHC>`Non-cancer`,"TRUE","FALSE"))
+data2<-data2 %>% select(f,cohort,cancer_high) %>% spread(key=cohort,value=cancer_high)
+nrow(data2 %>% filter(PCAWG == Plasma))
+nrow(data2)
+
+
+data<-data %>% filter(f %in% top$feature)
+data$type<-factor(data$type,levels=c("Non-cancer","LIHC"))
+data<-inner_join(data,top,by=c("f"="feature"))
+top$feature<-gsub("#","\n",top$feature)
+data$f<-gsub("#","\n",data$f)
+top$feature<-gsub("_","\n",top$feature)
+data$f<-gsub("_","\n",data$f)
+
+data$f<-factor(data$f,levels=top$feature)
+
+#data<-data %>% filter(bigfam=="LINE")
+pcawg<-data %>% filter(cohort=="PCAWG")
+plasma<-data %>% filter(cohort=="Plasma")
+pcawg_meds$f<-gsub("#","\n",pcawg_meds$f)
+plasma_meds$f<-gsub("#","\n",plasma_meds$f)
+pcawg_meds$f<-gsub("_","\n",pcawg_meds$f)
+plasma_meds$f<-gsub("_","\n",plasma_meds$f)
+pcawg_meds<-pcawg_meds %>% filter(f %in% pcawg$f)
+plasma_meds<-plasma_meds %>% filter(f %in% plasma$f)
+
+pcawg_meds$f<-factor(pcawg_meds$f,levels=top$feature)
+plasma_meds$f<-factor(plasma_meds$f,levels=top$feature)
+library(cowplot)
+
+
+li_a<-ggplot(pcawg,aes(x=type,y=c,fill=type))+facet_wrap(vars(f),nrow=1,scales="free")+theme_classic(base_size =12)+geom_boxplot(outlier.shape=NA,alpha=.5)+geom_jitter(color="black",size=.3,alpha=.25)+theme(legend.position="none",strip.placement = "outside",strip.background = element_blank(),strip.text=element_text(size=12),axis.text.x=element_blank())+xlab("")+ylab("Centered and Scaled Kmer Count")+scale_fill_discrete(type=c("indianred","plum"))+stat_compare_means(method = "wilcox.test",label = "p.format",size=4,label.x.npc="middle",label.y.npc=.95)+geom_blank(data=pcawg_meds)
+
+
+
+li_b<-ggplot(plasma,aes(x=type,y=c,fill=type))+facet_wrap(vars(f),nrow=1,scales="free")+theme_classic(base_size =12)+geom_boxplot(outlier.shape=NA,alpha=.5)+geom_jitter(color="black",size=.3,alpha=.25)+theme(legend.position="none",strip.text=element_blank(),,axis.text.x=element_blank())+#stat_compare_means(label.x.npc="middle",label.y.npc=.15)+
+  xlab("")+ylab("Centered and Scaled Kmer Count")+scale_fill_discrete(type=c("indianred","plum"))+
+  stat_compare_means(method = "wilcox.test",label = "p.format",size=4,label.x.npc="middle",label.y.npc=.95)+geom_blank(data=plasma_meds)
+
+
+library(cowplot)
+lihc<-plot_grid(li_a,li_b,ncol=1,rel_heights=c(1,1))
+
+
+#save_data_3<-rbind(pcawg,plasma)
+#save_data_3<-save_data_3 %>% select(id,type,c,f)
+#save_data_3$panel<-"Liver Cancer"
+
+#save_data<-rbind(save_data_1,save_data_2,save_data_3)
+
+#write.csv(save_data,here("output","Figure_Data_Files","Fig3B.csv"))
+
+```
+
+```{r liver, fig.width=8,fig.height=16, dev=c("png", "pdf")}
+lihc
+```
+
+```{r lung, fig.width=8,fig.height=16, dev=c("png", "pdf")}
+luad
+
+lusc
+```
+
+```{r comp, fig.width=32,fig.height=10, dev=c("png", "pdf")}
+a1<-plot_grid(lihc,lusc,luad,rel_widths=c(1,1,1),nrow=1)
+a1
+```
+
+
+```{r legend, fig.width=4,fig.height=4, dev=c("png", "pdf")}
+plot_grid(legend)
+```
+
+

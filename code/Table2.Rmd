@@ -1,0 +1,97 @@
+---
+title: "PCAWGROCs"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+ROCs for PCAWG T vs N
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+load_all("~/Dropbox/useful.stuff.aa")           # Load
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+
+detection<-fread(here("data","Cristiano_Detection","Results","Cross_Validation_scores.csv"))
+
+artemis_delfi_ensemble<-detection %>% select(-V1) %>% filter(model=="ARTEMIS_single_DELFI_SSLs_Ensemble")
+
+#Get the thresholds
+
+t<-artemis_delfi_ensemble %>% summarize(thresh=(roc(type,score,levels=c("healthy",'cancer')) %>% coords(transpose=FALSE) %>% filter(specificity>=.9))$threshold[1] 
+)
+artemis_delfi_ensemble<-artemis_delfi_ensemble %>% filter(type=="cancer"&score>t$thresh)
+
+```
+
+
+```{r}
+#Save the monitoring patients because we'll need them
+data1<-fread(here("data","Lung_Monitoring","meta2.csv"))
+data2<-fread(here("data","Lung_Monitoring","dynamics.csv"))
+meta<-tibble(right_join(data1,data2 %>% select(-Patient),by=c("Patient Timepoint"="Timepoint ID")))
+meta<-meta[!duplicated(meta$Patient), ]
+
+
+```
+
+```{r}
+artemis_delfi_too<-fread(here("data","Cristiano_TOO","Results","Cross_Validation_scores.csv"))
+artemis_delfi_too<-artemis_delfi_too %>% select(-V1) %>% filter(model=="ARTEMIS_DELFI_raw_Ensemble")
+
+artemis_delfi_too %>% group_by(Tumor_Type) %>% summarize(n=n())
+artemis_delfi_too<-artemis_delfi_too %>% filter(id %in%meta$sample|id %in%artemis_delfi_ensemble$id)
+artemis_delfi_too %>% group_by(Tumor_Type) %>% summarize(n=n())
+
+#Top prediction correct
+artemis_delfi_too %>% group_by(Tumor_Type) %>% summarize(n=n(),c=sum(Tumor_Type==pred),p=c/n,l=binom.test(c,n)$conf.int[1],t=binom.test(c,n)$conf.int[2]) 
+
+
+
+
+top2<-artemis_delfi_too %>% group_by(id) %>% rowwise() %>%
+  mutate(pred2 = {x <- c_across(c("Breast","Cholangiocarcinoma","Colorectal","Gastric","Lung","Ovarian","Pancreatic"));
+  if (sum(!is.na(x)) >= 2) tail(head(c("Breast","Cholangiocarcinoma","Colorectal","Gastric","Lung","Ovarian","Pancreatic")[order(x, decreasing = T)],2),1) else NA})
+#Top 2 prediction correct
+
+top2 %>% group_by(Tumor_Type) %>% summarize(n=n(),c=sum(Tumor_Type==pred|pred2==Tumor_Type),p=c/n,l=binom.test(c,n)$conf.int[1],t=binom.test(c,n)$conf.int[2])
+ 
+
+artemis_delfi_too$Tumor_Type<-factor(artemis_delfi_too$Tumor_Type,levels=c("Breast","Cholangiocarcinoma","Colorectal","Gastric","Lung","Ovarian","Pancreatic"))
+artemis_delfi_too$pred<-factor(artemis_delfi_too$pred,levels=c("Breast","Cholangiocarcinoma","Colorectal","Gastric","Lung","Ovarian","Pancreatic"))
+
+#Confusion Matrix
+confusionMatrix(data=artemis_delfi_too$pred, reference = artemis_delfi_too$Tumor_Type)
+
+```
+
+```{r}
+#All patients detected for artemis-delfi do random
+ns<-artemis_delfi_too %>% group_by(Tumor_Type) %>% summarize(n=n())
+
+
+set.seed(1234)
+rand<-sample(c("Breast","Cholangiocarcinoma","Colorectal","Gastric","Lung","Ovarian","Pancreatic"),size=211,replace=TRUE,prob=ns$n/211)
+
+set.seed(2468)
+rand2<-sample(c("Breast","Cholangiocarcinoma","Colorectal","Gastric","Lung","Ovarian","Pancreatic"),size=211,replace=TRUE,prob=ns$n/211)
+
+
+dat<-tibble(artemis_delfi_too %>% select(id,Tumor_Type),rand_pred=rand,rand_pred2=rand2)
+dat %>% group_by(Tumor_Type) %>% summarize(n=n(),c=sum(Tumor_Type==rand_pred),p=c/n,c2=sum(Tumor_Type==rand_pred|Tumor_Type==rand_pred2),p2=c2/n)
+```
+
+
+
+

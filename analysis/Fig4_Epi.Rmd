@@ -1,0 +1,392 @@
+---
+title: "Fig4"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+I am going to exclude two replicates of H3K36me3-human_GM12878_ENCFF001WYF H3K36me3-human_GM12878_ENCFF001WYH as a search of the metadata shows that these were "hotspots" not "peaks" which seems to be throwing off coverage etc.
+
+H3K4me3-human_GM12878_ENCFF001SUF and H3K4me3-human_GM12878_ENCFF001SUM seem to be true replicates
+```{r}
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(here)
+library(devtools)
+load_all(here("code","useful.stuff.aa"))           # Load
+library(gridExtra)
+library(cowplot)
+
+
+
+```
+
+Chunk 1 is the function of the peaks
+```{r chrom, echo=FALSE, fig.width=15, fig.height=4, dev=c("png", "pdf")}
+data<-read_csv(here("data","Epi","Chromatin.csv"))
+data<-data %>% filter(!histone %in% c("H3K36me3-human_GM12878_ENCFF001WYF","H3K36me3-human_GM12878_ENCFF001WYH","H3K4me3-human_GM12878_ENCFF001SUM"))
+#peak count is the number of peaks from the histone experiment that overlap that state
+#total_peak is the number of peaks in that experiment
+#total_ch is the number of bp in that chromatin state
+#Within an experiment, we've controlled for the total available peaks -- so can just do peaks per bp.
+#Different numbers of total peaks in different experiments though, so may want to center/scale within the experiment?
+data$peaks_per_mb<-(data$peak_count/(data$total_ch/1000000))
+data<-data %>% filter(! state %in% c("6_Egn3_iHMM_GM12878","14_Low1_iHMM_GM12878","15_Low2_iHMM_GM12878","16_Low3_iHMM_GM12878","17_Unmap_iHMM_GM12878"))
+
+#normalize to 1 rather than center/scale
+#data<-data %>% group_by(histone) %>% mutate(peaks_per_mb_scaled=scale(peaks_per_mb)[,1])
+data<-data %>% group_by(histone) %>% mutate(peaks_per_mb_scaled=peaks_per_mb/sum(peaks_per_mb))
+
+data<-data %>% mutate(state2=if_else(state=="1_Pro_iHMM_GM12878","Promoter",state))
+data<-data %>% mutate(state2=if_else(state=="2_Enh1_iHMM_GM12878","Enhancer1",state2))
+data<-data %>% mutate(state2=if_else(state=="3_Enh2_iHMM_GM12878","Enhancer2",state2))
+data<-data %>% mutate(state2=if_else(state=="4_Egn1_iHMM_GM12878","5' Transcription 1",state2))
+data<-data %>% mutate(state2=if_else(state=="5_Egn2_iHMM_GM12878","5' Transcription 2",state2))
+data<-data %>% mutate(state2=if_else(state=="6_Egn3_iHMM_GM12878","Gene, H4K20me1",state2))
+data<-data %>% mutate(state2=if_else(state=="7_Egn4_iHMM_GM12878","3' Transcription 1",state2))
+data<-data %>% mutate(state2=if_else(state=="8_Egn5_iHMM_GM12878","3' Transcription 2",state2))
+data<-data %>% mutate(state2=if_else(state=="9_Egn6_iHMM_GM12878","3' Transcription 3",state2))
+data<-data %>% mutate(state2=if_else(state=="10_Rep1_iHMM_GM12878","PC Repressed 1",state2))
+data<-data %>% mutate(state2=if_else(state=="11_Rep2_iHMM_GM12878","PC Repressed 2",state2))
+data<-data %>% mutate(state2=if_else(state=="12_Het1_iHMM_GM12878","Heterochromatin 1",state2))
+data<-data %>% mutate(state2=if_else(state=="13_Het2_iHMM_GM12878","Heterochromatin 2",state2))
+data<-data %>% mutate(state2=if_else(state=="14_Low1_iHMM_GM12878","Low Signal 1",state2))
+data<-data %>% mutate(state2=if_else(state=="15_Low2_iHMM_GM12878","Low Signal 2",state2))
+data<-data %>% mutate(state2=if_else(state=="16_Low3_iHMM_GM12878","Low Signal 3",state2))
+
+data<-data %>% mutate(cat=if_else(state2 %in% c("Promoter","Enhancer1","Enhancer2","5' Transcription 1","5' Transcription 2"),"Active","Gene, H4K20me1"))
+data<-data %>% mutate(cat=if_else(state2 %in% c("3' Transcription 1","3' Transcription 2","3' Transcription 3"),"3' Transcription",cat))
+data<-data %>% mutate(cat=if_else(state2 %in% c("PC Repressed 1","PC Repressed 2","Heterochromatin 1","Heterochromatin 2"),"Repressed",cat))
+data<-data %>% mutate(cat=if_else(state2 %in% c("Low Signal 1","Low Signal 2","Low Signal 3"),"Low Signal",cat))
+data$state2<-factor(data$state2,levels=rev(c("Promoter","Enhancer1","Enhancer2","5' Transcription 1","5' Transcription 2","3' Transcription 1","3' Transcription 2","3' Transcription 3","PC Repressed 1","PC Repressed 2","Heterochromatin 1","Heterochromatin 2")))
+data$cat<-factor(data$cat,levels=c("Active","3' Transcription","Repressed"))
+
+#getting ordering
+peak_order<-(data %>% group_by(peak,cat)%>%summarize(s=sum(peaks_per_mb_scaled)) %>% filter(cat=="Active")%>% arrange(-s))$peak
+peak_order[8]->test
+peak_order[8]<-peak_order[7]
+peak_order[7]<-test
+data$peak<-factor(data$peak,levels=peak_order)
+a<-ggplot(data,aes(x=state2,y=peaks_per_mb_scaled,color=cat))+geom_point()+facet_grid(.~peak)+geom_segment(aes(x=state2,xend=state2,y=0,yend=peaks_per_mb_scaled,color=cat))+coord_flip()+theme_classic()+theme(axis.title.y=element_blank(),legend.title=element_blank())+labs(y="Normalized Peaks per mb of chromatin state")#+geom_hline(yintercept=0,color="gray",alpha=.5,linetype="dashed")
+
+
+p1<-a+theme(legend.position="none",panel.spacing.x = unit(1, "lines"))
+
+legend_p1 <- get_legend(
+  a + theme(legend.position = "right")
+)
+
+
+#save_data<-data %>% ungroup() %>% select(state2,peaks_per_mb_scaled,cat,peak)
+#write.csv(save_data,here("output","Figure_Data_Files","Fig4_1.csv"))
+```
+
+Chunk 2 is describing the peaks in the repeat families
+#Always need to scale the metric within the histone experiment to correct for how many peaks were in the experiment
+#need to scale within the feature to account for difficulty of aligning peaks here
+#Perhaps, for each histone -- percentage of peaks found in the feature. Corrects for more or less peaks in a given experiment. 
+#Then scale within the feature, so if a given feature was just hard to find peaks in general they're not all low.
+
+```{r repeats, echo=FALSE, fig.width=15, fig.height=4, dev=c("png", "pdf")}
+data<-read_csv(here("data","Epi","Histone_marks.csv")) ### excluded the two problem datasets in file creation
+
+#get all the experimental peaks for each experiment
+data2<-read_csv(here("data","epi","Chromatin.csv"))
+data2<-data2 %>% filter(!histone %in% c("H3K36me3-human_GM12878_ENCFF001WYF","H3K36me3-human_GM12878_ENCFF001WYH"))
+
+tots<-data2 %>% filter(state=="1_Pro_iHMM_GM12878") %>% group_by(peak) %>% summarize(all_peaks=sum(total_peak))
+data<-inner_join(data,tots,by="peak")
+data$exp_perc<-data$peaks/data$all_peaks
+
+#normalize to 1 rather than center/scale
+#data<-data %>% group_by(feature) %>% mutate(scaled_peaks=scale(exp_perc)[,1])
+data<-data %>% group_by(feature) %>% mutate(scaled_peaks=exp_perc/sum(exp_perc))
+data$peak<-factor(data$peak,levels=peak_order)
+data<-data %>% mutate(scaled_peaks=if_else(scaled_peaks>.5,.5,scaled_peaks))
+
+b<-ggplot(data,aes(x=fam2,y=scaled_peaks,color=fam2))+geom_boxplot(outlier.shape=NA)+geom_jitter(size=.05,alpha=.2)+facet_grid(.~peak,scales="free")+theme_classic()+theme(axis.text.x=element_blank(),axis.title.x=element_blank(),axis.ticks.x=element_blank())+labs(y="Normalized fraction\nof epigenetic marks found\nin repeat element",color="Repeat Elements")+ylim(c(0,.5))
+
+p2<-b+theme(legend.position="none",strip.text = element_blank(),panel.spacing.x = unit(1, "lines"))
+legend_p2 <- get_legend(
+  b + theme(legend.position = "right")
+)
+
+#save_data<-data %>% ungroup() %>% select(fam2,scaled_peaks,peak)
+#write.csv(save_data,here("output","Figure_Data_Files","Fig4_2.csv"))
+
+```
+
+Chunk 3 is the fragment size distributions
+
+
+
+```{r size, echo=FALSE, fig.width=15, fig.height=4, dev=c("png", "pdf")}
+data<-read_csv(here("data","epi","Healthy_FragmentSizes_HiSeq.csv"))
+data<-data %>% filter(!set %in% c("H3K36me3.human_GM12878_ENCFF001WYF","H3K36me3.human_GM12878_ENCFF001WYH"))
+
+data<-data %>% filter(grepl("human_GM12878",set)|set=="All_reads")
+d<-data %>% group_by(ind,set) %>% summarize(tot=sum(count))
+data<-inner_join(data,d,by=c("ind","set"))
+data$perc<-data$count/data$tot
+data$set<-sapply(str_split(data$set,"\\."),"[",1)
+data<-data %>% filter(set != "H2AFZ")
+
+data<-data %>% group_by(width,set) %>% summarize(med=mean(perc),SD=sd(perc))
+a<-data %>% filter(set=="All_reads")
+data<-data %>% filter(set != "All_reads")
+data$group<-"Histone\nFragments"
+
+a<-inner_join(data %>% select(width,set),a %>% select(-set),by="width")
+a$group<-"All Fragments"
+data<-rbind(data,a)
+data$set<-factor(data$set,levels=peak_order)
+
+
+```
+
+```{r size2, echo=FALSE, fig.width=15, fig.height=3, dev=c("png", "pdf")}
+data<-data %>% filter(width>=120 & width <= 160)
+
+#c2<-ggplot(data,aes(x=width,y=med,color=group))+geom_line()+facet_grid(.~set)+geom_ribbon(aes(ymin=med-SD,ymax=med+SD,color=group,fill=group),linetype=0,alpha=.25)+theme_classic()+theme(legend.position="none")+labs(x="Fragment Length",y="Proportion\nof Fragments")+scale_x_continuous(breaks=c(130,150))
+#c2
+#p4<-c2+theme(strip.text = element_blank())
+
+means<-data %>% select(-SD) %>% spread(key=group,value=med)
+max<-data %>% mutate(max=med+SD) %>% select(-med,-SD) %>% spread(key=group,value=max)
+min<-data %>% mutate(min=med-SD) %>% select(-med,-SD) %>% spread(key=group,value=min)
+
+means$Mean_Diff<-means$`Histone\nFragments`-means$`All Fragments`
+max$Max_Diff<-max$`Histone\nFragments`-max$`All Fragments`
+min$Min_Diff<-min$`Histone\nFragments`-min$`All Fragments`
+
+data<-inner_join(means %>% select(width,set,Mean_Diff),max%>% select(width,set,Max_Diff),by=c("width","set"))
+data<-inner_join(min %>% select(width,set,Min_Diff),data,by=c("width","set"))
+data$set<-factor(data$set,levels=peak_order)
+
+c2<-ggplot(data,aes(x=width,y=Mean_Diff,color="Average Fragment\nDensity"))+geom_line()+facet_grid(.~set)+geom_ribbon(aes(ymin=Min_Diff,ymax=Max_Diff),linetype=0,alpha=.25)+theme_classic()+theme(legend.title = element_blank())+labs(x="Fragment Length",y="cfDNA fragment length\ndifference in fragments\nwith or without epigenetic mark")+scale_x_continuous(breaks=c(120,160))+geom_hline(yintercept=0,linetype="dashed",alpha=.5)+scale_color_manual(values=c("black"))
+#c2+theme(legend.position="none")
+p4<-c2+theme(strip.text = element_blank(),axis.text.x=element_text(size=8),panel.spacing.x = unit(1, "lines"))+theme(legend.position="none")
+
+legend_p4 <- get_legend(
+  c2 + theme(legend.position = "right")
+)
+
+c2<-c2+theme(legend.position="none")
+
+
+#save_data<-data %>% ungroup() %>% select(width,Mean_Diff,Min_Diff,Max_Diff)
+#write.csv(save_data,here("output","Figure_Data_Files","Fig4_3.csv"))
+
+
+```
+
+#Coverage
+```{r cov, echo=FALSE, fig.width=15, fig.height=4, dev=c("png", "pdf")}
+library(ggpubr)
+data<-read_csv(here("data","Epi","Healthy_FragmentCoverage_HiSeq.csv"))
+data<-data %>% filter(!set %in% c("H3K36me3-human_GM12878_ENCFF001WYF","H3K36me3-human_GM12878_ENCFF001WYH"))
+
+data<-data %>% filter(grepl("human_GM12878",set)|set=="All_reads")
+
+data$set<-sapply(str_split(data$set,"-"),"[",1)
+data<-data %>% filter(set != "H2AFZ")
+
+a<-data %>% select(set,coverage,ind) %>% filter(set=="All_reads") %>% select(-set)
+
+data<-data %>% filter(set != "All_reads")
+data<-inner_join(data,a %>% dplyr::rename("All_cov"="coverage"),by="ind")
+
+
+
+#data<-rbind(data %>% select(set,ind,coverage,group),a)
+data$set<-factor(data$set,levels=peak_order)
+
+d<-ggplot(data,aes(x=coverage,y=All_cov,color="Patient"))+geom_point(size=.7)+facet_grid(.~set)+theme_classic()+geom_abline(slope=1,intercept=0)+theme(legend.title=element_blank())+labs(y="All Sequencing\ncoverage",x="Coverage over Histone Mark")+scale_color_manual(values=c("black"))
+#d+theme(legend.position="none")
+p5<-d+theme(strip.text = element_blank(),panel.spacing.x = unit(1, "lines"))
+
+legend_p5 <- get_legend(
+  p5 + theme(legend.position = "right")
+)
+
+p5<-p5+theme(legend.position="none")
+
+
+
+```
+
+```{r MA}
+data$A<-(log10(data$All_cov)+log10(data$coverage))/2
+data$M<-log10(data$coverage)-log10(data$All_cov)
+
+d<-ggplot(data,aes(x=A,y=M))+geom_point(size=.7)+facet_grid(.~set)+theme_classic()+theme(legend.position="none")+geom_hline(yintercept=0,color="red")+labs(y="log difference in cfDNA\ncoverage in regions with\nepigenetic mark vs. all regions",x="Log Average Coverage")
+#d
+p5<-d+theme(strip.text = element_blank(),panel.spacing.x = unit(1, "lines"))
+
+#save_data<-data %>% ungroup() %>% select(A,M,set)
+#write.csv(save_data,here("output","Figure_Data_Files","Fig4_4.csv"))
+
+```
+
+
+```{r plasma_repeats, echo=FALSE, fig.width=15,fig.height=4,dev=c("png", "pdf")}
+data<-read_csv(here("data","Epi","Histone_marks.csv")) ### excluded the two problem datasets in file creation
+#get all the experimental peaks for each experiment
+data2<-read_csv(here("data","Epi","Chromatin.csv"))
+data2<-data2 %>% filter(!histone %in% c("H3K36me3-human_GM12878_ENCFF001WYF","H3K36me3-human_GM12878_ENCFF001WYH"))
+tots<-data2 %>% filter(state=="1_Pro_iHMM_GM12878") %>% group_by(peak) %>% summarize(all_peaks=sum(total_peak))
+data<-inner_join(data,tots,by="peak")
+data$exp_perc<-data$peaks/data$all_peaks
+data<-data %>% group_by(feature) %>% mutate(scaled_peaks=exp_perc/sum(exp_perc))
+
+#Get LUCAS ARTEMIS features
+features<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+features<-features %>% select(-V1)
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+meta<-meta %>% filter(id %in% selected$id)
+meta<-meta %>% filter(type=="healthy")# & sex=="Male")
+features<-features %>% filter(id %in% meta$id)
+features<-features %>% as_tibble()
+features<-features %>% gather(key=feature,value=count,-id)
+features<-features %>% group_by(feature) %>% summarize(a=mean(count),sd=sd(count))
+features<-inner_join(features,data %>% select(feature,peak,scaled_peaks,subfam,fam,fam2),by="feature")
+
+#Get expected
+data<-fread(here("data","Kmer_Distributions","chr_distribution.csv"))
+data<-data %>% select(-V1)
+data$total_kmers<-data$occurrences*data$kmer_count
+data<-data %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+
+data2<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data2<-data2 %>% select(-V1)
+data2$total_kmers<-data2$occurrences*data2$kmer_count
+data2<-data2 %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+data<-rbind(data,data2)
+data$total_kmers<-data$total_kmers/(30*.86) #86% of 30 million reads
+#write.csv(data,"Expected.csv")
+features<-inner_join(features,data,by="feature")
+features$ratio<-features$a/features$total_kmers
+library(ggpubr)
+
+#Get top and bottom 10%
+data <- features[order(features$scaled_peaks, decreasing = TRUE), ]  # Top N highest values by group
+data <- data.table(data, key = "peak")
+data <- data[ , head(.SD, 126), by = peak]
+data$set<-"top 10%"
+
+data2 <- features[order(features$scaled_peaks, decreasing = FALSE), ]  # Bottom N highest values by group
+data2 <- data.table(data2, key = "peak")
+data2 <- data2[ , head(.SD, 126), by = peak]
+data2$set<-"bottom 10%"
+
+d<-rbind(data,data2)
+d$peak<-factor(d$peak,levels=peak_order)
+
+
+
+```
+
+```{r plasma_repeats_scaled, echo=FALSE, fig.width=15,fig.height=4,dev=c("png", "pdf")}
+data<-read_csv(here("data","Epi","Histone_marks.csv")) ### excluded the two problem datasets in file creation
+#get all the experimental peaks for each experiment
+data2<-read_csv(here("data","Epi","Chromatin.csv"))
+data2<-data2 %>% filter(!histone %in% c("H3K36me3-human_GM12878_ENCFF001WYF","H3K36me3-human_GM12878_ENCFF001WYH"))
+tots<-data2 %>% filter(state=="1_Pro_iHMM_GM12878") %>% group_by(peak) %>% summarize(all_peaks=sum(total_peak))
+data<-inner_join(data,tots,by="peak")
+data$exp_perc<-data$peaks/data$all_peaks
+data<-data %>% group_by(feature) %>% mutate(scaled_peaks=exp_perc/sum(exp_perc))
+
+#Get LUCAS ARTEMIS features
+features<-fread(here("data","Final_LUCAS_Ensemble","LUCAS_artemis.csv"))
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+features<-features %>% select(-V1)
+manifest<-fread(here("data","cfDNA_manifest_HiSeq.txt"))
+selected<-manifest %>% filter(LUCAS_Hi==TRUE)
+meta<-meta %>% filter(id %in% selected$id)
+meta<-meta %>% filter(type=="healthy")# & sex=="Male")
+features<-features %>% filter(id %in% meta$id)
+features<-features %>% as_tibble()
+features<-features %>% gather(key=feature,value=count,-id)
+features<-features %>% group_by(feature) %>% summarize(a=mean(count),sd=sd(count))
+features<-inner_join(features,data %>% select(feature,peak,scaled_peaks,subfam,fam,fam2),by="feature")
+
+#Get expected
+data<-fread(here("data","Kmer_Distributions","chr_distribution.csv"))
+data<-data %>% select(-V1)
+data$total_kmers<-data$occurrences*data$kmer_count
+data<-data %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+
+data2<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data2<-data2 %>% select(-V1)
+data2$total_kmers<-data2$occurrences*data2$kmer_count
+data2<-data2 %>% group_by(feature)%>%summarize(total_kmers=sum(total_kmers))
+data<-rbind(data,data2)
+data$total_kmers<-data$total_kmers/(30*.86) #86% of 30 million reads
+#write.csv(data,"Expected.csv")
+features<-inner_join(features,data,by="feature")
+features$ratio<-features$a/features$total_kmers
+library(ggpubr)
+
+#Get top and bottom 10%
+data <- features[order(features$scaled_peaks, decreasing = TRUE), ]  # Top N highest values by group
+data <- data.table(data, key = "peak")
+data <- data[ , head(.SD, 126), by = peak]
+data$set<-"top 10%"
+
+data2 <- features[order(features$scaled_peaks, decreasing = FALSE), ]  # Bottom N highest values by group
+data2 <- data.table(data2, key = "peak")
+data2 <- data2[ , head(.SD, 126), by = peak]
+data2$set<-"bottom 10%"
+
+d<-rbind(data,data2)
+d$peak<-factor(d$peak,levels=peak_order)
+
+means<-d %>% group_by(set,peak) %>% summarize(m=mean(ratio),sd_r=sd(ratio))
+means<-means %>% filter(set=="bottom 10%")
+
+d<-inner_join(d,means %>% ungroup() %>% select(peak,m,sd_r),by="peak")
+d$ratio<-(d$ratio-d$m)/d$sd_r
+x<-ggplot(d,aes(x=set,y=ratio,color=set,fill=set))+geom_boxplot(outlier.shape=NA,width=.5,alpha=.2)+geom_jitter(size=.1,alpha=.25,color="grey50")+facet_grid(.~peak)+theme_classic()+theme(legend.position="bottom",axis.title.x=element_blank(),axis.ticks.x=element_blank(),axis.text.x=element_blank())+stat_compare_means(method="wilcox.test",size=3,label.y=2.5,aes(label = paste0("p = ", after_stat(p.format))))+scale_color_manual(values=c("purple","green"))+scale_fill_manual(values=c("purple","green"))+ylab("Centered and scaled ratio of \nObserved to Expected\nkmer Count")+ylim(c(-3,3))+labs(fill="Features by histone\nmark density",colour="Features by histone\nmark density")
+
+
+
+p6<-x+theme(legend.position="none",strip.text = element_blank(),panel.spacing.x = unit(1, "lines"))
+
+legend_p6 <- get_legend(
+  x + theme(legend.position = "right")
+)
+
+
+#save_data<-d %>% ungroup() %>% select(set,ratio,peak)
+#write.csv(save_data,here("output","Figure_Data_Files","Fig4_5.csv"))
+
+
+```
+
+
+
+
+
+```{r composite, echo=FALSE, fig.width=16, fig.height=12, dev=c("png", "pdf","tiff")}
+
+#plots<-plot_grid(p1,p2,p3,p4,p5,p6,ncol=1,align="v",axis="l",rel_heights=c(1,1,1,1,1,1))
+#legends<-plot_grid(legend_p1,legend_p2,legend_p3,legend_p4,legend_p6,ncol=1,rel_heights=c(1,1,1,1,1))
+#plot_grid(plots,legends,nrow=1,rel_widths=c(1,.15))
+
+plots<-plot_grid(p1,p2,p4,p5,p6,ncol=1,align="v",axis="l",rel_heights=c(1,1,1,1,1))
+legends<-plot_grid(legend_p1,legend_p2,legend_p4,legend_p5,legend_p6,ncol=1,rel_heights=c(1,1,1,1))
+plot_grid(plots,legends,nrow=1,rel_widths=c(1,.15))
+
+
+#rel_heights=c(1.1,.8,.8,.8,.8,.8)
+```
+
+
+
+
+
+

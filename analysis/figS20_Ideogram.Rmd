@@ -1,0 +1,72 @@
+---
+title: "S20"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r ideo, echo=FALSE, fig.width=10, fig.height=10, dev=c("png", "pdf")}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(gbm)
+library(karyoploteR)
+library(data.table)
+library(tidyverse)
+library("viridis")           # Load
+library(regioneR)
+
+
+
+bins<-fread(here("data","Epi_Reference_Bins.csv"))
+bins<-bins[map >= 0.90 & gc >= 0.30]
+bins <- bins[,chr:=factor(chr, paste0("chr", c(1:22, "X")))]
+setkey(bins, chr, start, end)
+bins[,bin:=1:.N]
+bins$bin<-paste0(bins$ref,"_",bins$bin)
+
+total.tracks <- 1
+pp <- getDefaultPlotParams(plot.type=1)
+#pp$data1height <- 1000
+pp$data1max <- 6
+
+kp <- plotKaryotype(genome="hg19",chromosomes="autosomal",plot.type=1,plot.params = pp)
+
+bins<-bins %>% mutate(ref=if_else(ref=="H4K20me1-human_GM12878_ENCFF001SUQ","H4K20me1",ref))
+bins<-bins %>% mutate(ref=if_else(ref=="H3K27me3-human_GM12878_ENCFF001SUI","H3K27me3",ref))
+bins<-bins %>% mutate(ref=if_else(ref=="H3K9me3-human_GM12878_ENCFF001SUP","H3K9me3",ref))
+bins<-bins %>% mutate(ref=if_else(ref=="H3K36me3-human_GM12878_ENCFF001SUJ","H3K36me3",ref))
+bins<-bins %>% mutate(ref=if_else(ref=="states_7_9","3' Transcription",ref))
+bins<-bins %>% mutate(ref=if_else(ref=="states_10_13","Repression",ref))
+bins<-bins %>% mutate(ref=if_else(ref=="states_1_5","Activation",ref))
+#bins<-bins %>% mutate(ref=if_else(ref=="H3K36me3-human_GM12878_ENCFF001SUJ","BROKEN",ref))
+
+
+#at <- autotrack(current.track = 1, total.tracks = 2,r0=0, r1=5)
+bins<-bins %>% mutate(color=if_else(ref==unique(bins$ref)[1],viridis(7)[1],"test"))
+for (i in 2:7) {
+  bins<-bins %>% mutate(color=if_else(ref==unique(bins$ref)[i],viridis(7)[i],color))
+  
+}
+b1<-toGRanges(bins %>% select(chr,start,end,color,ref))
+
+
+kpPlotRegions(kp, data=b1,r0=1, r1=4, col = bins$color)
+
+
+legend(x=.75,y=.2,fill = c(rev(viridis(7))), legend = c(rev(unique(bins$ref))),
+       xjust = 0.5, # centers legend at x coordinate
+       yjust = 0.5,bty="n") # centers legend at y coordinate))
+
+
+```
+

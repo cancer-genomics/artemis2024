@@ -1,0 +1,512 @@
+---
+title: "S12"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+ROCs for PCAWG T vs N
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+load_all(here("code","useful.stuff.aa"))           # Load
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+
+ploidy<-fread(here("data","TCGA","combined_meta.csv"))
+
+pcawg2<-fread(here("data","PCAWG","artemis_PCAWG1.csv"))
+pcawg2<-pcawg2 %>% tibble() %>% select(-V1)
+pcawg3<-fread(here("data","PCAWG","artemis_PCAWG2.csv"))
+pcawg3<-pcawg3 %>% tibble() %>% select(-V1)
+pcawg2<-rbind(pcawg2,pcawg3)
+#pcawg<-pcawg %>% tibble()
+#pcawg2<-pcawg2 %>% filter(!id %in% pcawg$id)
+#pcawg<-rbind(pcawg,pcawg2)
+pcawg<-pcawg2
+pcawg<-pcawg %>% mutate(type=if_else(grepl("tumor",id),"cancer","healthy"))
+pcawg$id<-sapply(str_split(pcawg$id,"_"),"[",1)
+pcawg<-pcawg %>% filter(id %in% ploidy$`id`)
+
+pcawg<-inner_join(pcawg,ploidy %>% select(id,Project),by=c("id"="id"))
+pcawg<-pcawg %>% mutate(project_id=if_else(type=="healthy","Normal",Project))
+pcawg<-pcawg %>% select(-Project)
+test<-pcawg %>% gather(key=feature,value=count,-id,-type,-project_id)
+
+#Add info needed to center/scale by family
+test$fam<-sapply(str_split(test$feature,"#"),"[",2)
+test<-test %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+test$bigfam<-sapply(str_split(test$fam,"_"),"[",1)
+test<-test %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA",bigfam))
+test<-test %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"TEs",bigfam))
+
+
+test<-test %>% group_by(id,type,project_id,bigfam)%>%summarize(c=scale(count)[,1],f=feature)
+test<-test %>% rename("count"="c") %>% rename("feature"="f")
+pcawg<-test %>% ungroup() %>% select(-bigfam) %>% spread(key=feature,value=count)
+pcawg<-pcawg %>% ungroup()
+```
+
+```{r pcawg_roc, echo=FALSE, fig.width=6, fig.height=6, dev=c("png", "pdf")}
+
+
+train_preds<-fread(here("data","PCAWG","Classification_preds.csv")) %>% select(-V1)
+roc(train_preds$type,train_preds$score)
+
+#saveRDS(model_delfi,here("data","PCAWG","PCAWG_Classification.rds"))
+
+preds<-format_roc(train_preds$type,train_preds$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+a<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="black")+ggtitle("All Tumors vs. Normal")
+
+
+#side=rowAnnotation(type=stats$`Project`,col=list(type=c("LUAD-US"="gray","LUSC-US"="orange","COAD/READ-US"="pink","LIHC-US"="green","BRCA-US"="purple","OV-US"="red")))
+
+train<-train_preds %>% filter(project_id %in% c("Normal","LUAD-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+b<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity")+scale_color_discrete(type="gray")+ggtitle("Lung Adenocarcinoma")
+
+train<-train_preds %>% filter(project_id %in% c("Normal","LUSC-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+c<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="orange")+ggtitle("Lung Squamous")
+
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","COAD-US","READ-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+d<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="pink")+ggtitle("Colorectal")
+#write.csv(train_preds,"../data/pcawg_artemis_scores.csv")
+
+train<-train_preds %>% filter(project_id %in% c("Normal","LIHC-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+e<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="green")+ggtitle("Liver")
+#write.csv(train_preds,"../data/pcawg_artemis_scores.csv")
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","BRCA-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+f<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="purple")+ggtitle("Breast")
+#write.csv(train_preds,"../data/pcawg_artemis_scores.csv")
+
+train<-train_preds %>% filter(project_id %in% c("Normal","OV-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+g<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="red")+ggtitle("Ovarian")
+#write.csv(train_preds,"../data/pcawg_artemis_scores.csv")
+
+train<-train_preds %>% filter(project_id %in% c("Normal","BLCA-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+h<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="blue")+ggtitle("Bladder")
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","CESC-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+i<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="indianred")+ggtitle("Cervical")
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","HNSC-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+j<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="goldenrod")+ggtitle("Head and Neck Squamous")
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","THCA-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+k<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="chocolate1")+ggtitle("Thyroid")
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","PRAD-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+l<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="cadetblue")+ggtitle("Prostate")
+
+
+train<-train_preds %>% filter(project_id %in% c("Normal","STAD-US"))
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+m<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="darkorchid")+ggtitle("Gastric")
+
+library(cowplot)
+```
+
+```{r all, echo=FALSE,include = FALSE,fig.width=32, fig.height=14, dev=c("png", "pdf")}
+plot_grid(b,c,d,e,f,g,h,i,j,k,l,m,nrow=3)
+
+```
+
+```{r overall, echo=FALSE,include = FALSE,fig.width=10, fig.height=10, dev=c("png", "pdf")}
+a
+
+```
+
+```{r}
+#white patients
+w<-ploidy %>% filter(race=="white")
+
+
+train<-train_preds %>% filter(id %in% w$id)
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+w<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="gray")+ggtitle("White")
+
+
+bl<-ploidy %>% filter(race=="black or african american")
+
+
+train<-train_preds %>% filter(id %in% bl$id)
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+bl<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="gray")+ggtitle("Black or African American")
+
+as<-ploidy %>% filter(race=="asian")
+
+train<-train_preds %>% filter(id %in% as$id)
+preds<-format_roc(train$type,train$score,"AUC (95% CI)")
+preds<-preds %>% arrange(sens)
+
+as<-preds %>%
+  ggplot(aes(spec, sens,color=type)) +
+  geom_line(size=1.1) +
+  scale_x_reverse(expand=c(0, 0.01),
+                  breaks=c(0, 0.25, 0.5, 0.80, 1),
+                  labels=as.character(
+                    c("0", ".25", ".50", ".80", "1.0"))) +
+  scale_y_continuous(expand=c(0, 0.01),
+                     breaks=c(0, 0.25, 0.5, 0.75, 1),
+                     labels=as.character(
+                       c("0", ".25", ".50", ".75", "1.0")))+  #scale_color_manual(values=colors) +
+  theme_classic(base_size=20) +
+  theme(panel.grid=element_blank(),
+        legend.position=c(.5,.25),
+        aspect.ratio=0.8,
+        legend.text.align=0,
+        legend.text=element_text(size=15),
+        legend.title=element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Specificity") + ylab("Sensitivity") +scale_color_discrete(type="gray")+ggtitle("Asian")
+```
+
+```{r race, echo=FALSE,include = FALSE,fig.width=18, fig.height=6, dev=c("png", "pdf")}
+plot_grid(w,bl,as,nrow=1)
+
+```
+
+

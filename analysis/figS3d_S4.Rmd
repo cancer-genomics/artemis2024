@@ -1,0 +1,229 @@
+---
+title: "S3d_S4"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(dplyr)
+library(devtools)
+library(here)
+load_all(here("code","useful.stuff.aa"))           # Load
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(ggplot2)
+library(corrplot)
+
+```
+
+Kegg supplement
+```{r KEGG, echo=FALSE, fig.width=10, fig.height=12, dev=c("png", "pdf")}
+nm<-fread(here("data","GSEA","KEGG_DensityKmers.GseaPreranked.1699237807444","gsea_report_for_na_pos_1699237807444.tsv"))
+nm<-nm %>% filter(`FDR q-val`<.05)
+
+nm2<-fread(here("data","GSEA","KEGG_TotalKmers.GseaPreranked.1699237843817","gsea_report_for_na_pos_1699237843817.tsv"))
+nm2<-nm2 %>% filter(`FDR q-val`<.05)
+nm2$data<-"Total Kmers"
+nm$data<-"Kmer Density"
+nm<-rbind(nm,nm2)
+nm$data<-factor(nm$data,levels=c("Total Kmers","Kmer Density"))
+
+nm$NAME<-gsub("KEGG_","",nm$NAME)
+nm_set<-nm %>% arrange(data,`FDR q-val`,-NES)
+nm$NAME<-factor(nm$NAME,levels=rev(unique(nm_set$NAME)))
+
+ranks<-ggplot(nm,aes(x=NAME,y=`FDR q-val`))+facet_grid(.~data)+geom_point(aes(color=NES))+coord_flip()+theme_minimal(base_size=14)+theme(legend.position="bottom",axis.title.y=element_blank(),axis.text.y=element_text(size=10))+
+  ylab("False Discovery Rate q-value")+labs(color="Normalized Enrichment Score")
+
+ranks
+
+```
+
+COSMIC functions
+```{r}
+library(ggpubr)
+library(fgsea)
+set.seed(42)
+
+# Make custom GSEA plot
+custom_enrichment <- function(ranks, genes, ylims, title=''){
+    library(ggplot2)
+    prep_df <- function(peaks, ids){
+        tar_ranges <- 2:(length(peaks$tops) - 1)
+        x <- rep(ids, each=2)
+        y <- rbind(peaks$bots[tar_ranges], peaks$top[tar_ranges]) %>%
+            c()
+        data.frame(x=c(0, length(ranks), x), y=c(0, 0, y))
+    }
+    
+    # Prep data
+    ranks <- sort(ranks, decreasing=T)
+    ids <- genes %>%
+        intersect(names(ranks)) %>%
+        match(names(ranks)) %>%
+        sort()
+    peaks <- custom_get_peaks(ranks, ids)
+    df <- prep_df(peaks, ids)
+
+    # Generate plot with real data
+    p <- ggplot(df, aes(x=x, y=y)) + 
+        geom_line(color="dark blue") + 
+        geom_hline(yintercept=max(df$y), colour="red", linetype="dashed") + 
+        geom_hline(yintercept=min(df$y), colour="red", linetype="dashed") + 
+        geom_hline(yintercept=0, colour="black") + 
+        theme_classic(base_size=20) +
+        geom_segment(data=df[-1:-2, ], mapping=aes(x=x, y=ylims[1]+.01, xend=x, yend=ylims[1]+0.05), size=0.2) +
+        theme(plot.title = element_text(size=15)) +
+        labs(x="Gene Rank", y="Enrichment Score", title=title) + 
+        ylim(ylims[1], ylims[2])
+
+    # Add lines for random permutations
+    for(i in 1:100){
+        new_ids <- sample(1:length(ranks), length(ids)) %>%
+            sort()
+        peaks <- custom_get_peaks(ranks, new_ids)
+        df <- prep_df(peaks, ids)
+        p$layers <- c(geom_line(data=df, color='light grey', size=.1), p$layers)
+    }
+    p
+}
+
+custom_calc_gsea_stats <- function(ranks, ids, nperm=0){
+    # Get peaks and leading edge genes
+    peaks <- custom_get_peaks(ranks, ids)
+    if(peaks$stat > 0){
+        mid <- which(peaks$tops == peaks$stat) %>%
+            na.omit() %>%
+            head(1)
+        le <- names(peaks$tops)[1:mid] %>%
+            na.omit()
+    } else {
+        mid <- which(peaks$bots == peaks$stat) %>%
+            na.omit() %>%
+            tail(1)
+        le <- names(peaks$bots)[length(peaks$bots):mid] %>%
+            na.omit()
+    }
+    outs <- list(Leading.Edge=le, Enrichment.Score=peaks$stat)
+
+    # Calculate pval if nperm defined
+    if(nperm != 0){
+        stats <- sapply(1:nperm, function(x){
+            new_ids <- sample(1:length(ranks), length(ids)) %>%
+                sort()
+            custom_get_peaks(ranks, new_ids)$stat
+        })
+        n_greater <- sum(abs(stats) > abs(peaks$stat))
+        if(n_greater == 0) n_greater <- 1
+        outs$P <- n_greater / nperm
+    }
+    outs
+}
+
+custom_get_peaks <- function(ranks, ids){
+    # Sort ids
+    ids <- sort(ids)
+
+    # Get correct step size for enrichment scores
+    step_up <- 1 / length(ids)
+    step_dn <- 1 / (length(ranks))
+
+    # Calculate enrichment scores before and after each hit
+    tops <- 0
+    bots <- 0
+    prev_id <- 1
+    for(id in ids){
+        bots <- c(bots, tail(tops, 1) + step_dn * (prev_id - id))
+        tops <- c(tops, tail(bots, 1) + step_up)
+        prev_id <- id
+    }
+    tops <- c(tops, 0)
+    bots <- c(bots, 0)
+    
+    # Calc stat as the min/max of bot/top
+    names(tops) <- names(bots) <- c(NA, names(ranks)[ids], NA)
+    stat <- ifelse(abs(min(bots)) > max(tops), min(bots), max(tops))
+
+    # Return
+    list(tops=tops, bots=bots, stat=stat)
+}
+
+custom_gsea <- function(ranks, sets){
+    # Prep to run
+    df <- c()
+    ranks <- sort(ranks, decreasing=T)
+
+    # Step through each set
+    for(set in names(sets)){
+        # Get index of genes in pathway
+        ids <- sets[[set]] %>%
+            intersect(names(ranks)) %>%
+            match(names(ranks)) %>%
+            sort()
+
+        # Calc relevant GSEA info and add to data frame
+        gsea <- custom_calc_gsea_stats(ranks, ids, 1e4)
+        df <- rbind(df, tibble(Gene.Set=set, P.val=gsea$P, 
+            Enrichment.Score=gsea$Enrichment.Score, 
+            Leading.Edge=list(gsea$Leading.Edge)))
+    }
+
+    # Finalize analyses and return
+    df$P.adj <- p.adjust(df$P.val, 'BH')
+    df
+}
+
+# Make GSEA plots for all ranks for given pathways
+compare_gsea_plots <- function(path, sets, all_ranks, ylims){
+    plots <- lapply(1:length(all_ranks), function(i){
+        custom_enrichment(all_ranks[[i]], sets[[path]], ylims,
+            paste(names(all_ranks)[i]))
+    })
+    title <- gsub('_', ' ', path, fixed=T) %>%
+        str_to_title()
+    ggarrange(plotlist=plots, ncol=2, nrow=2) %>%
+        annotate_figure(top=text_grob(title, size=20)) %>%
+        print()
+    return()
+}
+
+################################################################################
+# Generate GSEA plots from Akshaya's results
+################################################################################
+get_ranks <- function(file){
+    tab <- read.table(file, sep='\t', header=F)
+    ranks <- as.integer(tab$V2)
+    names(ranks) <- tab$V1
+    return(ranks)
+}
+
+```
+
+
+```{r cosmic, echo=FALSE, fig.width=10, fig.height=10, dev=c("png", "pdf")}
+# Read in gene sets and ranks
+sets <- gmtPathways(here("data","GSEA","COSMIC_Genesets","COSMIC_gene_sets.gmt"))
+total_ranks <- get_ranks(here("data","GSEA","total_kmer.rnk"))
+density_ranks <- get_ranks(here("data","GSEA","kmer_diversity_bydensity.rnk"))
+
+# Plot all gene sets
+
+path="RANDOM_736"
+a<-print(custom_enrichment(total_ranks, sets[[path]], c(-0.1, 0.35), path))+ggtitle("Total Kmers")
+b<-print(custom_enrichment(density_ranks, sets[[path]], c(-0.1, 0.35), path))+ggtitle("Kmer Density")
+
+path="COSMIC_ALL"
+c<-print(custom_enrichment(total_ranks, sets[[path]], c(-0.1, 0.35), path))+ggtitle("Total Kmers")
+d<-print(custom_enrichment(density_ranks, sets[[path]], c(-0.1, 0.35), path))+ggtitle("Kmer Density")
+
+library(cowplot)
+plot_grid(c,d,a,b,nrow=2)
+
+```
+
+
+

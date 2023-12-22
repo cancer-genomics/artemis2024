@@ -1,0 +1,993 @@
+---
+title: "S14"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+Make the heatmap figure and curate some correlations for the text
+Also some figures on healthy variation
+```{r lib}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(caret)
+library(recipes)
+library(pROC)
+library(readxl)
+```
+
+Assemble the data
+```{r assemble1}
+ploidy<-fread(here("data","Supp_Tables","s12_PCAWG_SuppTable.csv"))
+ploidy<-ploidy %>% select(Project,breakpoint.count,nondiploid.frac,loh.frac,non.modal.frac,modal.ploidy,entropy,ploidy,tmb,Primary_site,id,blacklist,Ploidy_Metrics_Available)
+
+ploidy<-ploidy %>% filter(blacklist=="N")
+
+ploidy_all<-ploidy %>% filter(Ploidy_Metrics_Available=="Y")
+
+
+all_samples<-fread(here("data","TCGA","repository_1680116108.tsv"))
+#Noushin's data
+#Noushin's data
+ploidy<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230404.rds"))
+ploidy2<-readRDS(here("data","TCGA","tcga_data_export_for_artemis_20230928.rds"))
+
+ploidy<-inner_join(ploidy,all_samples,by=c("dcc_file_id"="File ID"))
+exc<-read_xlsx(here("data","TCGA","pcawg-exclusion-list.xlsx"))
+exc2<-exc %>% filter(icgc_donor_id %in% ploidy$`ICGC Donor`|icgc_donor_id %in% ploidy2$icgc_donor_id)
+ploidy2<-inner_join(ploidy2,all_samples,by=c("icgc_specimen_id"="Specimen ID"))
+ploidy$icgc_donor_id<-ploidy$`ICGC Donor`
+nms<-intersect(colnames(ploidy),colnames(ploidy2))
+ploidy<-rbind(ploidy %>% select(nms),ploidy2%>%select(nms))
+
+ploidy<-ploidy %>% mutate(blacklist=if_else(`ICGC Donor` %in% exc$icgc_donor_id,"Y","N"))
+
+ploidy<-ploidy %>% mutate(Ploidy_Metrics_Available=if_else(is.na(ploidy),"N","Y"))
+
+ploidy<-ploidy %>% select(`ICGC Donor`,bcr_patient_barcode)
+ploidy_all<-inner_join(ploidy_all,ploidy,by=c("id"="ICGC Donor"))
+
+ploidy<-ploidy_all
+
+
+```
+
+```{r assemble2}
+library(survival)
+library(survminer)
+
+p1<-ploidy
+
+meta<-read_xlsx(here("data","TCGA","pcawg_donor_clinical_August2016_v9 (2).xlsx"))
+meta<-meta %>% select(icgc_donor_id,donor_survival_time,donor_vital_status,donor_interval_of_last_followup)
+
+dat<-inner_join(p1,meta,by=c("id"="icgc_donor_id"))
+dat<-dat %>% mutate(surv=if_else(is.na(donor_survival_time),donor_interval_of_last_followup,donor_survival_time))
+dat<-dat %>% mutate(censor=if_else(donor_vital_status=="alive",0,1))
+dat_os<-dat
+
+meta<-fread(here("data","TCGA","KM_Plot__Progression_Free_(months) (1).txt"))
+
+#dat<-inner_join(dat,ploidy %>% select(donor_barcode,id),by="id")
+dat<-inner_join(dat,meta,by=c("bcr_patient_barcode"="Patient ID"))
+dat$surv_pfs<-dat$PFS_MONTHS
+dat<-dat %>% filter(!is.na(surv_pfs))
+dat$censor_pfs<-if_else(dat$PFS_STATUS=="0:CENSORED",0,1)
+dat_pfs<-dat
+
+
+
+```
+
+KM based on Entropy
+Plot Overall Suvival
+```{r KM_overall_OS}
+d<-as.data.frame(dat_os)
+med<-median(d$entropy)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(entropy<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Entropy Low", "Entropy High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_1<-a+ggtitle("Entropy")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+Breakpoint
+```{r KM_overall_OS2}
+d<-as.data.frame(dat_os)
+med<-median(d$breakpoint.count )
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(breakpoint.count <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Breakpoint Count Low", "Breakpoint Count High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_2<-a+ggtitle("Breakpoint Count")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+Non-Modal Fraction
+```{r KM_overall_OS3}
+d<-as.data.frame(dat_os)
+med<-median(d$non.modal.frac  )
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(non.modal.frac  <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Non-modal Fraction Low", "Non-modal Fraction High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_3<-a+ggtitle("Non-Modal Fraction")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+Non-diploid fraction
+```{r KM_overall_OS4}
+d<-as.data.frame(dat_os)
+med<-median(d$nondiploid.frac)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(nondiploid.frac  <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Non-diploid Fraction Low", "Non-diploid Fraction High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_4<-a+ggtitle("Non-Diploid Fraction")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+
+Ploidy
+```{r KM_overall_OS5}
+d<-as.data.frame(dat_os)
+med<-median(d$ploidy  )
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(ploidy  <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Ploidy Low", "Ploidy High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_5<-a+ggtitle("Ploidy")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+
+LOH
+```{r KM_overall_OS6}
+d<-as.data.frame(dat_os)
+med<-median(d$loh.frac  )
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(loh.frac  <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("LOH Fraction Low", "LOH Fraction High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_6<-a+ggtitle("LOH Fraction")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+
+Modal Ploidy
+```{r KM_overall_OS7}
+d<-as.data.frame(dat_os)
+med<-median(d$modal.ploidy  )
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(modal.ploidy  <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Modal Ploidy Low", "Modal Ploidy High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+overall_7<-a+ggtitle("Modal Ploidy")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+
+TMB
+```{r KM_overall_OS8}
+d<-as.data.frame(dat_os)
+med<-median(d$tmb)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+
+d$survival <- with(d, Surv(surv, censor))
+d<-d %>% mutate(med_grp=if_else(tmb  <=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("TMB Low", "TMB High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Overall Survival") +
+    xlab("Days")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv), by=max(dat$surv)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv,censor) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+overall_8<-a+ggtitle("TMB")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+```{r OS_ALL, fig.width=20,fig.height=8, dev=c("png", "pdf")}
+library(cowplot)
+
+plot_grid(overall_1,overall_2,overall_3,overall_4,overall_5,overall_6,overall_7,overall_8,ncol=4)
+```
+
+
+
+Plot PFS
+Entropy
+```{r KM_overall_PFS}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$entropy)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(entropy<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Entropy Low", "Entropy High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_1<-a+ggtitle("Entropy")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+Breakpoint
+```{r KM_overall_PFS2}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$breakpoint.count)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(breakpoint.count<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Breakpoint Count Low", "Breakpoint Count High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_2<-a+ggtitle("Breakpoint Count")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+Non-Modal Fraction
+
+```{r KM_overall_PFS3}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$non.modal.frac)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(non.modal.frac<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Non-modal Fraction Low", "Non-modal Fraction High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_3<-a+ggtitle("Non-modal Fraction")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+Non-diploid fraction
+
+```{r KM_overall_PFS4}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$nondiploid.frac)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(nondiploid.frac<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Non-diploid Fraction Low", "Non-diploid Fraction High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_4<-a+ggtitle("Non-diploid Fraction")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+Ploidy
+
+```{r KM_overall_PFS5}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$ploidy)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(ploidy<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Ploidy Low", "Ploidy High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_5<-a+ggtitle("Ploidy")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+LOH
+```{r KM_overall_PFS6}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$loh.frac)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(loh.frac<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("LOH Fraction Low", "LOH Fraction High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_6<-a+ggtitle("LOH Fraction")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+Modal Ploidy
+
+```{r KM_overall_PFS7}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$modal.ploidy)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(modal.ploidy<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("Modal Ploidy Low", "Modal Ploidy High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_7<-a+ggtitle("Modal Ploidy")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+TMB
+```{r KM_overall_PFS8}
+d<-as.data.frame(dat_pfs)
+#med<-d %>% group_by(Project) %>% summarize(med=median(SINE))
+#d<-inner_join(d,med,by="Project")
+med<-median(d$tmb)
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d<-d %>% mutate(med_grp=if_else(tmb<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("TMB Low", "TMB High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(dat$surv_pfs), by=max(dat$surv_pfs)/2), medians)),0) 
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs, censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.75, label=plabel,
+                                size=5)
+  a<-fig$plot
+  
+
+
+pfs_8<-a+ggtitle("TMB")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+
+```{r PFS_ALL, fig.width=20,fig.height=8, dev=c("png", "pdf")}
+library(cowplot)
+
+plot_grid(pfs_1,pfs_2,pfs_3,pfs_4,pfs_5,pfs_6,pfs_7,pfs_8,ncol=4)
+```

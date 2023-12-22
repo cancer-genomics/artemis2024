@@ -1,0 +1,165 @@
+---
+title: "S2_S3abc"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(RColorBrewer)
+```
+
+
+```{r}
+data<-fread(here("data","Kmer_Distributions","chr_distribution.csv"))
+data<-data %>% select(-V1)
+d0<-data 
+d0<-d0 %>% mutate(unique=if_else(occurrences==0,0.0,as.numeric(kmer_count)))
+d0<-d0 %>% group_by(feature,chr) %>% summarize(kmers=sum(unique))
+d_tot<-data %>% filter(chr=="chr1") %>% group_by(feature) %>% summarize(tot=sum(kmer_count))
+d0<-inner_join(d0,d_tot,by="feature")
+d0$perc<-d0$kmers/d0$tot
+#remember sometimes sums to more than one because a given kmer can be found on multiple chromosomes
+
+median((d0 %>% filter(chr=="chr1"))$tot)
+
+
+features<-d0
+
+data<-fread(here("data","Kmer_Distributions","chr_distribution_altemose.csv"))
+data<-data %>% select(-V1)
+d0<-data 
+d0<-d0 %>% mutate(unique=if_else(occurrences==0,0.0,as.numeric(kmer_count)))
+d0<-d0 %>% group_by(feature,chr) %>% summarize(kmers=sum(unique)) #I am summing over all chromosomes here
+d_tot<-data %>% filter(chr=="chr1") %>% group_by(feature) %>% summarize(tot=sum(kmer_count))
+d0<-inner_join(d0,d_tot,by="feature")
+d0$perc<-d0$kmers/d0$tot
+#remember sometimes they will sum to greater than 1, because a kmer can be on multiple chromosomes!
+#Do Altemose and de novo together
+d0<-rbind(features,d0)
+
+sum((d0 %>% filter(chr=="chr1"))$tot)
+
+```
+
+The boxplots
+```{r boxplots, echo=FALSE, fig.width=7, fig.height=14, dev=c("png", "pdf")}
+###Boxplots of how many chromosomes each thing is found on, grouped by family
+d_chr<-d0 %>% group_by(feature) %>% summarize(n_chr=sum(kmers != 0),tot=mean(tot))
+d_chr$fam<-sapply(str_split(d_chr$feature,"#"),"[",2)
+d_chr<-d_chr %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+d_chr$bigfam<-sapply(str_split(d_chr$fam,"_"),"[",1)
+#d_chr<-d_chr %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA\n Elements\n(rRNA,\nsnRNA,\nsrpRNA,\nscRNA,\ntRNA)",bigfam))
+#d_chr<-d_chr %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable Elements\n (DNA, DNA?, RC, Retroposon)",bigfam))
+d_chr<-d_chr %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA\n Elements",bigfam))
+d_chr<-d_chr %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable Elements",bigfam))
+
+d_chr$fam<-gsub("Satellite_","",d_chr$fam)
+d_chr$fam<-gsub("LINE_","",d_chr$fam)
+d_chr$fam<-gsub("SINE_","",d_chr$fam)
+d_chr$fam<-gsub("DNA_","",d_chr$fam)
+d_chr$fam<-gsub("DNA\\?_","",d_chr$fam)
+d_chr$fam<-gsub("LTR_","",d_chr$fam)
+
+d_chr<-d_chr %>% mutate(fam=if_else(fam=="tRNA" & bigfam=="SINE","SINE_tRNA",fam))
+ord<-d_chr %>% group_by(bigfam,fam) %>% summarize(m=median(n_chr))%>%arrange(-m)
+d_chr$fam<-factor(d_chr$fam,levels=ord$fam)
+d_chr %>% group_by(fam) %>% summarize(n=n())
+#tiny_fam<-d_chr %>% group_by(fam) %>% summarize(n=n()) %>% filter(n<6)
+#d_chr_big<-d_chr %>% filter(!fam %in% tiny_fam$fam)
+plot1<-ggplot(d_chr,aes(x=fam,y=n_chr,color=log10(tot)))+geom_boxplot(outlier.shape=NA)+geom_jitter(size=.3)+
+  coord_flip()+theme_classic()+theme(legend.position="bottom",legend.title=element_text(size=12),legend.text=element_text(size=12),
+                                     strip.text.y=element_text(angle=0,size=14),axis.text.x=element_text(size=12),axis.title.y=element_blank(),strip.placement="outside")+
+  ylab("Number of Chromosomes\nwith element-defining kmers")+
+  scale_color_viridis_c(direction=-1,option="rocket")+scale_y_continuous(breaks=c(1,4,8,12,16,20,24))+
+  labs(color="Log10 Number of kmers defining element")+facet_grid(bigfam~.,scales="free",space="free",switch="both")
+
+library(grid)
+q<-ggplotGrob(plot1)
+lg <- linesGrob(x=unit(c(1,1),"npc"), y=unit(c(0,1),"npc"), 
+                   gp=gpar(col="black", lwd=2))
+
+for (k in grep("strip-l",q$layout$name)) {
+  q$grobs[[k]]$grobs[[1]]$children[[1]] <- lg
+}
+
+grid.draw(q)
+
+
+
+```
+
+The lollipops feature distributions by chromosome
+```{r lollipops, echo=FALSE, fig.width=3, fig.height=5, dev=c("png", "pdf")}
+###Lollipops of how many features found on each chromosome
+dc<-d0 %>% group_by(chr) %>% summarize(num_features=sum(kmers !=0))
+dc$chr<-factor(gsub("chr","",dc$chr),levels=rev(c(seq(1:22),"X","Y")))
+
+pd1<-ggplot(dc,aes(x=chr,y=num_features))+geom_bar(stat="identity",width=.5,fill="indianred")+theme_classic(base_size=14)+ylab("Number of Elements")+xlab("Chromosome")+theme()+coord_flip()+theme(axis.text=element_text(size=14))
+pd1
+```
+
+Kmer distributions genome wide
+```{r Hist, echo=FALSE, fig.width=3, fig.height=3, dev=c("png", "pdf")}
+d<-fread(here("data","Get_Numbers","a3_artemis_histo.txt"))
+colnames(d)<-c("Bin","Count")
+d$Count<-d$Count*2
+d$Count<-d$Count/sum(d$Count)
+
+
+d<-d %>% mutate(set=if_else(Bin==1,"1","2-10"))
+d<-d %>% mutate(set=if_else(Bin>10,">=11",set))
+d<-d %>% group_by(set) %>% summarize(s=sum(Count))
+d$set<-factor(d$set,levels=rev(c("1","2-10",">=11")))
+pd<-ggplot(d,aes(x=set,y=s))+geom_bar(stat="identity",fill="indianred",width=.5)+ylab("Proportion of all kmers")+xlab("Occurrences in Genome")+theme_classic(base_size=14)+coord_flip()+theme(axis.text=element_text(size=14))
+pd
+```
+
+```{r comp2, echo=FALSE, fig.width=4, fig.height=12, dev=c("png", "pdf")}
+library(cowplot)
+library(gridExtra)
+
+x<-plot_grid(pd,pd1,align="v",axis="l",rel_heights=c(.75,2),ncol=1)
+x
+
+```
+
+Size Figure
+```{r size, echo=FALSE, fig.width=12,fig.height=12,dev=c("png","pdf")}
+size<-fread(here("data","Kmer_Distributions","RepeatFamilySizes.csv"))
+size<-size %>% filter(type=="repeat_type")
+size$group<-gsub("/","_",size$group)
+size<-size %>% group_by(group,seqnames) %>% summarize(mb=mean(mb))
+size<-size %>% group_by(group) %>% summarize(mb=sum(mb))
+d<-d0 %>% filter(chr=="chr1")
+
+d<-inner_join(d,size,by=c("feature"="group"))
+d$fam<-sapply(str_split(d$feature,"#"),"[",2)
+d<-d %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+d$bigfam<-sapply(str_split(d$fam,"_"),"[",1)
+d<-d %>% mutate(bigfam=if_else(grepl("RNA",bigfam),"RNA Elements\n(rRNA, snRNA, srpRNA, scRNA,tRNA)",bigfam))
+d<-d %>% mutate(bigfam=if_else(bigfam %in% c("DNA","DNA?","RC","Retroposon"),"Transposable Elements\n(DNA, DNA?, RC, Retroposon)",bigfam))
+p<-ggplot(d,aes(x=mb,y=tot))+facet_wrap(vars(bigfam),scales="free")+theme_classic(base_size=14)+geom_point(aes(color=bigfam))+xlab("Mb of genome")+ylab("Number of defining kmers")+theme(legend.position="none",strip.background = element_blank())+stat_cor(method="spearman",label.x.npc = "left",label.y.npc="top")
+
+library(grid)
+q <- ggplotGrob(p)
+lg <- linesGrob(x=unit(c(0,1),"npc"), y=unit(c(0,0),"npc"), 
+                   gp=gpar(col="black", lwd=4))
+
+for (k in grep("strip-t",q$layout$name)) {
+  q$grobs[[k]]$grobs[[1]]$children[[1]] <- lg
+}
+
+grid.draw(q)
+
+```

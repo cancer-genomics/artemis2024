@@ -1,0 +1,382 @@
+---
+title: "S25"
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+load_all(here("code","useful.stuff.aa"))           # Load
+library(caret)
+library(recipes)
+library(pROC)
+library(gbm)
+library(readxl)
+
+dat<-fread(here("data","Lung_Monitoring","lung_dynamics_artemis.csv"))
+#dat<-dat %>% filter(id != "PGDX7348P1_Amended" & id != "PGDX7348P2_Amended") #something is weird
+dat<-dat %>% select(-V1)
+e<-fread(here("data","Kmer_Distributions","Expected.csv"))
+e<-e %>% filter(total_kmers>1000)
+e$fam<-sapply(str_split(e$feature,"#"),"[",2)
+e$fam<-sapply(str_split(e$fam,"_"),"[",1)
+e<-e %>% mutate(fam=if_else(is.na(fam),"Satellite",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("rRNA","snRNA","scRNA","tRNA","srpRNA"),"RNA/DNA Elements",fam))
+e<-e %>% mutate(fam=if_else(fam %in% c("DNA","DNA?","RC","Retroposon"),"RNA/DNA Elements",fam))
+artemis<-dat %>% select(id,e$feature)
+test<-artemis %>% gather(key=feature,value=count,-id)
+test<-inner_join(test,e %>% select(feature,fam),by="feature")
+test<-test %>% group_by(id,fam) %>% summarize(c=scale(count)[,1],f=feature)
+test<-test %>% ungroup() %>% select(-fam)
+test<-test %>% spread(key=f,value=c)
+artemis<-test
+
+
+delfi<-fread(here("data","Lung_Monitoring","delfi_features.csv"))
+delfi$id<-gsub("_Amended","",delfi$id)
+dat<-inner_join(artemis,delfi,by="id")
+
+epi<-fread(here("data","Lung_Monitoring","lung_dynamics_epi.csv"))
+epi$id<-gsub("_Amended","",epi$id)
+dat<-inner_join(dat,epi,by="id")
+
+
+#These are the models we actually want
+model<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","ARTEMIS_Ensemble.rds"))
+model2<-readRDS(here("data","Mathios_Published","model_seq_glm.rds"))
+model3<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","ARTEMIS_single_DELFI_SSLs_Ensemble.rds"))
+
+#I have to generate some SSL scores though to use:
+s1<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Cov_GBM.rds"))
+s2<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Ratios_ssl.rds"))
+s3<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","zscores_ssl.rds"))
+s4<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Epi_ssl.rds"))
+s5<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","LINE_ssl.rds"))
+s6<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","LTR_ssl.rds"))
+s7<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","SINE_ssl.rds"))
+s8<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","Sat_ssl.rds"))
+s9<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","RNA_TE_ssl.rds"))
+
+d<-tibble(id=dat$id,Cov_GBM=predict(s1,dat,type="prob")$cancer,Ratios_ssl=predict(s2,dat,type="prob")$cancer,
+          zscores_ssl=predict(s3,dat,type="prob")$cancer,Epi_ssl=predict(s4,dat,type="prob")$cancer,LINE_ssl=predict(s5,dat,type="prob")$cancer,
+          LTR_ssl=predict(s6,dat,type="prob")$cancer,SINE_ssl=predict(s7,dat,type="prob")$cancer,Sat_ssl=predict(s8,dat,type="prob")$cancer,RNA_TE_ssl=predict(s9,dat,type="prob")$cancer)
+
+
+meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+
+scores<-tibble(Artemis_Score=predict(model,d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl),type="prob")$cancer,
+	id=dat$id,
+	delfi_score=predict(model2,dat,type="prob")$cancer)
+
+d<-inner_join(d,scores,by="id")
+d$combo_score<-predict(model3,d %>% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type="prob")$cancer
+d<-d %>% select(id,Artemis_Score,delfi_score,combo_score)
+data1<-fread(here("data","Lung_Monitoring","meta2.csv"))
+data2<-fread(here("data","Lung_Monitoring","dynamics.csv"))
+
+meta<-tibble(right_join(data1,data2 %>% select(-Patient),by=c("Patient Timepoint"="Timepoint ID")))
+meta<-inner_join(d,meta,by=c("id"="sample"))
+
+
+
+meta$`Neg Median healthy correlation`<- -1*(meta$`Median healthy correlation`)
+#meta<-inner_join(meta,scores,by=c("id"="id"))
+m<-meta %>% select(Patient,`Max MAF`,`day`,category,
+  `Initial radiographic response to treatment`,Artemis_Score,`Timepoint Significance`,`Days since Treatment`,`Neg Median healthy correlation`,delfi_score,combo_score)
+
+
+m<-m %>% gather(key="feature",value="amount",`Max MAF`,Artemis_Score,`Neg Median healthy correlation`,combo_score,delfi_score)
+
+PFS_order<-c("CGPLLU244","CGPLLU246","CGLU316","CGPLLU13","CGPLLU245","CGPLLU267","CGPLLU89",
+  "CGLU369","CGPLLU271","CGPLLU266","CGPLLU86","CGPLLU14","CGPLLU88","CGPLLU43","CGLU344","CGPLLU269",
+  "CGPLLU265","CGPLLU264","CGLU373")
+coef_order<-c(unique(m$feature)[1],unique(m$feature)[3],"ARTEMIS-DELFI Score","DELFI Score","ARTEMIS Score")
+m$Patient<-factor(m$Patient,levels=PFS_order)
+m<-m %>% mutate(feature=if_else(feature=="Artemis_Score","ARTEMIS Score",feature))
+m<-m %>% mutate(feature=if_else(feature=="delfi_score","DELFI Score",feature))
+m<-m %>% mutate(feature=if_else(feature=="combo_score","ARTEMIS-DELFI Score",feature))
+
+m$feature<-factor(m$feature,levels=coef_order)
+
+#m<-m %>% filter(Patient != "CGPLLU88") #This is the one missing stuff
+```
+
+```{r horizontal, echo=FALSE,include = FALSE,fig.width=26, fig.height=12, dev=c("png", "pdf")}
+m<-m %>% filter(feature != "Neg Median healthy correlation")
+
+ggplot(m,aes(x=`Days since Treatment`,y=`amount`,color=`Initial radiographic response to treatment`,fill=`Initial radiographic response to treatment`))+
+geom_point(aes(shape=category,pch=21,alpha=`Timepoint Significance`,fill=`Initial radiographic response to treatment`,color=`Initial radiographic response to treatment`))+geom_line()+
+facet_grid(feature~Patient,scales="free")+
+scale_alpha_discrete(range=c(.9,.4))+ylab("Score")+
+scale_shape_manual(values=c(21,24,22))+
+theme_classic(base_size=12)
+
+
+```
+
+
+```{r}
+PFS<-read_xlsx(here("data","Lung_Monitoring","PFS.xlsx"))
+
+m2<-inner_join(m,PFS,by="Patient")
+
+dat<-m2 %>% filter(`Timepoint Significance`=="Post treatment" & feature=="ARTEMIS Score")
+
+dat2<-dat %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat3<-dat %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=max(`Days since Treatment`))
+
+dat4<-m2 %>% filter(`Timepoint Significance`=="Pre treatment" & feature=="ARTEMIS Score")
+dat4<-dat4 %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat0<-inner_join(m2,dat4,by=c("Patient","Days since Treatment"))
+dat0<-dat0 %>% filter(feature=="ARTEMIS Score")
+dat0$baseline<-dat0$amount
+dat<-inner_join(dat,dat2,by=c("Patient","Days since Treatment"))
+
+library(survival)
+library(survminer)
+dat$surv_pfs<-dat$`Progression-free Survival (months)`
+dat$censor_pfs<-if_else(dat$`Progression-free Survival (months)`=="Ongoing",0,1)
+dat3$last_time<-dat3$`Days since Treatment`
+dat<-inner_join(dat,dat3 %>% select(Patient,last_time),by="Patient")
+dat<-inner_join(dat,dat0 %>% select(Patient,baseline),by="Patient")
+dat<-dat %>% mutate(surv_pfs=if_else(surv_pfs=="Ongoing",last_time/30.5,as.numeric(surv_pfs)))
+d<-as.data.frame(dat)
+
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d$perc<-((d$amount-d$baseline)/d$baseline)
+
+#med<- -0.3
+med<- (m2 %>% filter(feature=="ARTEMIS Score" & `Timepoint Significance`=="Pre treatment") %>% summarize(m=median(amount)))$m
+
+d<-d %>% mutate(med_grp=if_else(amount<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("ARTEMIS Low", "ARTEMIS High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-Free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(d$surv_pfs), by=max(d$surv_pfs)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs,censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.6, label=plabel,
+                                size=5)
+  a<-fig$plot
+  a
+
+
+overall_1<-a+ggtitle("ARTEMIS Score")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+```{r}
+PFS<-read_xlsx(here("data","Lung_Monitoring","PFS.xlsx"))
+
+m2<-inner_join(m,PFS,by="Patient")
+
+dat<-m2 %>% filter(`Timepoint Significance`=="Post treatment" & feature=="ARTEMIS-DELFI Score")
+
+dat2<-dat %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat3<-dat %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=max(`Days since Treatment`))
+
+dat4<-m2 %>% filter(`Timepoint Significance`=="Pre treatment" & feature=="ARTEMIS-DELFI Score")
+dat4<-dat4 %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat0<-inner_join(m2,dat4,by=c("Patient","Days since Treatment"))
+dat0<-dat0 %>% filter(feature=="ARTEMIS-DELFI Score")
+dat0$baseline<-dat0$amount
+dat<-inner_join(dat,dat2,by=c("Patient","Days since Treatment"))
+
+library(survival)
+library(survminer)
+dat$surv_pfs<-dat$`Progression-free Survival (months)`
+dat$censor_pfs<-if_else(dat$`Progression-free Survival (months)`=="Ongoing",0,1)
+dat3$last_time<-dat3$`Days since Treatment`
+dat<-inner_join(dat,dat3 %>% select(Patient,last_time),by="Patient")
+dat<-inner_join(dat,dat0 %>% select(Patient,baseline),by="Patient")
+dat<-dat %>% mutate(surv_pfs=if_else(surv_pfs=="Ongoing",last_time/30.5,as.numeric(surv_pfs)))
+d<-as.data.frame(dat)
+
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d$perc<-((d$amount-d$baseline)/d$baseline)
+
+#med<- -0.3
+med<- (m2 %>% filter(feature=="ARTEMIS-DELFI Score" & `Timepoint Significance`=="Pre treatment") %>% summarize(m=median(amount)))$m
+
+d<-d %>% mutate(med_grp=if_else(amount<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("ARTEMIS-DELFI Low", "ARTEMIS-DELFI High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-Free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(d$surv_pfs), by=max(d$surv_pfs)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs,censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.6, label=plabel,
+                                size=5)
+  a<-fig$plot
+  a
+
+
+overall_2<-a+ggtitle("ARTEMIS-DELFI Score")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+```
+
+```{r}
+
+PFS<-read_xlsx(here("data","Lung_Monitoring","PFS.xlsx"))
+
+m2<-inner_join(m,PFS,by="Patient")
+
+dat<-m2 %>% filter(`Timepoint Significance`=="Post treatment" & feature=="DELFI Score")
+
+dat2<-dat %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat3<-dat %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=max(`Days since Treatment`))
+
+dat4<-m2 %>% filter(`Timepoint Significance`=="Pre treatment" & feature=="DELFI Score")
+dat4<-dat4 %>% dplyr::group_by(Patient) %>% summarize(`Days since Treatment`=min(`Days since Treatment`))
+dat0<-inner_join(m2,dat4,by=c("Patient","Days since Treatment"))
+dat0<-dat0 %>% filter(feature=="ARTEMIS Score")
+dat0$baseline<-dat0$amount
+dat<-inner_join(dat,dat2,by=c("Patient","Days since Treatment"))
+
+library(survival)
+library(survminer)
+dat$surv_pfs<-dat$`Progression-free Survival (months)`
+dat$censor_pfs<-if_else(dat$`Progression-free Survival (months)`=="Ongoing",0,1)
+dat3$last_time<-dat3$`Days since Treatment`
+dat<-inner_join(dat,dat3 %>% select(Patient,last_time),by="Patient")
+dat<-inner_join(dat,dat0 %>% select(Patient,baseline),by="Patient")
+dat<-dat %>% mutate(surv_pfs=if_else(surv_pfs=="Ongoing",last_time/30.5,as.numeric(surv_pfs)))
+d<-as.data.frame(dat)
+
+d$survival <- with(d, Surv(surv_pfs, censor_pfs))
+d$perc<-((d$amount-d$baseline)/d$baseline)
+
+#med<- -0.3
+med<- (m2 %>% filter(feature=="DELFI Score" & `Timepoint Significance`=="Pre treatment") %>% summarize(m=median(amount)))$m
+
+d<-d %>% mutate(med_grp=if_else(amount<=med,0,1))
+fit <- survfit(survival ~ med_grp, data = d)
+fig <- ggsurvplot(fit, data = d,
+           surv.median.line = "hv", ## Add medians survival
+           ## Add p-value and tervals
+           pval = FALSE,
+           conf.int = FALSE,
+           ## Add risk table
+           risk.table = FALSE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           axes.offset=FALSE,
+           ## Color palettes. Use custom color: c("#E7B800", "#2E9FDF"),
+           ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
+           ##palette = c("#E7B800", "#2E9FDF"),
+           legend=c(0.75, 0.8),
+           legend.title="", 
+           palette=c("blue", "red"),
+           legend.labs=c("DELFI Low", "DELFI High"),
+           ##legend.labs=labels,
+           ggtheme = theme_classic(base_size=12) # Change ggplot2 theme
+           ) +
+    ylab("Progression-Free Survival") +
+    xlab("Months")
+  medians <- surv_median(fit)$median
+  breaks <- round(sort(c(seq(0, max(d$surv_pfs), by=max(d$surv_pfs)/2), medians)),0)
+#breaks <- breaks[ breaks != 1000 ]
+  breaks<-round(breaks,1)
+  fig$plot <- fig$plot  +
+    scale_x_continuous(breaks=breaks, expand=expansion(mult=c(0, 0.01)))
+  X2 <- survdiff(Surv(surv_pfs,censor_pfs) ~ med_grp, data=d)$chisq
+  p <- round(1-pchisq(X2, df=1), 4)
+  if(p < 0.001){
+      plabel <- "P < 0.001"
+  } else {
+      plabel <- paste0("P = ", round(p, 3))
+  }
+  fig$plot <- fig$plot + annotate("text", x=max(dat$surv_pfs)/3, y=0.6, label=plabel,
+                                size=5)
+  a<-fig$plot
+  a
+
+
+overall_3<-a+ggtitle("DELFI Score")+theme(plot.title = element_text(hjust = 0.5))
+
+
+
+
+```
+
+```{r PFS, echo=FALSE,include = FALSE,fig.width=6, fig.height=12, dev=c("png", "pdf")}
+library(cowplot)
+plot_grid(overall_2,overall_3,overall_1,nrow=3)
+
+```
+
+
+
+
