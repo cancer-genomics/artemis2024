@@ -4,6 +4,7 @@ A summary of the available resources is available in /docs/index.html - please v
 Detailed READMEs specific to subfolders are available within them. 
 
 There are 4 folders of interest in this workflowr.
+
 (1) analysis - contains code needed to generate each figure, table and supplementary figure of the paper.
 
 (2) code - This contains code needed to generate ARTEMIS features and to train ARTEMIS and ARTEMIS-DELFI models, as well as some packages with functions used by other code in this repository.
