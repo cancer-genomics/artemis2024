@@ -1,4 +1,4 @@
-# annapragada2024_artemis_code
+# artemis_code
 
 A summary of the available resources is available in /docs/index.html - please view this first.
 Detailed READMEs specific to subfolders are available within them. 
