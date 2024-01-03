@@ -97,8 +97,8 @@ prep <- dat %>%
   mutate(
     slope = round(lm(ratio ~ CN_ave)$coefficients[2], 2),
     significance = summary(lm(ratio ~ CN_ave))$coefficients[2, 4],
-    x = 4,   # x coordinate for slope label
-    y = 7.5     # y coordinate for slope label
+    x = 5,   # x coordinate for slope label
+    y = 2.3     # y coordinate for slope label
   )
 prep<-prep %>% filter(id=="DO29850" & arm=="chr10p")
 prep$slope_label<-paste0("Observed Slope = ",prep$slope)
@@ -116,7 +116,7 @@ ggplot(dat,aes(x=CN_ave,y=ratio))+geom_point()+geom_point()+theme_classic()+
 ) +theme(legend.position="bottom",legend.title=element_blank())+scale_color_manual(values=c("red","blue"))+xlab("Average Arm Level Copy-Number")+ylab("Expected Arm Copy Number\nin Tumor Based on Kmer Counts")+
   geom_text(
    data = prep, aes(x = x, y = y, label = slope_label,hjust=0),size=5)+
-geom_vline(xintercept=2,color="gray",linetype="dashed")+geom_hline(yintercept=2,linetype="dashed",color="gray")+stat_cor(method="spearman",data=dat,size=5,label.x=4,label.y=7.8)
+geom_vline(xintercept=2,color="gray",linetype="dashed")+geom_hline(yintercept=2,linetype="dashed",color="gray")+stat_cor(method="spearman",data=dat,size=5,label.x=5,label.y=2.6)
 
 ```
 

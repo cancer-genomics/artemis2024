@@ -27,7 +27,7 @@ The ARTEMIS and DELFI features,  the code needed to train (and externally valida
 # Documentation
 We have provided a README describing the structure of this workflowr, as well as READMEs within subfolders as needed. 
 
-A list of R-related dependencies for reproducing the figures in the LUCAS manuscript is available in the [SessionInfo](../docs/SessionInfo.html) document. Most of the R packages are available from Bioconductor or CRAN. 
+A list of R-related dependencies for reproducing the figures in the manuscript is available in the [SessionInfo](../docs/SessionInfo.html) document. Most of the R packages are available from Bioconductor or CRAN. 
 
 There are two packages that we wrote with useful functions  - useful.stuff.aa and rlucas. Copies of both are available in the [code](../code) folder. rlucas was originally made available in the code/ folder of https://github.com/cancer-genomics/reproduce_lucas_wflow. 
 

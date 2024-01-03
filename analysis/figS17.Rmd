@@ -102,7 +102,7 @@ f_platform<-inner_join(f_hi,f_nova,by=c("cg_id"="id","feature"))
 #f<-f_platform %>% group_by(id,type) %>% summarize(c=cor(count_hi,count_nova,method="pearson"))
 f<-f_platform %>% group_by(id,type) %>% summarize(c=cor(count_hi,count_nova,method="spearman"))
 
-ggplot(f,aes(x=type,y=c,color=type))+geom_boxplot(outlier.shape=NA)+geom_jitter()+theme_classic()+xlab("")+ylab("Spearman Correlation Coefficient Between Replicates")+labs(color="")+scale_color_manual(values=c("deeppink4","black"))
+ggplot(f,aes(x=type,y=c,color=type))+geom_boxplot(outlier.shape=NA)+geom_jitter()+theme_classic(base_size = 22)+xlab("")+ylab("Spearman Correlation Coefficient\nBetween Replicates")+labs(color="")+scale_color_manual(values=c("deeppink4","black"))
 
 ```
 
