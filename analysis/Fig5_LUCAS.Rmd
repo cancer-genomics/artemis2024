@@ -24,7 +24,8 @@ model_names<-c("ARTEMIS_Ensemble","ARTEMIS_single_DELFI_SSLs_Ensemble")
 #model_names<-c("ARTEMIS_Ensemble","Mathios_DELFI","ARTEMIS_single_DELFI_SSLs_Ensemble")
 
 #colors<-c("#66c2a5","#8da0cb","#fc8d62")
-colors<-c("#1b9e77","#d95f02")
+#colors<-c("#1b9e77","#d95f02")
+colors<-c("#7570B3","#d95f02")
 
 meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
 meta<-meta %>% select(-V1)
@@ -396,7 +397,7 @@ b<-ggplot(all_dat,aes(x=group2,y=score,dodge=model,fill=model))+
         legend.justification=c("center", "top"),
         strip.background=element_blank(),
         strip.placement="outside",axis.title.x =element_blank(),strip.text=element_text(size=14))+#scale_fill_discrete(labels=c("ARTEMIS+DELFI","ARTEMIS","DELFI"))+
-     scale_fill_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=c("#1b9e77","#d95f02"))+
+     scale_fill_manual(labels=c("ARTEMIS","ARTEMIS+DELFI"),values=c("#7570B3","#d95f02"))+
       facet_grid(.~set,scales="free_x",space="free",switch="x")+ylab("Model Score")
 
 b

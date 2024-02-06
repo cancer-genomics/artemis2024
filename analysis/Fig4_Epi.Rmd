@@ -18,8 +18,9 @@ library(devtools)
 load_all(here("code","useful.stuff.aa"))           # Load
 library(gridExtra)
 library(cowplot)
+library(RColorBrewer)
 
-
+colors6 <- brewer.pal(8, "Dark2")
 
 ```
 
@@ -69,7 +70,7 @@ peak_order[8]->test
 peak_order[8]<-peak_order[7]
 peak_order[7]<-test
 data$peak<-factor(data$peak,levels=peak_order)
-a<-ggplot(data,aes(x=state2,y=peaks_per_mb_scaled,color=cat))+geom_point()+facet_grid(.~peak)+geom_segment(aes(x=state2,xend=state2,y=0,yend=peaks_per_mb_scaled,color=cat))+coord_flip()+theme_classic()+theme(axis.title.y=element_blank(),legend.title=element_blank())+labs(y="Normalized Peaks per mb of chromatin state")#+geom_hline(yintercept=0,color="gray",alpha=.5,linetype="dashed")
+a<-ggplot(data,aes(x=state2,y=peaks_per_mb_scaled,color=cat))+geom_point()+facet_grid(.~peak)+geom_segment(aes(x=state2,xend=state2,y=0,yend=peaks_per_mb_scaled,color=cat))+coord_flip()+theme_classic()+theme(axis.title.y=element_blank(),legend.title=element_blank())+labs(y="Normalized Peaks per mb of chromatin state")+scale_color_manual(values=c(colors6[2],colors6[3],colors6[6]))#+geom_hline(yintercept=0,color="gray",alpha=.5,linetype="dashed")
 
 
 p1<-a+theme(legend.position="none",panel.spacing.x = unit(1, "lines"))
@@ -106,7 +107,7 @@ data<-data %>% group_by(feature) %>% mutate(scaled_peaks=exp_perc/sum(exp_perc))
 data$peak<-factor(data$peak,levels=peak_order)
 data<-data %>% mutate(scaled_peaks=if_else(scaled_peaks>.5,.5,scaled_peaks))
 
-b<-ggplot(data,aes(x=fam2,y=scaled_peaks,color=fam2))+geom_boxplot(outlier.shape=NA)+geom_jitter(size=.05,alpha=.2)+facet_grid(.~peak,scales="free")+theme_classic()+theme(axis.text.x=element_blank(),axis.title.x=element_blank(),axis.ticks.x=element_blank())+labs(y="Normalized fraction\nof epigenetic marks found\nin repeat element",color="Repeat Elements")+ylim(c(0,.5))
+b<-ggplot(data,aes(x=fam2,y=scaled_peaks,color=fam2))+geom_boxplot(outlier.shape=NA)+geom_jitter(size=.05,alpha=.2)+facet_grid(.~peak,scales="free")+theme_classic()+theme(axis.text.x=element_blank(),axis.title.x=element_blank(),axis.ticks.x=element_blank())+labs(y="Normalized fraction\nof epigenetic marks found\nin repeat element",color="Repeat Elements")+ylim(c(0,.5))+scale_color_manual(values=colors6[3:8])
 
 p2<-b+theme(legend.position="none",strip.text = element_blank(),panel.spacing.x = unit(1, "lines"))
 legend_p2 <- get_legend(
