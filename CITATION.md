@@ -1,1 +1,1 @@
-Annapragada, A.V. Niknafs, N. White, J.R. Bruhm, D.C., Cherry, C., Medina, J.E., Adleff, V., Hruban C., Mathios, D., Foda, Z.H., Phallen, J., Scharpf, R.B., Velculescu, V.E. Genome-wide repeat landscapes in cancer and cell-free DNA.
+Annapragada, A.V. Niknafs, N. White, J.R. Bruhm, D.C., Cherry, C., Medina, J.E., Adleff, V., Hruban C., Mathios, D., Foda, Z.H., Phallen, J., Scharpf, R.B., Velculescu, V.E. Genome-wide repeat landscapes in cancer and cell-free DNA. Science Translational Medicine. 16, eadj9283 (2024). 
