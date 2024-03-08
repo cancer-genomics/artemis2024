@@ -13,5 +13,7 @@ There are 4 folders of interest in this workflowr.
 
 (4) docs - This contains html of the markdown files in analysis, as well as the generated figures.
 
+SessionInfo.Rmd in the analysis folder, and the corresponding html in the docs folder document the versions of packages used to compile this repo. 
+
 This repository is available on Github, and may be run as a workflowr project to generate a webpage with all code and figures linked. 
 [workflowr]: https://github.com/jdblischak/workflowr
