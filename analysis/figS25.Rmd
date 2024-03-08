@@ -73,6 +73,20 @@ d<-tibble(id=dat$id,Cov_GBM=predict(s1,dat,type="prob")$cancer,Ratios_ssl=predic
 
 meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
 
+#Mathios data had a bunch of unused columns and it only breaks some versions of R and i don't want to deal with it so now we have a bunch of dummy columns
+dat$clinical_nlratio<-NA
+dat$clinical_CRP<-NA
+dat$clinical_cfdna_conc<-NA
+dat$clinical_age<-NA
+dat$clinical_IL6<-NA
+dat$clinical_YKL40<-NA
+dat$clinical_CEA<-NA
+dat$clinical_bmi<-NA
+dat$clinical_packyears<-NA
+dat$clinical_smokingstatus<-NA
+dat$clinical_COPD<-NA
+dat$multinucratio<-NA
+
 scores<-tibble(Artemis_Score=predict(model,d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl),type="prob")$cancer,
 	id=dat$id,
 	delfi_score=predict(model2,dat,type="prob")$cancer)

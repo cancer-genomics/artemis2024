@@ -309,7 +309,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-02-06
+<strong>Last updated:</strong> 2024-03-08
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -443,15 +443,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree20ed939239cc30d2ee1b176b92b12baffd60085atargetblank20ed939a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree09fa07f8f531f18afa741ae561a09ce76939bd87targetblank09fa07fa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/20ed939239cc30d2ee1b176b92b12baffd60085a" target="_blank">20ed939</a>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/09fa07f8f531f18afa741ae561a09ce76939bd87" target="_blank">09fa07f</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree20ed939239cc30d2ee1b176b92b12baffd60085atargetblank20ed939a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree09fa07f8f531f18afa741ae561a09ce76939bd87targetblank09fa07fa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -461,7 +461,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/20ed939239cc30d2ee1b176b92b12baffd60085a" target="_blank">20ed939</a>.
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/09fa07f8f531f18afa741ae561a09ce76939bd87" target="_blank">09fa07f</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -527,10 +527,9 @@ Ignored files:
     Ignored:    output/
 
 Unstaged changes:
-    Modified:   analysis/Fig4_Epi.Rmd
     Modified:   analysis/Fig5_LUCAS.Rmd
-    Modified:   analysis/figS22_liver.Rmd
     Modified:   analysis/figS23_24_lungval.Rmd
+    Modified:   analysis/figS25.Rmd
 
 </code></pre>
 <p>
@@ -576,6 +575,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/7837ec39149d0793ef20292619d2e9a85eeec593/analysis/Fig5_LUCAS.Rmd" target="_blank">7837ec3</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-02-06
+</td>
+<td>
+fixing red green color scheme
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/cancer-genomics/annapragada2024_artemis_code/7837ec39149d0793ef20292619d2e9a85eeec593/docs/Fig5_LUCAS.html" target="_blank">7837ec3</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-02-06
+</td>
+<td>
+fixing red green color scheme
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -659,47 +692,16 @@ colors&lt;-c(&quot;#7570B3&quot;,&quot;#d95f02&quot;)
 meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))
 meta&lt;-meta %&gt;% select(-V1)
 
-#Add in Mathios Published scores
-model&lt;-readRDS(here(&quot;data&quot;,&quot;Mathios_Published&quot;,&quot;model_seq_glm.rds&quot;))
-#cv&lt;-fread(here(&quot;data&quot;,&quot;Models&quot;,&quot;Mathios_Published&quot;,&quot;Mathios_S2.csv&quot;))
-cv&lt;-colData(se) %&gt;%
-    as_tibble() %&gt;%
-    mutate(lab_id=colnames(se)) %&gt;%
-    filter(!is.na(score_seq)) %&gt;%
-    select(lab_id, score_seq)
 
-cv&lt;-inner_join(lucas_meta %&gt;% filter(Training==&quot;YES&quot;) %&gt;% select(cg_id,id,type),cv,by=c(&quot;cg_id&quot;=&quot;lab_id&quot;)) %&gt;% rename(&quot;score&quot;=&quot;score_seq&quot;)
-cv$model&lt;-&quot;Mathios_Published&quot;
-cv$set&lt;-&quot;SSL&quot;
 data&lt;-fread(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Results&quot;,&quot;Cross_Validation_scores.csv&quot;))
 data&lt;-data %&gt;% select(-V1)
-data&lt;-rbind(data,cv %&gt;% select(-cg_id))
 #########
 data&lt;-data %&gt;% filter(model %in% model_names)
 
 val_dat&lt;-fread(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Results&quot;,&quot;Test_set_scores.csv&quot;))
 val_dat&lt;-val_dat %&gt;% select(-V1)
-#The mathios publication didn&#39;t have scores for ahn_bu
-v&lt;-fread(here(&quot;data&quot;,&quot;Mathios_Published&quot;,&quot;validation_preds.csv&quot;))
-v&lt;-inner_join(meta %&gt;% select(id,type),v %&gt;% select(id,cancer),by=c(&quot;id&quot;=&quot;id&quot;)) %&gt;% rename(&quot;score&quot;=&quot;cancer&quot;)
-v$model&lt;-&quot;Mathios_Published&quot;
-v$set&lt;-&quot;SSL&quot;
-
-#get IDs not in Mathios
-ids&lt;-unique((val_dat %&gt;% filter(!id %in% v$id))$id)
-#read in the test set features
-t&lt;-fread(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Cohorts&quot;,&quot;LUCAS_Test.csv&quot;))
-#get only the missing ids and needed features
-t&lt;-t %&gt;% filter(id %in% ids) %&gt;% select(id,type,starts_with(&quot;ratio&quot;),starts_with(&quot;zscore&quot;))
-preds&lt;-predict(model,t,type=&quot;prob&quot;)</code></pre>
-<pre><code>Warning: &#39;keep_original_cols&#39; was added to `step_pca()` after this recipe was created.
-Regenerate your recipe to avoid this warning.</code></pre>
-<pre class="r"><code>t&lt;-tibble(id=t$id,type=t$type,score=preds$cancer,model=&quot;Mathios_Published&quot;,set=&quot;SSL&quot;)
-val_dat&lt;-rbind(val_dat,v,t)
 #######
 val_dat&lt;-val_dat %&gt;% filter(model %in% model_names)
-#val_dat %&gt;% dplyr::group_by(model) %&gt;% dplyr::summarize(r=roc(type,score)$auc[1])
-#data %&gt;% dplyr::group_by(model) %&gt;% dplyr::summarize(r=roc(type,score)$auc[1])
 cv_dat&lt;-data</code></pre>
 <pre><code>Setting direction: controls &lt; cases
 Setting direction: controls &lt; cases
@@ -880,6 +882,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/7837ec39149d0793ef20292619d2e9a85eeec593/docs/figure/Fig5_LUCAS.Rmd/all_ROCs-1.png" target="_blank">7837ec3</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-02-06
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/Fig5_LUCAS.Rmd/all_ROCs-1.png" target="_blank">72def7c</a>
 </td>
 <td>
@@ -928,6 +941,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/7837ec39149d0793ef20292619d2e9a85eeec593/docs/figure/Fig5_LUCAS.Rmd/CV_boxplots-1.png" target="_blank">7837ec3</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-02-06
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/Fig5_LUCAS.Rmd/CV_boxplots-1.png" target="_blank">72def7c</a>
 </td>
 <td>
@@ -964,6 +988,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/7837ec39149d0793ef20292619d2e9a85eeec593/docs/figure/Fig5_LUCAS.Rmd/CV_boxplots-2.png" target="_blank">7837ec3</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-02-06
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/Fig5_LUCAS.Rmd/CV_boxplots-2.png" target="_blank">72def7c</a>
@@ -1031,6 +1066,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/7837ec39149d0793ef20292619d2e9a85eeec593/docs/figure/Fig5_LUCAS.Rmd/plotEV_extra-1.png" target="_blank">7837ec3</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-02-06
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/Fig5_LUCAS.Rmd/plotEV_extra-1.png" target="_blank">72def7c</a>
 </td>
 <td>
@@ -1084,74 +1130,63 @@ other attached packages:
 loaded via a namespace (and not attached):
   [1] readxl_1.3.1                backports_1.2.1            
   [3] plyr_1.8.6                  splines_4.0.5              
-  [5] listenv_0.8.0               GenomeInfoDb_1.26.7        
-  [7] digest_0.6.27               foreach_1.5.1              
-  [9] htmltools_0.5.2             fansi_0.5.0                
- [11] checkmate_2.0.0             magrittr_2.0.1             
- [13] memoise_2.0.0               cluster_2.1.2              
- [15] tzdb_0.1.2                  openxlsx_4.2.4             
- [17] remotes_2.4.0               globals_0.14.0             
- [19] recipes_0.1.16              modelr_0.1.8               
- [21] gower_0.2.2                 matrixStats_0.61.0         
- [23] prettyunits_1.1.1           jpeg_0.1-9                 
- [25] colorspace_2.0-2            rvest_1.0.1                
- [27] haven_2.4.3                 xfun_0.25                  
- [29] callr_3.7.0                 crayon_1.4.1               
- [31] RCurl_1.98-1.4              jsonlite_1.7.2             
- [33] iterators_1.0.13            glue_1.6.2                 
- [35] gtable_0.3.0                ipred_0.9-11               
- [37] zlibbioc_1.36.0             XVector_0.30.0             
- [39] DelayedArray_0.16.3         car_3.0-11                 
- [41] pkgbuild_1.2.0              shape_1.4.6                
- [43] future.apply_1.8.1          BiocGenerics_0.36.1        
- [45] abind_1.4-5                 scales_1.2.1               
- [47] DBI_1.1.1                   rstatix_0.7.0              
- [49] Rcpp_1.0.7                  htmlTable_2.2.1            
- [51] foreign_0.8-81              lava_1.6.10                
- [53] prodlim_2019.11.13          stats4_4.0.5               
- [55] glmnet_4.1-2                htmlwidgets_1.5.3          
- [57] httr_1.4.2                  ellipsis_0.3.2             
- [59] farver_2.1.0                pkgconfig_2.0.3            
- [61] nnet_7.3-16                 sass_0.4.0                 
- [63] dbplyr_2.1.1                utf8_1.2.2                 
- [65] caret_6.0-88                labeling_0.4.2             
- [67] reshape2_1.4.4              tidyselect_1.1.1           
- [69] rlang_1.1.1                 later_1.3.0                
- [71] munsell_0.5.0               cellranger_1.1.0           
- [73] tools_4.0.5                 cachem_1.0.6               
- [75] cli_3.6.1                   generics_0.1.0             
- [77] broom_0.7.9                 evaluate_0.14              
- [79] fastmap_1.1.0               yaml_2.2.1                 
- [81] ModelMetrics_1.2.2.2        processx_3.5.2             
- [83] knitr_1.33                  fs_1.5.0                   
- [85] zip_2.2.0                   future_1.22.1              
- [87] nlme_3.1-152                whisker_0.4                
- [89] xml2_1.3.2                  compiler_4.0.5             
- [91] rstudioapi_0.13             png_0.1-7                  
- [93] curl_4.3.2                  testthat_3.0.4             
- [95] ggsignif_0.6.2              reprex_2.0.1               
- [97] bslib_0.3.0                 stringi_1.7.4              
- [99] highr_0.9                   ps_1.6.0                   
-[101] desc_1.3.0                  Matrix_1.3-4               
-[103] vctrs_0.4.0                 pillar_1.6.2               
-[105] lifecycle_1.0.3             jquerylib_0.1.4            
-[107] bitops_1.0-7                httpuv_1.6.2               
-[109] GenomicRanges_1.42.0        latticeExtra_0.6-29        
-[111] R6_2.5.1                    promises_1.2.0.1           
-[113] gridExtra_2.3               rio_0.5.27                 
-[115] parallelly_1.27.0           IRanges_2.24.1             
-[117] sessioninfo_1.1.1           codetools_0.2-18           
-[119] MASS_7.3-54                 assertthat_0.2.1           
-[121] pkgload_1.2.1               SummarizedExperiment_1.20.0
-[123] rprojroot_2.0.2             withr_2.5.0                
-[125] S4Vectors_0.28.1            GenomeInfoDbData_1.2.4     
-[127] parallel_4.0.5              hms_1.1.0                  
-[129] grid_4.0.5                  rpart_4.1-15               
-[131] timeDate_3043.102           class_7.3-19               
-[133] rmarkdown_2.10              MatrixGenerics_1.2.1       
-[135] carData_3.0-4               git2r_0.28.0               
-[137] base64enc_0.1-3             Biobase_2.50.0             
-[139] lubridate_1.7.10           </code></pre>
+  [5] GenomeInfoDb_1.26.7         digest_0.6.27              
+  [7] htmltools_0.5.2             fansi_0.5.0                
+  [9] checkmate_2.0.0             magrittr_2.0.1             
+ [11] memoise_2.0.0               cluster_2.1.2              
+ [13] tzdb_0.1.2                  openxlsx_4.2.4             
+ [15] remotes_2.4.0               modelr_0.1.8               
+ [17] matrixStats_0.61.0          prettyunits_1.1.1          
+ [19] jpeg_0.1-9                  colorspace_2.0-2           
+ [21] rvest_1.0.1                 haven_2.4.3                
+ [23] xfun_0.25                   callr_3.7.0                
+ [25] crayon_1.4.1                RCurl_1.98-1.4             
+ [27] jsonlite_1.7.2              glue_1.6.2                 
+ [29] gtable_0.3.0                zlibbioc_1.36.0            
+ [31] XVector_0.30.0              DelayedArray_0.16.3        
+ [33] car_3.0-11                  pkgbuild_1.2.0             
+ [35] BiocGenerics_0.36.1         abind_1.4-5                
+ [37] scales_1.2.1                DBI_1.1.1                  
+ [39] rstatix_0.7.0               Rcpp_1.0.7                 
+ [41] htmlTable_2.2.1             foreign_0.8-81             
+ [43] stats4_4.0.5                htmlwidgets_1.5.3          
+ [45] httr_1.4.2                  ellipsis_0.3.2             
+ [47] pkgconfig_2.0.3             farver_2.1.0               
+ [49] nnet_7.3-16                 sass_0.4.0                 
+ [51] dbplyr_2.1.1                utf8_1.2.2                 
+ [53] tidyselect_1.1.1            labeling_0.4.2             
+ [55] rlang_1.1.1                 later_1.3.0                
+ [57] munsell_0.5.0               cellranger_1.1.0           
+ [59] tools_4.0.5                 cachem_1.0.6               
+ [61] cli_3.6.1                   generics_0.1.0             
+ [63] broom_0.7.9                 evaluate_0.14              
+ [65] fastmap_1.1.0               yaml_2.2.1                 
+ [67] processx_3.5.2              knitr_1.33                 
+ [69] fs_1.5.0                    zip_2.2.0                  
+ [71] whisker_0.4                 xml2_1.3.2                 
+ [73] compiler_4.0.5              rstudioapi_0.13            
+ [75] curl_4.3.2                  png_0.1-7                  
+ [77] testthat_3.0.4              ggsignif_0.6.2             
+ [79] reprex_2.0.1                bslib_0.3.0                
+ [81] stringi_1.7.4               highr_0.9                  
+ [83] ps_1.6.0                    desc_1.3.0                 
+ [85] Matrix_1.3-4                vctrs_0.4.0                
+ [87] pillar_1.6.2                lifecycle_1.0.3            
+ [89] jquerylib_0.1.4             bitops_1.0-7               
+ [91] httpuv_1.6.2                GenomicRanges_1.42.0       
+ [93] R6_2.5.1                    latticeExtra_0.6-29        
+ [95] promises_1.2.0.1            gridExtra_2.3              
+ [97] rio_0.5.27                  IRanges_2.24.1             
+ [99] sessioninfo_1.1.1           assertthat_0.2.1           
+[101] pkgload_1.2.1               SummarizedExperiment_1.20.0
+[103] rprojroot_2.0.2             withr_2.5.0                
+[105] S4Vectors_0.28.1            GenomeInfoDbData_1.2.4     
+[107] parallel_4.0.5              hms_1.1.0                  
+[109] rpart_4.1-15                grid_4.0.5                 
+[111] rmarkdown_2.10              MatrixGenerics_1.2.1       
+[113] carData_3.0-4               git2r_0.28.0               
+[115] Biobase_2.50.0              lubridate_1.7.10           
+[117] base64enc_0.1-3            </code></pre>
 </div>
 
 

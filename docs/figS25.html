@@ -32,6 +32,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
 <!-- Add a small amount of space between sections. -->
@@ -262,7 +264,13 @@ $(document).ready(function () {
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -301,7 +309,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2023-12-22
+<strong>Last updated:</strong> 2024-03-08
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -310,8 +318,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
 aria-hidden="true"></span> 1
 </p>
 <p>
-<strong>Knit directory:</strong>
-<code>annapragada2024_artemis_code/</code> <span
+<strong>Knit directory:</strong> <code>artemis2024/</code> <span
 class="glyphicon glyphicon-question-sign" aria-hidden="true"
 title="This is the local directory in which the code in this file was executed.">
 </span>
@@ -340,10 +347,10 @@ changes </a>
 <div id="strongRMarkdownfilestronguncommittedchanges"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
 <code>wflow_publish</code> to commit the R Markdown file and build the
 HTML.</p>
 </div>
@@ -436,13 +443,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong1d0c4f5">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree09fa07f8f531f18afa741ae561a09ce76939bd87targetblank09fa07fa">
 <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong> 1d0c4f5
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/09fa07f8f531f18afa741ae561a09ce76939bd87" target="_blank">09fa07f</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrong1d0c4f5"
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree09fa07f8f531f18afa741ae561a09ce76939bd87targetblank09fa07fa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -451,7 +460,8 @@ and connecting the code version to the results is critical for
 reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version 1d0c4f5.
+The results in this page were generated with repository version
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/09fa07f8f531f18afa741ae561a09ce76939bd87" target="_blank">09fa07f</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -466,80 +476,60 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    analysis/.Rhistory
     Ignored:    code/.DS_Store
+    Ignored:    code/.Rhistory
+    Ignored:    code/ARTEMIS_Pipeline/.DS_Store
+    Ignored:    code/ARTEMIS_Pipeline/01_generate_artemis/.DS_Store
+    Ignored:    code/ARTEMIS_Pipeline/04_artemis_pipeline/.DS_Store
+    Ignored:    code/ARTEMIS_Pipeline/04_artemis_pipeline/counts/
+    Ignored:    code/ARTEMIS_Pipeline/04_artemis_pipeline/read_counts/
+    Ignored:    code/cfDNA_Models/.DS_Store
+    Ignored:    code/cfDNA_Models/Liver_Detection/.DS_Store
+    Ignored:    code/cfDNA_Models/Liver_Detection/Cohorts/.DS_Store
+    Ignored:    code/cfDNA_Models/Liver_Detection/Control/.DS_Store
+    Ignored:    code/cfDNA_Models/Lung_Detection/.DS_Store
+    Ignored:    code/cfDNA_Models/Lung_Detection/Control/.DS_Store
+    Ignored:    code/cfDNA_Models/Multi_Cancer_Detection/.DS_Store
+    Ignored:    code/cfDNA_Models/Multi_Cancer_Detection/Control/.DS_Store
+    Ignored:    code/cfDNA_Models/Multi_Cancer_TissueOfOrigin/.DS_Store
+    Ignored:    code/cfDNA_Models/Multi_Cancer_TissueOfOrigin/Control/.DS_Store
+    Ignored:    code/rlucas/.DS_Store
+    Ignored:    code/rlucas/data/.DS_Store
+    Ignored:    code/useful.stuff.aa/.DS_Store
+    Ignored:    code/useful.stuff.aa/R/.DS_Store
+    Ignored:    code/useful.stuff.aa/data/.DS_Store
+    Ignored:    code/useful.stuff.aa/raw-data/
     Ignored:    data/.DS_Store
-    Ignored:    output/.DS_Store
-
-Untracked files:
-    Untracked:  analysis/Fig2a_S11_S16.Rmd
-    Untracked:  analysis/Fig2b_S7.Rmd
-    Untracked:  analysis/Fig2c_S8a.Rmd
-    Untracked:  analysis/Fig2d_S10_LINE1.Rmd
-    Untracked:  analysis/Fig2e_S13.Rmd
-    Untracked:  analysis/Fig3a.Rmd
-    Untracked:  analysis/Fig3b.Rmd
-    Untracked:  analysis/Fig4_Epi.Rmd
-    Untracked:  analysis/Fig5_LUCAS.Rmd
-    Untracked:  analysis/SessionInfo.Rmd
-    Untracked:  analysis/figS12.Rmd
-    Untracked:  analysis/figS14.Rmd
-    Untracked:  analysis/figS15.Rmd
-    Untracked:  analysis/figS17.Rmd
-    Untracked:  analysis/figS18_epi.Rmd
-    Untracked:  analysis/figS20_Ideogram.Rmd
-    Untracked:  analysis/figS21a_featureimp.Rmd
-    Untracked:  analysis/figS21bc_stability.Rmd
-    Untracked:  analysis/figS22_liver.Rmd
-    Untracked:  analysis/figS23_24_lungval.Rmd
-    Untracked:  analysis/figS25.Rmd
-    Untracked:  analysis/figS2_S3abc.Rmd
-    Untracked:  analysis/figS3d_S4.Rmd
-    Untracked:  analysis/figS5_S6_simulations.Rmd
-    Untracked:  analysis/figS8bc.Rmd
-    Untracked:  analysis/figS9.Rmd
-    Untracked:  code/ARTEMIS_Pipeline/
-    Untracked:  code/Table1.Rmd
-    Untracked:  code/Table2.Rmd
-    Untracked:  code/Tissue_Models/
-    Untracked:  code/cfDNA_Models/
-    Untracked:  code/rlucas/
-    Untracked:  code/useful.stuff.aa/
-    Untracked:  data/CN_Analysis/
-    Untracked:  data/Cristiano_Detection/
-    Untracked:  data/Cristiano_TOO/
-    Untracked:  data/Downsamples/
-    Untracked:  data/Epi/
-    Untracked:  data/Epi_Reference_Bins.csv
-    Untracked:  data/Extended Data Fig.12_recurrence_analysis_Mathios_etal.xlsx
-    Untracked:  data/Final_LUCAS_Ensemble/
-    Untracked:  data/Final_Liver_Risk_Ensemble/
-    Untracked:  data/GSEA/
-    Untracked:  data/Get_Numbers/
-    Untracked:  data/Kmer_Distributions/
-    Untracked:  data/LINE1/
-    Untracked:  data/LUCAS_Stability_Analysis/
-    Untracked:  data/Liver_Published_delfi-results_risk.csv
-    Untracked:  data/Lung_Monitoring/
-    Untracked:  data/Mathios_Published/
-    Untracked:  data/Mathios_batching.xlsx
-    Untracked:  data/NoveltyTables/
-    Untracked:  data/PCAWG/
-    Untracked:  data/Plasma_CV_meta_HiSeq.csv
-    Untracked:  data/Plasma_CV_meta_Novaseq.csv
-    Untracked:  data/Simulation/
-    Untracked:  data/Supp_Tables/
-    Untracked:  data/TCGA/
-    Untracked:  data/cfDNA_manifest_HiSeq.txt
-    Untracked:  data/focal_pcawg/
-    Untracked:  data/lucas_nova_artemis.csv
-    Untracked:  data/process_pcawg/
+    Ignored:    data/CN_Analysis/.DS_Store
+    Ignored:    data/Cristiano_Detection/.DS_Store
+    Ignored:    data/Cristiano_TOO/.DS_Store
+    Ignored:    data/Downsamples/.DS_Store
+    Ignored:    data/Epi/.DS_Store
+    Ignored:    data/Final_LUCAS_Ensemble/.DS_Store
+    Ignored:    data/Final_LUCAS_Ensemble/Locked_Models/.DS_Store
+    Ignored:    data/Final_Liver_Risk_Ensemble/.DS_Store
+    Ignored:    data/Final_Liver_Risk_Ensemble/Results/.DS_Store
+    Ignored:    data/GSEA/.DS_Store
+    Ignored:    data/GSEA/KEGG_DensityKmers.GseaPreranked.1699237807444/.DS_Store
+    Ignored:    data/GSEA/KEGG_TotalKmers.GseaPreranked.1699237843817/.DS_Store
+    Ignored:    data/Get_Numbers/.DS_Store
+    Ignored:    data/Kmer_Distributions/.DS_Store
+    Ignored:    data/LINE1/.DS_Store
+    Ignored:    data/LINE1/Downloads/.DS_Store
+    Ignored:    data/LUCAS_Stability_Analysis/.DS_Store
+    Ignored:    data/Mathios_Published/.DS_Store
+    Ignored:    data/NoveltyTables/.DS_Store
+    Ignored:    data/PCAWG/.DS_Store
+    Ignored:    data/TCGA/.DS_Store
+    Ignored:    data/focal_pcawg/.DS_Store
+    Ignored:    output/
 
 Unstaged changes:
-    Modified:   README.md
-    Modified:   analysis/about.Rmd
-    Modified:   analysis/index.Rmd
-    Modified:   analysis/license.Rmd
-    Deleted:    output/README.md
+    Modified:   analysis/Fig5_LUCAS.Rmd
+    Modified:   analysis/figS23_24_lungval.Rmd
+    Modified:   analysis/figS25.Rmd
 
 </code></pre>
 <p>
@@ -554,16 +544,79 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/figS25.Rmd</code>) and HTML
+(<code>docs/figS25.html</code>) files. If you’ve configured a remote Git
+repository (see <code>?wflow_git_remote</code>), click on the hyperlinks
+in the table below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/analysis/figS25.Rmd" target="_blank">72def7c</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2023-12-22
+</td>
+<td>
+all code
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/cancer-genomics/annapragada2024_artemis_code/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figS25.html" target="_blank">72def7c</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2023-12-22
+</td>
+<td>
+all code
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
 </div>
 <pre class="r"><code>library(here)</code></pre>
-<pre><code>here() starts at /Users/akshayaannapragada/Dropbox/ScannedNotes/VelculescuLab/Cancer Genomics Lab/plasma_repeats/annapragada2024_artemis_code</code></pre>
+<pre><code>here() starts at /Users/akshayaannapragada/Dropbox/ScannedNotes/VelculescuLab/Cancer Genomics Lab/plasma_repeats/artemis2024</code></pre>
 <pre class="r"><code>library(data.table)
 library(tidyverse)</code></pre>
 <pre><code>── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
@@ -673,9 +726,26 @@ d&lt;-tibble(id=dat$id,Cov_GBM=predict(s1,dat,type=&quot;prob&quot;)$cancer,Rati
 
 meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))
 
+#Mathios data had a bunch of unused columns and it only breaks some versions of R and i don&#39;t want to deal with it so now we have a bunch of dummy columns
+dat$clinical_nlratio&lt;-NA
+dat$clinical_CRP&lt;-NA
+dat$clinical_cfdna_conc&lt;-NA
+dat$clinical_age&lt;-NA
+dat$clinical_IL6&lt;-NA
+dat$clinical_YKL40&lt;-NA
+dat$clinical_CEA&lt;-NA
+dat$clinical_bmi&lt;-NA
+dat$clinical_packyears&lt;-NA
+dat$clinical_smokingstatus&lt;-NA
+dat$clinical_COPD&lt;-NA
+dat$multinucratio&lt;-NA
+
 scores&lt;-tibble(Artemis_Score=predict(model,d %&gt;% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl),type=&quot;prob&quot;)$cancer,
     id=dat$id,
     delfi_score=predict(model2,dat,type=&quot;prob&quot;)$cancer)</code></pre>
+<pre><code>Warning:  There was 1 column that was a factor when the recipe was prepped:
+ &#39;clinical_smokingstatus&#39;.
+ This may cause errors when processing new data.</code></pre>
 <pre><code>Warning: &#39;keep_original_cols&#39; was added to `step_pca()` after this recipe was created.
 Regenerate your recipe to avoid this warning.</code></pre>
 <pre class="r"><code>d&lt;-inner_join(d,scores,by=&quot;id&quot;)
@@ -800,6 +870,43 @@ replace the existing scale.</code></pre>
   a&lt;-fig$plot
   a</code></pre>
 <p><img src="figure/figS25.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-2-1.png" target="_blank">72def7c</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2023-12-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>overall_1&lt;-a+ggtitle(&quot;ARTEMIS Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
 
@@ -879,6 +986,43 @@ replace the existing scale.</code></pre>
   a&lt;-fig$plot
   a</code></pre>
 <p><img src="figure/figS25.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-3-1.png" target="_blank">72def7c</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2023-12-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>overall_2&lt;-a+ggtitle(&quot;ARTEMIS-DELFI Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
 
@@ -958,6 +1102,43 @@ replace the existing scale.</code></pre>
   a&lt;-fig$plot
   a</code></pre>
 <p><img src="figure/figS25.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-4-1.png" target="_blank">72def7c</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2023-12-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>overall_3&lt;-a+ggtitle(&quot;DELFI Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <br>
 <p>
@@ -1024,20 +1205,20 @@ loaded via a namespace (and not attached):
  [70] bit64_4.0.5          ModelMetrics_1.2.2.2 processx_3.5.2      
  [73] knitr_1.33           fs_1.5.0             zip_2.2.0           
  [76] survMisc_0.5.5       future_1.22.1        nlme_3.1-152        
- [79] xml2_1.3.2           compiler_4.0.5       rstudioapi_0.13     
- [82] curl_4.3.2           testthat_3.0.4       ggsignif_0.6.2      
- [85] reprex_2.0.1         bslib_0.3.0          stringi_1.7.4       
- [88] highr_0.9            ps_1.6.0             desc_1.3.0          
- [91] Matrix_1.3-4         KMsurv_0.1-5         vctrs_0.4.0         
- [94] pillar_1.6.2         lifecycle_1.0.3      jquerylib_0.1.4     
- [97] httpuv_1.6.2         R6_2.5.1             promises_1.2.0.1    
-[100] gridExtra_2.3        rio_0.5.27           parallelly_1.27.0   
-[103] sessioninfo_1.1.1    codetools_0.2-18     MASS_7.3-54         
-[106] assertthat_0.2.1     pkgload_1.2.1        rprojroot_2.0.2     
-[109] withr_2.5.0          parallel_4.0.5       hms_1.1.0           
-[112] grid_4.0.5           rpart_4.1-15         timeDate_3043.102   
-[115] class_7.3-19         rmarkdown_2.10       carData_3.0-4       
-[118] git2r_0.28.0         lubridate_1.7.10    </code></pre>
+ [79] whisker_0.4          xml2_1.3.2           compiler_4.0.5      
+ [82] rstudioapi_0.13      curl_4.3.2           testthat_3.0.4      
+ [85] ggsignif_0.6.2       reprex_2.0.1         bslib_0.3.0         
+ [88] stringi_1.7.4        highr_0.9            ps_1.6.0            
+ [91] desc_1.3.0           Matrix_1.3-4         KMsurv_0.1-5        
+ [94] vctrs_0.4.0          pillar_1.6.2         lifecycle_1.0.3     
+ [97] jquerylib_0.1.4      httpuv_1.6.2         R6_2.5.1            
+[100] promises_1.2.0.1     gridExtra_2.3        rio_0.5.27          
+[103] parallelly_1.27.0    sessioninfo_1.1.1    codetools_0.2-18    
+[106] MASS_7.3-54          assertthat_0.2.1     pkgload_1.2.1       
+[109] rprojroot_2.0.2      withr_2.5.0          parallel_4.0.5      
+[112] hms_1.1.0            grid_4.0.5           rpart_4.1-15        
+[115] timeDate_3043.102    class_7.3-19         rmarkdown_2.10      
+[118] carData_3.0-4        git2r_0.28.0         lubridate_1.7.10    </code></pre>
 </div>
 
 

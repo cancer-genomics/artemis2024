@@ -30,45 +30,16 @@ colors<-c("#7570B3","#d95f02")
 meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
 meta<-meta %>% select(-V1)
 
-#Add in Mathios Published scores
-model<-readRDS(here("data","Mathios_Published","model_seq_glm.rds"))
-#cv<-fread(here("data","Models","Mathios_Published","Mathios_S2.csv"))
-cv<-colData(se) %>%
-    as_tibble() %>%
-    mutate(lab_id=colnames(se)) %>%
-    filter(!is.na(score_seq)) %>%
-    select(lab_id, score_seq)
 
-cv<-inner_join(lucas_meta %>% filter(Training=="YES") %>% select(cg_id,id,type),cv,by=c("cg_id"="lab_id")) %>% rename("score"="score_seq")
-cv$model<-"Mathios_Published"
-cv$set<-"SSL"
 data<-fread(here("data","Final_LUCAS_Ensemble","Results","Cross_Validation_scores.csv"))
 data<-data %>% select(-V1)
-data<-rbind(data,cv %>% select(-cg_id))
 #########
 data<-data %>% filter(model %in% model_names)
 
 val_dat<-fread(here("data","Final_LUCAS_Ensemble","Results","Test_set_scores.csv"))
 val_dat<-val_dat %>% select(-V1)
-#The mathios publication didn't have scores for ahn_bu
-v<-fread(here("data","Mathios_Published","validation_preds.csv"))
-v<-inner_join(meta %>% select(id,type),v %>% select(id,cancer),by=c("id"="id")) %>% rename("score"="cancer")
-v$model<-"Mathios_Published"
-v$set<-"SSL"
-
-#get IDs not in Mathios
-ids<-unique((val_dat %>% filter(!id %in% v$id))$id)
-#read in the test set features
-t<-fread(here("data","Final_LUCAS_Ensemble","Cohorts","LUCAS_Test.csv"))
-#get only the missing ids and needed features
-t<-t %>% filter(id %in% ids) %>% select(id,type,starts_with("ratio"),starts_with("zscore"))
-preds<-predict(model,t,type="prob")
-t<-tibble(id=t$id,type=t$type,score=preds$cancer,model="Mathios_Published",set="SSL")
-val_dat<-rbind(val_dat,v,t)
 #######
 val_dat<-val_dat %>% filter(model %in% model_names)
-#val_dat %>% dplyr::group_by(model) %>% dplyr::summarize(r=roc(type,score)$auc[1])
-#data %>% dplyr::group_by(model) %>% dplyr::summarize(r=roc(type,score)$auc[1])
 cv_dat<-data
 
 ```
