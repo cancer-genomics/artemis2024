@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r}
+```{r packages, message=FALSE}
 library(here)
 library(data.table)
 library(tidyverse)
@@ -21,9 +21,13 @@ library(recipes)
 library(pROC)
 library(gbm)
 library(readxl)
+```
 
+
+```{r join.data}
 dat<-fread(here("data","Lung_Monitoring","lung_dynamics_artemis.csv"))
-#dat<-dat %>% filter(id != "PGDX7348P1_Amended" & id != "PGDX7348P2_Amended") #something is weird
+##dat<-dat %>% filter(id != "PGDX7348P1_Amended" & id != "PGDX7348P2_Amended") #something is weird
+select <- dplyr::select
 dat<-dat %>% select(-V1)
 e<-fread(here("data","Kmer_Distributions","Expected.csv"))
 e<-e %>% filter(total_kmers>1000)
@@ -48,8 +52,9 @@ dat<-inner_join(artemis,delfi,by="id")
 epi<-fread(here("data","Lung_Monitoring","lung_dynamics_epi.csv"))
 epi$id<-gsub("_Amended","",epi$id)
 dat<-inner_join(dat,epi,by="id")
+```
 
-
+```{r models}
 #These are the models we actually want
 model<-readRDS(here("data","Final_LUCAS_Ensemble","Locked_Models","ARTEMIS_Ensemble.rds"))
 model2<-readRDS(here("data","Mathios_Published","model_seq_glm.rds"))
@@ -72,7 +77,9 @@ d<-tibble(id=dat$id,Cov_GBM=predict(s1,dat,type="prob")$cancer,Ratios_ssl=predic
 
 
 meta<-fread(here("data","Plasma_CV_meta_HiSeq.csv"))
+```
 
+```{r dummy.cols}
 #Mathios data had a bunch of unused columns and it only breaks some versions of R and i don't want to deal with it so now we have a bunch of dummy columns
 dat$clinical_nlratio<-NA
 dat$clinical_CRP<-NA
@@ -87,9 +94,12 @@ dat$clinical_smokingstatus<-NA
 dat$clinical_COPD<-NA
 dat$multinucratio<-NA
 
-scores<-tibble(Artemis_Score=predict(model,d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl),type="prob")$cancer,
+artemis.newdata <- d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
+predictions.artemis <- predict(model, artemis.newdata, type="prob")
+predictions.delfi <- predict(model2, dat, type="prob")
+scores<-tibble(Artemis_Score=predictions$cancer,
 	id=dat$id,
-	delfi_score=predict(model2,dat,type="prob")$cancer)
+	delfi_score=$cancer)
 
 d<-inner_join(d,scores,by="id")
 d$combo_score<-predict(model3,d %>% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type="prob")$cancer
@@ -187,7 +197,7 @@ fig <- ggsurvplot(fit, data = d,
            ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
            ##palette = c("#E7B800", "#2E9FDF"),
            legend=c(0.75, 0.8),
-           legend.title="", 
+           legend.title="",
            palette=c("blue", "red"),
            legend.labs=c("ARTEMIS Low", "ARTEMIS High"),
            ##legend.labs=labels,
@@ -268,7 +278,7 @@ fig <- ggsurvplot(fit, data = d,
            ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
            ##palette = c("#E7B800", "#2E9FDF"),
            legend=c(0.75, 0.8),
-           legend.title="", 
+           legend.title="",
            palette=c("blue", "red"),
            legend.labs=c("ARTEMIS-DELFI Low", "ARTEMIS-DELFI High"),
            ##legend.labs=labels,
@@ -351,7 +361,7 @@ fig <- ggsurvplot(fit, data = d,
            ## or brewer color (e.g.: "Dark2"), or ggsci color (e.g.: "jco")
            ##palette = c("#E7B800", "#2E9FDF"),
            legend=c(0.75, 0.8),
-           legend.title="", 
+           legend.title="",
            palette=c("blue", "red"),
            legend.labs=c("DELFI Low", "DELFI High"),
            ##legend.labs=labels,
