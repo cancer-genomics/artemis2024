@@ -309,7 +309,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-03-08
+<strong>Last updated:</strong> 2024-03-10
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -443,15 +443,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree09fa07f8f531f18afa741ae561a09ce76939bd87targetblank09fa07fa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree46900fd64e161fdac01330fdf401d9e8588ccab1targetblank46900fda">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/09fa07f8f531f18afa741ae561a09ce76939bd87" target="_blank">09fa07f</a>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/46900fd64e161fdac01330fdf401d9e8588ccab1" target="_blank">46900fd</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree09fa07f8f531f18afa741ae561a09ce76939bd87targetblank09fa07fa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree46900fd64e161fdac01330fdf401d9e8588ccab1targetblank46900fda"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -461,7 +461,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/09fa07f8f531f18afa741ae561a09ce76939bd87" target="_blank">09fa07f</a>.
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/46900fd64e161fdac01330fdf401d9e8588ccab1" target="_blank">46900fd</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -527,8 +527,6 @@ Ignored files:
     Ignored:    output/
 
 Unstaged changes:
-    Modified:   analysis/Fig5_LUCAS.Rmd
-    Modified:   analysis/figS23_24_lungval.Rmd
     Modified:   analysis/figS25.Rmd
 
 </code></pre>
@@ -579,6 +577,57 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/46900fd64e161fdac01330fdf401d9e8588ccab1/analysis/figS25.Rmd" target="_blank">46900fd</a>
+</td>
+<td>
+rscharpf
+</td>
+<td>
+2024-03-09
+</td>
+<td>
+Error in line 97,98 of figS25.Rmd
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/b30f45903206be0d66a3695ff5ea2e85a0828ee6/analysis/figS25.Rmd" target="_blank">b30f459</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-08
+</td>
+<td>
+small fix locked model
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/cancer-genomics/annapragada2024_artemis_code/b30f45903206be0d66a3695ff5ea2e85a0828ee6/docs/figS25.html" target="_blank">b30f459</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-08
+</td>
+<td>
+small fix locked model
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/analysis/figS25.Rmd" target="_blank">72def7c</a>
 </td>
 <td>
@@ -615,66 +664,22 @@ all code
 </div>
 </div>
 </div>
-<pre class="r"><code>library(here)</code></pre>
-<pre><code>here() starts at /Users/akshayaannapragada/Dropbox/ScannedNotes/VelculescuLab/Cancer Genomics Lab/plasma_repeats/artemis2024</code></pre>
-<pre class="r"><code>library(data.table)
-library(tidyverse)</code></pre>
-<pre><code>── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
-<pre><code>✔ ggplot2 3.3.5     ✔ purrr   0.3.4
-✔ tibble  3.1.6     ✔ dplyr   1.0.8
-✔ tidyr   1.2.0     ✔ stringr 1.4.0
-✔ readr   2.0.1     ✔ forcats 0.5.1</code></pre>
-<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::between()   masks data.table::between()
-✖ dplyr::filter()    masks stats::filter()
-✖ dplyr::first()     masks data.table::first()
-✖ dplyr::lag()       masks stats::lag()
-✖ dplyr::last()      masks data.table::last()
-✖ purrr::transpose() masks data.table::transpose()</code></pre>
-<pre class="r"><code>library(devtools)</code></pre>
-<pre><code>Loading required package: usethis</code></pre>
-<pre class="r"><code>library(ggplot2)
+<pre class="r"><code>library(here)
+library(data.table)
+library(tidyverse)
+library(devtools)
+library(ggplot2)
 library(ggpubr)
-library(cowplot)</code></pre>
-<pre><code>
-Attaching package: &#39;cowplot&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:ggpubr&#39;:
-
-    get_legend</code></pre>
-<pre class="r"><code>load_all(here(&quot;code&quot;,&quot;useful.stuff.aa&quot;))           # Load</code></pre>
-<pre><code>ℹ Loading useful.stuff.aa</code></pre>
-<pre class="r"><code>library(caret)</code></pre>
-<pre><code>Loading required package: lattice</code></pre>
-<pre><code>
-Attaching package: &#39;caret&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:purrr&#39;:
-
-    lift</code></pre>
-<pre class="r"><code>library(recipes)</code></pre>
-<pre><code>
-Attaching package: &#39;recipes&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:devtools&#39;:
-
-    check</code></pre>
-<pre><code>The following object is masked from &#39;package:stringr&#39;:
-
-    fixed</code></pre>
-<pre><code>The following object is masked from &#39;package:stats&#39;:
-
-    step</code></pre>
-<pre class="r"><code>library(pROC)</code></pre>
-<pre><code>Type &#39;citation(&quot;pROC&quot;)&#39; for a citation.</code></pre>
-<pre><code>
-Attaching package: &#39;pROC&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:stats&#39;:
-
-    cov, smooth, var</code></pre>
-<pre class="r"><code>library(gbm)</code></pre>
-<pre><code>Loaded gbm 2.1.8</code></pre>
-<pre class="r"><code>library(readxl)
-
-dat&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;lung_dynamics_artemis.csv&quot;))
-#dat&lt;-dat %&gt;% filter(id != &quot;PGDX7348P1_Amended&quot; &amp; id != &quot;PGDX7348P2_Amended&quot;) #something is weird
+library(cowplot)
+load_all(here(&quot;code&quot;,&quot;useful.stuff.aa&quot;))           # Load
+library(caret)
+library(recipes)
+library(pROC)
+library(gbm)
+library(readxl)</code></pre>
+<pre class="r"><code>dat&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;lung_dynamics_artemis.csv&quot;))
+##dat&lt;-dat %&gt;% filter(id != &quot;PGDX7348P1_Amended&quot; &amp; id != &quot;PGDX7348P2_Amended&quot;) #something is weird
+select &lt;- dplyr::select
 dat&lt;-dat %&gt;% select(-V1)
 e&lt;-fread(here(&quot;data&quot;,&quot;Kmer_Distributions&quot;,&quot;Expected.csv&quot;))
 e&lt;-e %&gt;% filter(total_kmers&gt;1000)
@@ -700,10 +705,8 @@ dat&lt;-inner_join(artemis,delfi,by=&quot;id&quot;)
 
 epi&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;lung_dynamics_epi.csv&quot;))
 epi$id&lt;-gsub(&quot;_Amended&quot;,&quot;&quot;,epi$id)
-dat&lt;-inner_join(dat,epi,by=&quot;id&quot;)
-
-
-#These are the models we actually want
+dat&lt;-inner_join(dat,epi,by=&quot;id&quot;)</code></pre>
+<pre class="r"><code>#These are the models we actually want
 model&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;ARTEMIS_Ensemble.rds&quot;))
 model2&lt;-readRDS(here(&quot;data&quot;,&quot;Mathios_Published&quot;,&quot;model_seq_glm.rds&quot;))
 model3&lt;-readRDS(here(&quot;data&quot;,&quot;Final_LUCAS_Ensemble&quot;,&quot;Locked_Models&quot;,&quot;ARTEMIS_single_DELFI_SSLs_Ensemble.rds&quot;))
@@ -724,9 +727,8 @@ d&lt;-tibble(id=dat$id,Cov_GBM=predict(s1,dat,type=&quot;prob&quot;)$cancer,Rati
           LTR_ssl=predict(s6,dat,type=&quot;prob&quot;)$cancer,SINE_ssl=predict(s7,dat,type=&quot;prob&quot;)$cancer,Sat_ssl=predict(s8,dat,type=&quot;prob&quot;)$cancer,RNA_TE_ssl=predict(s9,dat,type=&quot;prob&quot;)$cancer)
 
 
-meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))
-
-#Mathios data had a bunch of unused columns and it only breaks some versions of R and i don&#39;t want to deal with it so now we have a bunch of dummy columns
+meta&lt;-fread(here(&quot;data&quot;,&quot;Plasma_CV_meta_HiSeq.csv&quot;))</code></pre>
+<pre class="r"><code>#Mathios data had a bunch of unused columns and it only breaks some versions of R and i don&#39;t want to deal with it so now we have a bunch of dummy columns
 dat$clinical_nlratio&lt;-NA
 dat$clinical_CRP&lt;-NA
 dat$clinical_cfdna_conc&lt;-NA
@@ -740,15 +742,19 @@ dat$clinical_smokingstatus&lt;-NA
 dat$clinical_COPD&lt;-NA
 dat$multinucratio&lt;-NA
 
-scores&lt;-tibble(Artemis_Score=predict(model,d %&gt;% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl),type=&quot;prob&quot;)$cancer,
-    id=dat$id,
-    delfi_score=predict(model2,dat,type=&quot;prob&quot;)$cancer)</code></pre>
+artemis.newdata &lt;- d %&gt;% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
+predictions.artemis &lt;- predict(model, artemis.newdata, type=&quot;prob&quot;)
+predictions.delfi &lt;- predict(model2, dat, type=&quot;prob&quot;)</code></pre>
 <pre><code>Warning:  There was 1 column that was a factor when the recipe was prepped:
  &#39;clinical_smokingstatus&#39;.
  This may cause errors when processing new data.</code></pre>
 <pre><code>Warning: &#39;keep_original_cols&#39; was added to `step_pca()` after this recipe was created.
 Regenerate your recipe to avoid this warning.</code></pre>
-<pre class="r"><code>d&lt;-inner_join(d,scores,by=&quot;id&quot;)
+<pre class="r"><code>scores&lt;-tibble(Artemis_Score=predictions.artemis$cancer,
+    id=dat$id,
+    delfi_score=predictions.delfi$cancer)
+
+d&lt;-inner_join(d,scores,by=&quot;id&quot;)
 d$combo_score&lt;-predict(model3,d %&gt;% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type=&quot;prob&quot;)$cancer
 d&lt;-d %&gt;% select(id,Artemis_Score,delfi_score,combo_score)
 data1&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;meta2.csv&quot;))
@@ -839,7 +845,7 @@ fig &lt;- ggsurvplot(fit, data = d,
            ## or brewer color (e.g.: &quot;Dark2&quot;), or ggsci color (e.g.: &quot;jco&quot;)
            ##palette = c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
            legend=c(0.75, 0.8),
-           legend.title=&quot;&quot;, 
+           legend.title=&quot;&quot;,
            palette=c(&quot;blue&quot;, &quot;red&quot;),
            legend.labs=c(&quot;ARTEMIS Low&quot;, &quot;ARTEMIS High&quot;),
            ##legend.labs=labels,
@@ -869,44 +875,7 @@ replace the existing scale.</code></pre>
                                 size=5)
   a&lt;-fig$plot
   a</code></pre>
-<p><img src="figure/figS25.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
-Past versions of unnamed-chunk-2-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-2-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-2-1.png" target="_blank">72def7c</a>
-</td>
-<td>
-shay-279
-</td>
-<td>
-2023-12-22
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/figS25.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>overall_1&lt;-a+ggtitle(&quot;ARTEMIS Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
 
@@ -958,7 +927,7 @@ fig &lt;- ggsurvplot(fit, data = d,
            ## or brewer color (e.g.: &quot;Dark2&quot;), or ggsci color (e.g.: &quot;jco&quot;)
            ##palette = c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
            legend=c(0.75, 0.8),
-           legend.title=&quot;&quot;, 
+           legend.title=&quot;&quot;,
            palette=c(&quot;blue&quot;, &quot;red&quot;),
            legend.labs=c(&quot;ARTEMIS-DELFI Low&quot;, &quot;ARTEMIS-DELFI High&quot;),
            ##legend.labs=labels,
@@ -985,13 +954,13 @@ replace the existing scale.</code></pre>
                                 size=5)
   a&lt;-fig$plot
   a</code></pre>
-<p><img src="figure/figS25.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/figS25.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
-Past versions of unnamed-chunk-3-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div id="fig-unnamed-chunk-2-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1010,7 +979,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-3-1.png" target="_blank">72def7c</a>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-2-1.png" target="_blank">72def7c</a>
 </td>
 <td>
 shay-279
@@ -1074,7 +1043,7 @@ fig &lt;- ggsurvplot(fit, data = d,
            ## or brewer color (e.g.: &quot;Dark2&quot;), or ggsci color (e.g.: &quot;jco&quot;)
            ##palette = c(&quot;#E7B800&quot;, &quot;#2E9FDF&quot;),
            legend=c(0.75, 0.8),
-           legend.title=&quot;&quot;, 
+           legend.title=&quot;&quot;,
            palette=c(&quot;blue&quot;, &quot;red&quot;),
            legend.labs=c(&quot;DELFI Low&quot;, &quot;DELFI High&quot;),
            ##legend.labs=labels,
@@ -1101,13 +1070,13 @@ replace the existing scale.</code></pre>
                                 size=5)
   a&lt;-fig$plot
   a</code></pre>
-<p><img src="figure/figS25.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/figS25.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
-Past versions of unnamed-chunk-4-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div id="fig-unnamed-chunk-3-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1126,7 +1095,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-4-1.png" target="_blank">72def7c</a>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-3-1.png" target="_blank">72def7c</a>
 </td>
 <td>
 shay-279

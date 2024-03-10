@@ -97,9 +97,9 @@ dat$multinucratio<-NA
 artemis.newdata <- d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
 predictions.artemis <- predict(model, artemis.newdata, type="prob")
 predictions.delfi <- predict(model2, dat, type="prob")
-scores<-tibble(Artemis_Score=predictions$cancer,
+scores<-tibble(Artemis_Score=predictions.artemis$cancer,
 	id=dat$id,
-	delfi_score=$cancer)
+	delfi_score=predictions.delfi$cancer)
 
 d<-inner_join(d,scores,by="id")
 d$combo_score<-predict(model3,d %>% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type="prob")$cancer
