@@ -93,16 +93,25 @@ dat$clinical_packyears<-NA
 dat$clinical_smokingstatus<-NA
 dat$clinical_COPD<-NA
 dat$multinucratio<-NA
-
-artemis.newdata <- d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
+dat$Mathios_DELFI<-NA
+artemis.newdata<-inner_join(d,dat %>% select(-V1,-starts_with("clinical"),-multinucratio),by="id")
+#artemis.newdata <- d %>% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
 predictions.artemis <- predict(model, artemis.newdata, type="prob")
-predictions.delfi <- predict(model2, dat, type="prob")
+
+vars_keep<-model2$recipe$var_info
+vars_keep <-vars_keep %>% filter(variable != "type")
+predictions.delfi <- predict(model2, dat %>% select(vars_keep$variable), type="prob")
 scores<-tibble(Artemis_Score=predictions.artemis$cancer,
 	id=dat$id,
 	delfi_score=predictions.delfi$cancer)
 
 d<-inner_join(d,scores,by="id")
-d$combo_score<-predict(model3,d %>% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type="prob")$cancer
+d<-inner_join(d,dat %>% select(-V1),by="id")
+
+vars_keep<-model3$recipe$var_info
+vars_keep <-vars_keep %>% filter(variable != "type")
+
+d$combo_score<-predict(model3,d %>% select(vars_keep$variable),type="prob")$cancer
 d<-d %>% select(id,Artemis_Score,delfi_score,combo_score)
 data1<-fread(here("data","Lung_Monitoring","meta2.csv"))
 data2<-fread(here("data","Lung_Monitoring","dynamics.csv"))

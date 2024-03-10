@@ -443,15 +443,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree46900fd64e161fdac01330fdf401d9e8588ccab1targetblank46900fda">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetreec76433f939aaf08967e4b55134e1898d68dcb117targetblankc76433fa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/46900fd64e161fdac01330fdf401d9e8588ccab1" target="_blank">46900fd</a>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/c76433f939aaf08967e4b55134e1898d68dcb117" target="_blank">c76433f</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetree46900fd64e161fdac01330fdf401d9e8588ccab1targetblank46900fda"
+id="strongRepositoryversionstrongahrefhttpsgithubcomcancergenomicsannapragada2024artemiscodetreec76433f939aaf08967e4b55134e1898d68dcb117targetblankc76433fa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -461,7 +461,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/46900fd64e161fdac01330fdf401d9e8588ccab1" target="_blank">46900fd</a>.
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/tree/c76433f939aaf08967e4b55134e1898d68dcb117" target="_blank">c76433f</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -572,6 +572,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/c76433f939aaf08967e4b55134e1898d68dcb117/analysis/figS25.Rmd" target="_blank">c76433f</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-10
+</td>
+<td>
+fix rob’s changes
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/cancer-genomics/annapragada2024_artemis_code/c76433f939aaf08967e4b55134e1898d68dcb117/docs/figS25.html" target="_blank">c76433f</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-10
+</td>
+<td>
+fix rob’s changes
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -741,10 +775,14 @@ dat$clinical_packyears&lt;-NA
 dat$clinical_smokingstatus&lt;-NA
 dat$clinical_COPD&lt;-NA
 dat$multinucratio&lt;-NA
-
-artemis.newdata &lt;- d %&gt;% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
+dat$Mathios_DELFI&lt;-NA
+artemis.newdata&lt;-inner_join(d,dat %&gt;% select(-V1,-starts_with(&quot;clinical&quot;),-multinucratio),by=&quot;id&quot;)
+#artemis.newdata &lt;- d %&gt;% select(LINE_ssl,LTR_ssl,SINE_ssl,Sat_ssl,RNA_TE_ssl,Epi_ssl)
 predictions.artemis &lt;- predict(model, artemis.newdata, type=&quot;prob&quot;)
-predictions.delfi &lt;- predict(model2, dat, type=&quot;prob&quot;)</code></pre>
+
+vars_keep&lt;-model2$recipe$var_info
+vars_keep &lt;-vars_keep %&gt;% filter(variable != &quot;type&quot;)
+predictions.delfi &lt;- predict(model2, dat %&gt;% select(vars_keep$variable), type=&quot;prob&quot;)</code></pre>
 <pre><code>Warning:  There was 1 column that was a factor when the recipe was prepped:
  &#39;clinical_smokingstatus&#39;.
  This may cause errors when processing new data.</code></pre>
@@ -755,7 +793,12 @@ Regenerate your recipe to avoid this warning.</code></pre>
     delfi_score=predictions.delfi$cancer)
 
 d&lt;-inner_join(d,scores,by=&quot;id&quot;)
-d$combo_score&lt;-predict(model3,d %&gt;% select(Artemis_Score,Ratios_ssl,Cov_GBM,zscores_ssl),type=&quot;prob&quot;)$cancer
+d&lt;-inner_join(d,dat %&gt;% select(-V1),by=&quot;id&quot;)
+
+vars_keep&lt;-model3$recipe$var_info
+vars_keep &lt;-vars_keep %&gt;% filter(variable != &quot;type&quot;)
+
+d$combo_score&lt;-predict(model3,d %&gt;% select(vars_keep$variable),type=&quot;prob&quot;)$cancer
 d&lt;-d %&gt;% select(id,Artemis_Score,delfi_score,combo_score)
 data1&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;meta2.csv&quot;))
 data2&lt;-fread(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;dynamics.csv&quot;))
@@ -876,6 +919,43 @@ replace the existing scale.</code></pre>
   a&lt;-fig$plot
   a</code></pre>
 <p><img src="figure/figS25.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-1-1">
+Past versions of unnamed-chunk-1-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-1-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/c76433f939aaf08967e4b55134e1898d68dcb117/docs/figure/figS25.Rmd/unnamed-chunk-1-1.png" target="_blank">c76433f</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-10
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>overall_1&lt;-a+ggtitle(&quot;ARTEMIS Score&quot;)+theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <pre class="r"><code>PFS&lt;-read_xlsx(here(&quot;data&quot;,&quot;Lung_Monitoring&quot;,&quot;PFS.xlsx&quot;))
 
@@ -977,6 +1057,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/c76433f939aaf08967e4b55134e1898d68dcb117/docs/figure/figS25.Rmd/unnamed-chunk-2-1.png" target="_blank">c76433f</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-10
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-2-1.png" target="_blank">72def7c</a>
@@ -1093,6 +1184,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/c76433f939aaf08967e4b55134e1898d68dcb117/docs/figure/figS25.Rmd/unnamed-chunk-3-1.png" target="_blank">c76433f</a>
+</td>
+<td>
+shay-279
+</td>
+<td>
+2024-03-10
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/cancer-genomics/annapragada2024_artemis_code/blob/72def7c50b8b652ee03a2941aba1a9fc235e24ed/docs/figure/figS25.Rmd/unnamed-chunk-3-1.png" target="_blank">72def7c</a>
